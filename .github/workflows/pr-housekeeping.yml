@@ -1,0 +1,33 @@
+name: PR Housekeeping
+on:
+  pull_request_target:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add labels by branch
+        uses: actions-ecosystem/action-add-labels@v1
+        if: ${{ startsWith(github.head_ref, 'feature/') }}
+        with:
+          labels: |
+            feature
+      - name: Enforce PR title convention
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            chore
+            refactor
+            docs
+            test
+            ci

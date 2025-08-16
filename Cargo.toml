@@ -1,0 +1,7 @@
+[workspace]
+members = ["server"]
+resolver = "2"
+
+# Optional: unify some lint config for all members
+[workspace.metadata.ci]
+rust_version = "stable"

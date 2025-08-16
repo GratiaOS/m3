@@ -1,15 +1,16 @@
-use tokio_rusqlite::Connection;
-use rusqlite::{self};
+use tokio_rusqlite::Connection as AsyncConnection;
 
-pub struct Database(pub Connection);
+pub struct Database(pub AsyncConnection);
 
-pub async fn init_db() -> anyhow::Result<Database> {
-    let conn = Connection::open("memory.db").await?;
+pub async fn init_db() -> tokio_rusqlite::Result<Database> {
+    // 0.5.x API is `open`, not `connect`
+    let conn = AsyncConnection::open("memory.db").await?;
 
-    // run the schema inside the blocking pool; unwrap both Result layers
-    conn.call(|c: &mut rusqlite::Connection| -> rusqlite::Result<()> {
-        c.execute_batch(
-            r#"
+    // Run schema init; return tokio_rusqlite::Result so `?` auto-converts rusqlite errors.
+    conn.call(
+        |c: &mut rusqlite::Connection| -> tokio_rusqlite::Result<()> {
+            c.execute_batch(
+                r#"
             PRAGMA journal_mode=WAL;
 
             CREATE TABLE IF NOT EXISTS profiles(
@@ -18,67 +19,76 @@ pub async fn init_db() -> anyhow::Result<Database> {
             INSERT OR IGNORE INTO profiles(id,name) VALUES(1,'Raz'),(2,'Sawsan'),(3,'Nico');
 
             CREATE TABLE IF NOT EXISTS threads(
-              id INTEGER PRIMARY KEY, title TEXT
+              id INTEGER PRIMARY KEY, title TEXT, tags TEXT, profile_id INTEGER, created_at TEXT
             );
             INSERT OR IGNORE INTO threads(id,title) VALUES(1,'default');
 
             CREATE TABLE IF NOT EXISTS messages(
               id INTEGER PRIMARY KEY,
-              thread_id INTEGER, role TEXT, text TEXT, tags TEXT, profile_id INTEGER,
-              privacy TEXT DEFAULT 'public', importance INTEGER DEFAULT 0, ts TEXT
+              thread_id INTEGER,
+              role TEXT,
+              text TEXT,
+              tags TEXT,
+              profile_id INTEGER,
+              privacy TEXT DEFAULT 'public',
+              importance INTEGER DEFAULT 0,
+              ts TEXT
             );
 
             CREATE TABLE IF NOT EXISTS snapshots(
-              id INTEGER PRIMARY KEY, thread_id INTEGER, period TEXT, summary_md TEXT, ts TEXT
+              id INTEGER PRIMARY KEY,
+              thread_id INTEGER,
+              period TEXT,
+              summary_md TEXT,
+              ts TEXT
             );
 
             CREATE TABLE IF NOT EXISTS kv(
-              key TEXT PRIMARY KEY, value BLOB
+              key TEXT PRIMARY KEY,
+              value BLOB
             );
 
             CREATE TABLE IF NOT EXISTS tells(
               id INTEGER PRIMARY KEY,
-              node TEXT NOT NULL,
-              pre_activation TEXT NOT NULL,
-              action TEXT NOT NULL,
-              created_at TEXT NOT NULL,
+              node TEXT,
+              pre_activation TEXT,
+              action TEXT,
+              created_at TEXT,
               handled_at TEXT
             );
 
             CREATE TABLE IF NOT EXISTS status(
-              id INTEGER PRIMARY KEY CHECK (id=1),
+              id INTEGER PRIMARY KEY CHECK (id = 1),
               color TEXT NOT NULL DEFAULT 'green',
-              note  TEXT NOT NULL DEFAULT '',
-              updated_at TEXT NOT NULL,
+              note TEXT NOT NULL DEFAULT '',
+              updated_at TEXT NOT NULL DEFAULT (datetime('now')),
               expires_at TEXT
             );
-            "#
-        )?;
-
-        let now = chrono::Utc::now().to_rfc3339();
-        c.execute(
-            "INSERT OR IGNORE INTO status(id,color,note,updated_at,expires_at)
-             VALUES(1,'green','',?1,NULL)",
-            rusqlite::params![now],
-        )?;
-
-        Ok(())
-    }).await??; // <- outer tokio_rusqlite::Result, then inner rusqlite::Result
+            INSERT OR IGNORE INTO status(id,color,note,updated_at,expires_at)
+              VALUES(1,'green','',datetime('now'),NULL);
+            "#,
+            )?;
+            Ok(())
+        },
+    )
+    .await?; // unwrap tokio_rusqlite::Result
 
     Ok(Database(conn))
 }
 
+// Keep API; ensure default thread exists, return 1
 pub async fn ensure_default_thread(db: &Database) -> i64 {
-    let res = db.0.call(|c: &mut rusqlite::Connection| -> rusqlite::Result<i64> {
-        c.execute(
-            "INSERT OR IGNORE INTO threads(id,title) VALUES(1,'default')",
-            [],
-        )?;
-        Ok(1)
-    }).await;
+    let res: tokio_rusqlite::Result<i64> =
+        db.0.call(
+            |c: &mut rusqlite::Connection| -> tokio_rusqlite::Result<i64> {
+                c.execute(
+                    "INSERT OR IGNORE INTO threads(id,title) VALUES(1,'default')",
+                    [],
+                )?;
+                Ok(1)
+            },
+        )
+        .await;
 
-    match res {
-        Ok(Ok(id)) => id,
-        _ => 1,
-    }
+    res.unwrap_or(1)
 }
