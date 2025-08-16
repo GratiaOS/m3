@@ -122,8 +122,8 @@ pub struct HandleTellRequest {
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct StatusSet {
-    pub name: String,                  // "Raz" | "Sawsan" | etc.
-    pub status: String,                // "green" | "yellow" | "red"
+    pub name: String,   // "Raz" | "Sawsan" | etc.
+    pub status: String, // "green" | "yellow" | "red"
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
@@ -135,8 +135,8 @@ pub struct StatusItem {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct StatusGetResponse {
-    pub color: String,          // "green" | "yellow" | "red"
-    pub note: String,           // short free text
+    pub color: String, // "green" | "yellow" | "red"
+    pub note: String,  // short free text
     pub updated_at: DateTime<Utc>,
     pub expires_at: Option<DateTime<Utc>>,
 }
@@ -149,7 +149,9 @@ pub struct StatusSetRequest {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct StatusOk { pub ok: bool }
+pub struct StatusOk {
+    pub ok: bool,
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MemberEnergy {
@@ -177,7 +179,7 @@ pub struct TeamState {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SetStateRequest {
-    pub members: Option<Vec<MemberEnergy>>, 
+    pub members: Option<Vec<MemberEnergy>>,
     pub pillars: Option<PillarStatus>,
     pub note: Option<String>,
 }

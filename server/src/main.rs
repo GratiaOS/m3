@@ -1,6 +1,6 @@
+mod bus;
 mod db;
 mod models;
-mod bus;
 
 use bus::Bus;
 use chrono::Utc;
@@ -19,11 +19,11 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
+use serde::Deserialize;
 use tower_http::cors::{Any, CorsLayer};
 use tracing_subscriber::EnvFilter;
-use serde::Deserialize;
 
-use axum::response::sse::{Sse, Event};
+use axum::response::sse::{Event, Sse};
 use futures_util::stream::StreamExt;
 use std::time::Duration;
 use tokio_stream::wrappers::IntervalStream;
@@ -37,13 +37,13 @@ use rusqlite::params;
 
 // --- crypto ---
 use argon2::Argon2;
+use base64::engine::general_purpose::STANDARD as B64;
+use base64::Engine;
 use chacha20poly1305::{
     aead::{Aead, KeyInit},
     Key, XChaCha20Poly1305, XNonce,
 };
 use rand::RngCore;
-use base64::engine::general_purpose::STANDARD as B64;
-use base64::Engine;
 
 fn derive_key(pass: &str, salt: &[u8]) -> [u8; 32] {
     use argon2::password_hash::{PasswordHasher as _, SaltString};
@@ -133,7 +133,7 @@ async fn main() {
     struct TellsQuery {
         limit: Option<i64>,
     }
-    
+
     #[derive(Deserialize)]
     struct SetStateRequest {
         // pass-through merges; keep them flexible
@@ -300,8 +300,8 @@ async fn main() {
                                 vec![
                                     q.clone().into(),
                                     pname.into(),
-                                    (bid as i64).into(),
-                                    (limit as i64).into(),
+                                    bid.into(),
+                                    limit.into(),
                                 ],
                             ),
                             (Some(pname), Some(bid)) => (
@@ -314,8 +314,8 @@ async fn main() {
                                 vec![
                                     q.clone().into(),
                                     pname.into(),
-                                    (bid as i64).into(),
-                                    (limit as i64).into(),
+                                    bid.into(),
+                                    limit.into(),
                                 ],
                             ),
                             (Some(pname), None) if include_sealed => (
@@ -325,7 +325,7 @@ async fn main() {
                                  ORDER BY m.id DESC
                                  LIMIT ?3"
                                     .to_string(),
-                                vec![q.clone().into(), pname.into(), (limit as i64).into()],
+                                vec![q.clone().into(), pname.into(), limit.into()],
                             ),
                             (Some(pname), None) => (
                                 "SELECT m.id, m.text, m.tags, p.name, m.ts, m.privacy
@@ -334,7 +334,7 @@ async fn main() {
                                  ORDER BY m.id DESC
                                  LIMIT ?3"
                                     .to_string(),
-                                vec![q.clone().into(), pname.into(), (limit as i64).into()],
+                                vec![q.clone().into(), pname.into(), limit.into()],
                             ),
                             (None, Some(bid)) if include_sealed => (
                                 "SELECT m.id, m.text, m.tags, p.name, m.ts, m.privacy
@@ -345,8 +345,8 @@ async fn main() {
                                     .to_string(),
                                 vec![
                                     q.clone().into(),
-                                    (bid as i64).into(),
-                                    (limit as i64).into(),
+                                    bid.into(),
+                                    limit.into(),
                                 ],
                             ),
                             (None, Some(bid)) => (
@@ -358,8 +358,8 @@ async fn main() {
                                     .to_string(),
                                 vec![
                                     q.clone().into(),
-                                    (bid as i64).into(),
-                                    (limit as i64).into(),
+                                    bid.into(),
+                                    limit.into(),
                                 ],
                             ),
                             (None, None) if include_sealed => (
@@ -369,7 +369,7 @@ async fn main() {
                                  ORDER BY m.id DESC
                                  LIMIT ?2"
                                     .to_string(),
-                                vec![q.clone().into(), (limit as i64).into()],
+                                vec![q.clone().into(), limit.into()],
                             ),
                             (None, None) => (
                                 "SELECT m.id, m.text, m.tags, p.name, m.ts, m.privacy
@@ -378,11 +378,11 @@ async fn main() {
                                  ORDER BY m.id DESC
                                  LIMIT ?2"
                                     .to_string(),
-                                vec![q.clone().into(), (limit as i64).into()],
+                                vec![q.clone().into(), limit.into()],
                             ),
                         };
 
-                    let key_opt = state.key.lock().unwrap().clone();
+                    let key_opt = *state.key.lock().unwrap();
 
                     let rows: Vec<RetrievedChunk> = state
                         .db
@@ -433,7 +433,7 @@ async fn main() {
             post({
                 let state = state.clone();
                 move |Json(_req): Json<SnapshotRequest>| async move {
-                    let key_opt = state.key.lock().unwrap().clone();
+                    let key_opt = *state.key.lock().unwrap();
                     let summary: String = state
                         .db
                         .0
@@ -495,7 +495,7 @@ async fn main() {
                 let state = state.clone();
                 move |Json(req): Json<ExportRequest>| async move {
                     let thread = req.thread_id.unwrap_or(1);
-                    let key_opt = state.key.lock().unwrap().clone();
+                    let key_opt = *state.key.lock().unwrap();
 
                     let out: (String, i64) = state
                         .db
@@ -562,7 +562,7 @@ async fn main() {
                 let state = state.clone();
                 move |Json(req): Json<ExportRequest>| async move {
                     let thread = req.thread_id.unwrap_or(1);
-                    let key_opt = state.key.lock().unwrap().clone();
+                    let key_opt = *state.key.lock().unwrap();
 
                     let csv: String = state
                         .db
@@ -757,18 +757,18 @@ async fn main() {
                 move |Json(req): Json<StatusSet>| async move {
                     // persist in kv
                     let k = format!("status:{}", req.name);
-                    let v = format!("{}", req.status);
+                    let v = req.status.to_string();
+                    let v_for_db = v.clone();
                     let ts = chrono::Utc::now().to_rfc3339();
 
                     state.db.0.call(move |c| {
                         c.execute(
                             "INSERT OR REPLACE INTO kv(key,value) VALUES(?1,?2)",
-                            rusqlite::params![k, v],
+                            rusqlite::params![k, v_for_db],
                         )?;
                         Ok(())
                     }).await.ok();
 
-                    // publish for SSE listeners
                     state.bus.publish(&format!("status:{}:{}", req.name, v));
 
                     Json(serde_json::json!({ "ok": true, "name": req.name, "status": v, "ts": ts }))
@@ -783,21 +783,22 @@ async fn main() {
                 move || {
                     let state = state.clone();
                     async move {
-                        let rows_res: rusqlite::Result<Vec<StatusItem>> = state.db.0.call(|c| {
-                        let mut out = Vec::new();
-                        let mut stmt = c.prepare("SELECT key, value FROM kv WHERE key LIKE 'status:%'")?;
-                        let mut it = stmt.query([])?;
-                        while let Some(row) = it.next()? {
-                            let key: String = row.get(0)?;
-                            let name = key.trim_start_matches("status:").to_string();
-                            let status: String = row.get(1)?;
-                            out.push(StatusItem { name, status, ts: String::new() });
-                        }
-                        Ok(out)
-                    }).await.unwrap();
-                    let rows = rows_res.unwrap_or_default();
+                        let rows: Vec<StatusItem> = state.db.0.call(
+                            |c: &mut rusqlite::Connection| -> tokio_rusqlite::Result<Vec<StatusItem>> {
+                                let mut out = Vec::new();
+                                let mut stmt = c.prepare("SELECT key, value FROM kv WHERE key LIKE 'status:%'")?;
+                                let mut it = stmt.query([])?;
+                                while let Some(row) = it.next()? {
+                                    let key: String = row.get(0)?;
+                                    let name = key.trim_start_matches("status:").to_string();
+                                    let status: String = row.get(1)?;
+                                    out.push(StatusItem { name, status, ts: String::new() });
+                                }
+                                Ok(out)
+                            }
+                        ).await.unwrap();
 
-                    Json(rows)
+                        Json(rows)
                     }
                 }
             }),
@@ -870,11 +871,11 @@ async fn main() {
                                 color = "green".into();
                                 note.clear();
                                 updated_at = now.to_rfc3339();
-                                // write reset (ignore result)
-                                state.db.0.call(move |c| -> rusqlite::Result<()> {
+                                let updated_at_db = updated_at.clone(); // <— keep original for later parsing
+                                state.db.0.call(move |c: &mut rusqlite::Connection| -> tokio_rusqlite::Result<()> {
                                     c.execute(
                                         "UPDATE status SET color='green', note='', updated_at=?1, expires_at=NULL WHERE id=1",
-                                        rusqlite::params![updated_at],
+                                        rusqlite::params![updated_at_db],
                                     )?;
                                     Ok(())
                                 }).await.ok();
@@ -901,16 +902,23 @@ async fn main() {
                 let state = state.clone();
                 move |Json(req): Json<models::StatusSetRequest>| async move {
                     let now = chrono::Utc::now();
-                    let expires_at = req.ttl_minutes.map(|m| (now + chrono::Duration::minutes(m)).to_rfc3339());
+                    let expires_at =
+                        req.ttl_minutes.map(|m| (now + chrono::Duration::minutes(m)).to_rfc3339());
                     let note = req.note.unwrap_or_default();
                     let color = req.color;
-                    state.db.0.call(move |c| -> rusqlite::Result<()> {
-                        c.execute(
-                            "UPDATE status SET color=?1, note=?2, updated_at=?3, expires_at=?4 WHERE id=1",
-                            rusqlite::params![ color, note, now.to_rfc3339(), expires_at ],
-                        )?;
-                        Ok(())
-                    }).await.unwrap().unwrap();
+
+                    state
+                        .db
+                        .0
+                        .call(move |c: &mut rusqlite::Connection| -> tokio_rusqlite::Result<()> {
+                            c.execute(
+                                "UPDATE status SET color=?1, note=?2, updated_at=?3, expires_at=?4 WHERE id=1",
+                                rusqlite::params![color, note, now.to_rfc3339(), expires_at],
+                            )?;
+                            Ok(())
+                        })
+                        .await
+                        .unwrap();
 
                     Json(models::StatusOk { ok: true })
                 }
@@ -924,19 +932,21 @@ async fn main() {
                 move || {
                     let state = state.clone();
                     async move {
-                        let v_res: rusqlite::Result<serde_json::Value> = state.db.0.call(|c| {
-                            let r: rusqlite::Result<Vec<u8>> = c.query_row(
-                                "SELECT value FROM kv WHERE key='dashboard_state'",
-                                [],
-                                |row| row.get(0),
-                            );
-                            let v = r
-                                .ok()
-                                .and_then(|b| serde_json::from_slice::<serde_json::Value>(&b).ok())
-                                .unwrap_or_else(default_team_state);
-                            Ok(v)
-                        }).await.unwrap();
-                        let v = v_res.unwrap();
+                        let v: serde_json::Value = state.db.0.call(
+                            |c: &mut rusqlite::Connection| -> tokio_rusqlite::Result<serde_json::Value> {
+                                let r: rusqlite::Result<Vec<u8>> = c.query_row(
+                                    "SELECT value FROM kv WHERE key='dashboard_state'",
+                                    [],
+                                    |row| row.get(0),
+                                );
+                                let v = r
+                                    .ok()
+                                    .and_then(|b| serde_json::from_slice::<serde_json::Value>(&b).ok())
+                                    .unwrap_or_else(default_team_state);
+                                Ok(v)
+                            }
+                        ).await.unwrap();
+
                         Json(v)
                     }
                 }
@@ -948,35 +958,37 @@ async fn main() {
                 let state = state.clone();
                 move |Json(req): Json<SetStateRequest>| async move {
                     let now = chrono::Utc::now().to_rfc3339();
-                    let v_res: rusqlite::Result<Value> = state.db.0.call(move |c| {
-                        // load current
-                        let cur: Value = c
-                            .query_row(
-                                "SELECT value FROM kv WHERE key='dashboard_state'",
-                                [],
-                                |row| row.get::<_, Vec<u8>>(0),
-                            )
-                            .ok()
-                            .and_then(|b| serde_json::from_slice::<Value>(&b).ok())
-                            .unwrap_or_else(default_team_state);
+                    let v: Value = state.db.0.call(
+                        move |c: &mut rusqlite::Connection| -> tokio_rusqlite::Result<Value> {
+                            // load current
+                            let cur: Value = c
+                                .query_row(
+                                    "SELECT value FROM kv WHERE key='dashboard_state'",
+                                    [],
+                                    |row| row.get::<_, Vec<u8>>(0),
+                                )
+                                .ok()
+                                .and_then(|b| serde_json::from_slice::<Value>(&b).ok())
+                                .unwrap_or_else(default_team_state);
 
-                        // merge…
-                        let mut next = cur.clone();
-                        if let Some(ms) = req.members { next["members"] = serde_json::to_value(ms).unwrap(); }
-                        if let Some(ps) = req.pillars { next["pillars"] = serde_json::to_value(ps).unwrap(); }
-                        if let Some(n) = req.note { next["note"] = Value::String(n); }
-                        next["ts"] = Value::String(now.clone());
+                            // merge
+                            let mut next = cur.clone();
+                            if let Some(ms) = req.members { next["members"] = serde_json::to_value(ms).unwrap(); }
+                            if let Some(ps) = req.pillars { next["pillars"] = serde_json::to_value(ps).unwrap(); }
+                            if let Some(n) = req.note { next["note"] = Value::String(n); }
+                            next["ts"] = Value::String(now.clone());
 
-                        // save
-                        let blob = serde_json::to_vec(&next).unwrap();
-                        c.execute(
-                            "INSERT OR REPLACE INTO kv(key,value) VALUES('dashboard_state',?)",
-                            rusqlite::params![blob],
-                        )?;
+                            // save
+                            let blob = serde_json::to_vec(&next).unwrap();
+                            c.execute(
+                                "INSERT OR REPLACE INTO kv(key,value) VALUES('dashboard_state',?)",
+                                rusqlite::params![blob],
+                            )?;
 
-                        Ok(next) // <- add Ok
-                    }).await.unwrap();
-                    let v = v_res.unwrap();
+                            Ok(next)
+                        }
+                    ).await.unwrap();
+
                     Json(v)
                 }
             }),
@@ -1000,20 +1012,22 @@ async fn main() {
 // ensure a profile name exists, return id
 async fn ensure_profile(db: &Database, name: &str) -> i64 {
     let name = name.to_string();
-    db.0
-        .call(move |c| {
-            let r: Result<i64, rusqlite::Error> = c
-                .query_row("SELECT id FROM profiles WHERE name=?1", [name.as_str()], |r| r.get(0));
-            match r {
-                Ok(id) => Ok(id),
-                Err(_) => {
-                    c.execute("INSERT INTO profiles(name) VALUES(?1)", [name.as_str()])?;
-                    Ok(c.last_insert_rowid())
-                }
+    db.0.call(move |c| {
+        let r: Result<i64, rusqlite::Error> = c.query_row(
+            "SELECT id FROM profiles WHERE name=?1",
+            [name.as_str()],
+            |r| r.get(0),
+        );
+        match r {
+            Ok(id) => Ok(id),
+            Err(_) => {
+                c.execute("INSERT INTO profiles(name) VALUES(?1)", [name.as_str()])?;
+                Ok(c.last_insert_rowid())
             }
-        })
-        .await
-        .unwrap()
+        }
+    })
+    .await
+    .unwrap()
 }
 
 // ensure a thread by title exists (returns id) — adapts to whatever columns exist
@@ -1021,67 +1035,68 @@ async fn ensure_thread_by_title(db: &Database, title: &str) -> i64 {
     let title = title.to_string();
     let now = chrono::Utc::now().to_rfc3339();
 
-    db.0
-        .call(move |c| {
-            // already there?
-            if let Ok(id) =
-                c.query_row("SELECT id FROM threads WHERE title=?1", [title.as_str()], |r| r.get(0))
-            {
-                return Ok(id);
-            }
+    db.0.call(move |c| {
+        // already there?
+        if let Ok(id) = c.query_row(
+            "SELECT id FROM threads WHERE title=?1",
+            [title.as_str()],
+            |r| r.get(0),
+        ) {
+            return Ok(id);
+        }
 
-            // inspect schema
-            let (has_profile_id, has_created_at) = {
-                let mut has_profile_id = false;
-                let mut has_created_at = false;
-                let mut stmt = c.prepare("PRAGMA table_info(threads)")?;
-                let mut rows = stmt.query([])?;
-                while let Some(row) = rows.next()? {
-                    let col: String = row.get(1)?; // name
-                    if col == "profile_id" {
-                        has_profile_id = true;
-                    }
-                    if col == "created_at" {
-                        has_created_at = true;
-                    }
+        // inspect schema
+        let (has_profile_id, has_created_at) = {
+            let mut has_profile_id = false;
+            let mut has_created_at = false;
+            let mut stmt = c.prepare("PRAGMA table_info(threads)")?;
+            let mut rows = stmt.query([])?;
+            while let Some(row) = rows.next()? {
+                let col: String = row.get(1)?; // name
+                if col == "profile_id" {
+                    has_profile_id = true;
                 }
-                (has_profile_id, has_created_at)
-            };
+                if col == "created_at" {
+                    has_created_at = true;
+                }
+            }
+            (has_profile_id, has_created_at)
+        };
 
-            // choose insert shape based on available columns
-            match (has_profile_id, has_created_at) {
-                (true, true) => {
-                    c.execute(
-                        "INSERT INTO threads(title, profile_id, created_at)
+        // choose insert shape based on available columns
+        match (has_profile_id, has_created_at) {
+            (true, true) => {
+                c.execute(
+                    "INSERT INTO threads(title, profile_id, created_at)
                          VALUES(?1, (SELECT id FROM profiles WHERE name='Raz'), ?2)",
-                        rusqlite::params![title.as_str(), now.as_str()],
-                    )?;
-                }
-                (false, true) => {
-                    c.execute(
-                        "INSERT INTO threads(title, created_at) VALUES(?1, ?2)",
-                        rusqlite::params![title.as_str(), now.as_str()],
-                    )?;
-                }
-                (true, false) => {
-                    c.execute(
-                        "INSERT INTO threads(title, profile_id)
-                         VALUES(?1, (SELECT id FROM profiles WHERE name='Raz'))",
-                        rusqlite::params![title.as_str()],
-                    )?;
-                }
-                (false, false) => {
-                    c.execute(
-                        "INSERT INTO threads(title) VALUES(?1)",
-                        rusqlite::params![title.as_str()],
-                    )?;
-                }
+                    rusqlite::params![title.as_str(), now.as_str()],
+                )?;
             }
+            (false, true) => {
+                c.execute(
+                    "INSERT INTO threads(title, created_at) VALUES(?1, ?2)",
+                    rusqlite::params![title.as_str(), now.as_str()],
+                )?;
+            }
+            (true, false) => {
+                c.execute(
+                    "INSERT INTO threads(title, profile_id)
+                         VALUES(?1, (SELECT id FROM profiles WHERE name='Raz'))",
+                    rusqlite::params![title.as_str()],
+                )?;
+            }
+            (false, false) => {
+                c.execute(
+                    "INSERT INTO threads(title) VALUES(?1)",
+                    rusqlite::params![title.as_str()],
+                )?;
+            }
+        }
 
-            Ok(c.last_insert_rowid())
-        })
-        .await
-        .unwrap()
+        Ok(c.last_insert_rowid())
+    })
+    .await
+    .unwrap()
 }
 
 // returns count imported and a list of thread titles (only for threads that actually imported msgs)
@@ -1093,17 +1108,16 @@ async fn import_openai_folder(
     use std::{fs::File, io::Read};
 
     // quick index to speed up dedup check (safe to run every time)
-    db.0
-        .call(|c| {
-            c.execute(
-                "CREATE INDEX IF NOT EXISTS idx_messages_thread_ts_role
+    db.0.call(|c| {
+        c.execute(
+            "CREATE INDEX IF NOT EXISTS idx_messages_thread_ts_role
                  ON messages(thread_id, ts, role)",
-                [],
-            )?;
-            Ok(())
-        })
-        .await
-        .unwrap();
+            [],
+        )?;
+        Ok(())
+    })
+    .await
+    .unwrap();
 
     // find conversations.json on disk
     let candidates = [
@@ -1183,8 +1197,14 @@ async fn import_openai_folder(
             ta.partial_cmp(&tb)
                 .unwrap_or(std::cmp::Ordering::Equal)
                 .then_with(|| {
-                    let ra = a.pointer("/author/role").and_then(|v| v.as_str()).unwrap_or("");
-                    let rb = b.pointer("/author/role").and_then(|v| v.as_str()).unwrap_or("");
+                    let ra = a
+                        .pointer("/author/role")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("");
+                    let rb = b
+                        .pointer("/author/role")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("");
                     let rank = |r: &str| match r {
                         "system" => 0,
                         "user" => 1,
@@ -1196,8 +1216,12 @@ async fn import_openai_folder(
         });
 
         // pre-filter to skip empty/system-only threads
-        let mut filtered: Vec<(String /*role*/, String /*ts*/, String /*text*/, i64 /*pid*/)> =
-            Vec::new();
+        let mut filtered: Vec<(
+            String, /*role*/
+            String, /*ts*/
+            String, /*text*/
+            i64,    /*pid*/
+        )> = Vec::new();
         let mut last_text = String::new();
 
         for m in msgs {
@@ -1247,9 +1271,8 @@ async fn import_openai_folder(
         let privacy = privacy.to_string();
 
         // transaction + dedup by (thread_id, role, ts, text)
-        let inserted_count: i64 = db
-            .0
-            .call(move |c| {
+        let inserted_count: i64 =
+            db.0.call(move |c| {
                 let tx = c.unchecked_transaction()?;
 
                 let mut exists_stmt = tx.prepare(
@@ -1265,22 +1288,14 @@ async fn import_openai_folder(
 
                 let mut inserted = 0i64;
                 for (role, ts, text, pid) in filtered {
-                    let already = exists_stmt.exists(rusqlite::params![
-                        thread_id, role, ts, text
-                    ])?;
+                    let already =
+                        exists_stmt.exists(rusqlite::params![thread_id, role, ts, text])?;
                     if already {
                         continue;
                     }
 
                     insert_stmt.execute(rusqlite::params![
-                        thread_id,
-                        role,
-                        text,
-                        tags_json,
-                        pid,
-                        privacy,
-                        0i32,
-                        ts
+                        thread_id, role, text, tags_json, pid, privacy, 0i32, ts
                     ])?;
                     inserted += 1;
                 }

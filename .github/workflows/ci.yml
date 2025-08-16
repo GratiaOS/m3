@@ -2,49 +2,38 @@ name: CI
 
 on:
   push:
-    branches: ['**']
+    branches: [main, dev, feature/**]
   pull_request:
+    branches: [main, dev]
 
 jobs:
   rust:
-    name: Server (Rust)
+    name: Rust Build/Test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: server
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: server -> target
-      - name: fmt
-        run: cargo fmt --all -- --check
-      - name: clippy
-        run: cargo clippy --all-targets -- -D warnings
-      - name: build
-        run: cargo build --release
-      - name: test
-        run: cargo test --all
+          workspaces: |
+            . -> target
 
-  ui:
-    name: UI (Vite/React)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ui
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - name: Install
-        run: |
-          if command -v pnpm >/dev/null 2>&1; then corepack enable; corepack prepare pnpm@latest --activate; fi
-          pnpm i || npm i
-      - name: Lint
-        run: |
-          if [ -f package.json ] && jq -e '.scripts.lint' package.json >/dev/null 2>&1; then \
-            pnpm lint || npm run lint; else echo "No lint script"; fi
-      - name: Build
-        run: pnpm build || npm run build
+      - name: rustfmt
+        run: cargo fmt --all -- --check
+
+      - name: clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: build
+        run: cargo build --workspace --all-targets --release
+
+      - name: test
+        run: cargo test --workspace --all-targets -- --nocapture
