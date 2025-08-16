@@ -1,0 +1,33 @@
+@keyframes softPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 14px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+.pulse {
+  animation: softPulse 1.2s ease-out infinite;
+}
+.badge {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #eee;
+}
+.incognito-banner {
+  border: 1px solid #111;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.blur-when-incognito {
+  filter: blur(1.5px);
+  transition: filter 0.2s ease;
+}
