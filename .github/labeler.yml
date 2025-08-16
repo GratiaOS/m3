@@ -1,0 +1,6 @@
+server:
+  - 'server/**'
+ui:
+  - 'ui/**'
+docs:
+  - '**/*.md'
