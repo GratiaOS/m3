@@ -1,0 +1,26 @@
+cat > .gitignore <<'EOF'
+# macOS
+.DS_Store
+
+# Rust
+/target
+server/target
+**/*.rs.bk
+
+# Node
+node_modules
+.ui/.vite
+ui/dist
+.ui/.cache
+
+# Local data
+server/memory.db
+exports/
+
+# Editors
+.vscode
+.idea
+
+# dotenv (if you add later)
+.env
+EOF

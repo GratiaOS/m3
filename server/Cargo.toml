@@ -1,0 +1,26 @@
+[package]
+name = "m3-memory-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = { version = "0.7", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_with = "3"
+thiserror = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+rusqlite = { version = "0.31", features = ["bundled"] }
+chrono = { version = "0.4", features = ["serde"] }
+parking_lot = "0.12"
+argon2 = { version = "0.5", features = ["std"] }
+chacha20poly1305 = "0.10"
+base64 = "0.22"
+rand = "0.8"
+tokio-rusqlite = "0.5"
+anyhow = "1"
+tower-http = { version = "0.5", features = ["cors"] }
+futures-util = "0.3"
+tokio-stream  = "0.1"
