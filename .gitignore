@@ -14,12 +14,17 @@ ui/dist
 .ui/.cache
 
 # Local data
-server/memory.db
+/memory.db
+/memory.db-shm
+/memory.db-wal
 exports/
 
-# Editors
-.vscode
+# OS/editor noise
+.DS_Store
 .idea
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 
 # dotenv (if you add later)
 .env
