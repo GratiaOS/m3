@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+set -euo pipefail
+echo "[pre-commit] Hook triggered"
+
+# Pre-commit hook for m3
+# - Server: fmt, clippy (deny warnings), tests
+# - UI: optional lint + type-check (pnpm), if ui/ exists
+
+has_cmd() { command -v "$1" >/dev/null 2>&1; }
+
+echo "[pre-commit] Running server checks…"
+(
+  cd server
+  echo "[fmt] Checking formatting…"
+  cargo fmt -- --check
+
+  echo "[clippy] Running lints…"
+  cargo clippy -- -D warnings
+
+  echo "[test] Running tests…"
+  cargo test
+)
+
+# UI checks (optional)
+if [ -d ui ]; then
+  echo "[pre-commit] Running UI checks…"
+  (
+    cd ui
+
+    if ! has_cmd pnpm; then
+      echo "[ui] pnpm not found; skipping UI checks"
+      exit 0
+    fi
+
+    # lightweight, idempotent install (quiet); don't run package scripts
+    if [ -f pnpm-lock.yaml ]; then
+      pnpm install --ignore-scripts --frozen-lockfile > /dev/null 2>&1 || true
+    else
+      pnpm install --ignore-scripts > /dev/null 2>&1 || true
+    fi
+
+    # Lint only if a "lint" script exists
+    if pnpm -s run | grep -q '^lint'; then
+      echo "[lint] pnpm lint…"
+      pnpm -s lint
+    else
+      echo "[lint] no \"lint\" script; skipping"
+    fi
+
+    echo "[type-check] tsc --noEmit…"
+    if [ -f tsconfig.json ]; then
+      echo "[type-check] tsc -p tsconfig.json --noEmit…"
+      pnpm -s exec tsc -p tsconfig.json --noEmit
+    else
+      echo "[type-check] no tsconfig.json; skipping"
+    fi
+  )
+  echo "[pre-commit] UI checks passed ✅"
+else
+  echo "[pre-commit] Skipping UI checks (no ui/ directory)"
+fi
+
+echo "[pre-commit] All checks passed ✅"
