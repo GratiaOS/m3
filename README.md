@@ -25,7 +25,9 @@ Designed for offline resilience, privacy, and joyful retrieval.
 
 - **server/** Rust (Axum + tokio-rusqlite + rusqlite[bundled])
 - **ui/** Vite + React + TypeScript
-- SQLite DB: `./memory.db` (WAL mode). The files are git-ignored.
+- SQLite DB: `memory.db` in **repo root** (WAL mode).  
+  By default, the DB lives in `<repo-root>/memory.db`.  
+  You can override this with the `M3_DB_PATH` environment variable.
 
 ---
 
@@ -38,6 +40,7 @@ M3_BIND=127.0.0.1:3033              # bind address (default)
 M3_BEARER=supersecret               # optional bearer token for write routes
 M3_WEBHOOK_URL=https://.../hook     # optional webhook endpoint
 M3_WEBHOOK_SECRET=secret            # optional HMAC secret for webhook signing
+M3_DB_PATH=/custom/path/m3.db       # optional override for database location
 ```
 
 > If `M3_BEARER` is set, all **write** endpoints require `Authorization: Bearer <token>`.
