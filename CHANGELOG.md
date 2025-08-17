@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.1.2] — 2025-08-18
+
+### Added
+
+- Robust **pre-commit hook**:
+  - `cargo fmt`, `clippy -D warnings`, and `cargo test` checks
+  - Optional UI lint + `tsc --noEmit` type checks
+- Expanded **README**:
+  - Dev guide (Rust, Node, pnpm setup)
+  - API reference tables (seal, ingest/retrieve, status, export, webhooks, tells, etc.)
+  - Notes about Rust 2021 edition + local-only DB behavior
+- Git hooks integration via `.githooks/pre-commit`
+
+### Fixed
+
+- Removed redundant imports in `db.rs`
+- Enforced consistent formatting (`cargo fmt`)
+
+### Changed
+
+- Documentation polish for privacy model, sealed notes, and webhook signing.
+
 ## [0.1.1] - 2025-08-17
 
 ### Added
