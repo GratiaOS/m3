@@ -17,6 +17,9 @@ ui/dist
 /memory.db
 /memory.db-shm
 /memory.db-wal
+server/memory.db
+server/memory.db-shm
+server/memory.db-wal
 exports/
 
 # OS/editor noise

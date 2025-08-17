@@ -6,18 +6,21 @@ type RadarProps = {
   includeSealed?: boolean;
 };
 
+// minimal shape we read from rows
+type Row = { ts: string };
+
 export default function Radar({ intervalMs = 10000, includeSealed = false }: RadarProps) {
   const [last, setLast] = useState<{ ts: string; count: number } | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function tick() {
     if (busy) return;
+    setBusy(true);
     try {
-      setBusy(true);
-      // very light query: latest 5
-      const rows = await retrieve('*', 5, includeSealed);
-      if (rows?.length) {
-        setLast({ ts: rows[0].ts, count: rows.length });
+      const rows: unknown = await retrieve('*', 5, includeSealed);
+      if (Array.isArray(rows) && rows.length) {
+        const r0 = rows[0] as Row;
+        if (r0?.ts) setLast({ ts: r0.ts, count: rows.length });
       }
     } finally {
       setBusy(false);

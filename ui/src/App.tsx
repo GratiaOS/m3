@@ -32,6 +32,7 @@ export default function App() {
   // Incognito modes
   const [incognito, setIncognito] = useState(false); // soft: save as sealed + add "incognito" tag
   const [hardIncog, setHardIncog] = useState(false); // hard: send x-incognito header -> server skips writes
+  const [handoverOpen, setHandoverOpen] = useState(false);
 
   const searchRef = useRef<HTMLInputElement | null>(null);
 
@@ -84,7 +85,7 @@ export default function App() {
       else if (e.key === '/') {
         e.preventDefault();
         searchRef.current?.focus();
-      }
+      } else if (e.key === 'h') setHandoverOpen(true);
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -96,8 +97,6 @@ export default function App() {
         <h1 style={{ margin: 0 }}>
           M3 Memory Core <small style={{ fontSize: 12, opacity: 0.6 }}>({unlocked ? 'unlocked' : 'locked'})</small>
         </h1>
-
-        <Dashboard />
 
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
           {incognito && (
@@ -115,6 +114,8 @@ export default function App() {
           </label>
         </div>
       </div>
+
+      <Dashboard />
 
       <Composer onIngest={onIngest} incognito={incognito} />
 
@@ -167,6 +168,7 @@ export default function App() {
           title="l">
           lock
         </button>
+        <button onClick={() => setHandoverOpen(true)}>handover</button>
       </div>
 
       <div className={incognito ? 'blur-when-incognito' : ''}>
