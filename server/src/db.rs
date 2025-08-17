@@ -13,6 +13,18 @@ fn resolve_db_path() -> PathBuf {
         return PathBuf::from(p);
     }
 
+    // Walk up from CWD to find repo root (directory containing `.git`)
+    let mut dir = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+    loop {
+        if dir.join(".git").exists() {
+            return dir.join("memory.db");
+        }
+        if !dir.pop() {
+            break;
+        }
+    }
+
+    // Fallbacks (just in case)
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
     if cwd.file_name().and_then(|n| n.to_str()) == Some("server") {
         cwd.parent()

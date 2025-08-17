@@ -17,10 +17,11 @@ ui/dist
 /memory.db
 /memory.db-shm
 /memory.db-wal
+exports/
 /server/memory.db
 /server/memory.db-shm
 /server/memory.db-wal
-exports/
+/server/exports
 
 # OS/editor noise
 .DS_Store
