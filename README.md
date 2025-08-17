@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/GratiaOS/m3/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
-![Version](https://img.shields.io/badge/version-0.1.0-green.svg)
+![Version](https://img.shields.io/badge/version-0.1.1-green.svg)
 
 Your personal, local-first memory and knowledge system.\
 Designed for offline resilience, privacy, and joyful retrieval.
@@ -118,6 +118,18 @@ Rust evolves through **editions**, which are always backward-compatible:
 👉 We’re on **2021 edition** for this project.  
 You can always upgrade with `cargo fix --edition`.
 
+<!--
+🌱 dev-poem
+
+between threads and locks
+the mind still flows —
+local-first rivers
+carrying sealed secrets,
+awaiting only trust
+to open.
+
+-->
+
 ---
 
 ## 📚 API Reference
@@ -162,11 +174,11 @@ You can always upgrade with `cargo fix --edition`.
 
 ### Readiness Lights (per-member)
 
-| Method | Path             | Purpose                       | Body (JSON)                     |
-| ------ | ---------------- | ----------------------------- | ------------------------------- | ------ | ------- |
-| POST   | `/status`        | Set a member’s light          | `{ "name":"Raz","status":"green | yellow | red" }` |
-| GET    | `/status`        | Snapshot of all member lights | —                               |
-| GET    | `/status/stream` | SSE stream of updates         | —                               |
+| Method | Path             | Purpose                       | Body (JSON)                                          |
+| ------ | ---------------- | ----------------------------- | ---------------------------------------------------- |
+| POST   | `/status`        | Set a member’s light          | `{ "name":"Raz","status":"green \| yellow \| red" }` |
+| GET    | `/status`        | Snapshot of all member lights | —                                                    |
+| GET    | `/status/stream` | SSE stream of updates         | —                                                    |
 
 SSE events look like: `{ "name": "Raz", "status": "green" }` (batched per tick).
 
@@ -174,10 +186,10 @@ SSE events look like: `{ "name": "Raz", "status": "green" }` (batched per tick).
 
 ### Team Status (global color/note with TTL)
 
-| Method | Path          | Purpose                        | Body (JSON)       |
-| ------ | ------------- | ------------------------------ | ----------------- | ------ | ----------------------------------- |
-| POST   | `/status/get` | Get current team status        | `{}`              |
-| POST   | `/status/set` | Set team status + optional TTL | `{ "color":"green | yellow | red","note":"…","ttl_minutes":30 }` |
+| Method | Path          | Purpose                        | Body (JSON)                                                        |
+| ------ | ------------- | ------------------------------ | ------------------------------------------------------------------ |
+| POST   | `/status/get` | Get current team status        | `{}`                                                               |
+| POST   | `/status/set` | Set team status + optional TTL | `{ "color":"green \| yellow \| red","note":"…","ttl_minutes":30 }` |
 
 Triggers webhook `status.set` if webhooks are configured.
 
