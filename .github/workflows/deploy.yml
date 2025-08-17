@@ -1,0 +1,155 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'Deploy to Fly'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+  pull-requests: write
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository }}-server
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build server image
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    outputs:
+      primary_tag: ${{ steps.pick.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR (only on main)
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha
+            type=raw,value=latest,enable=${{ github.event_name == 'push' }}
+          labels: |
+            org.opencontainers.image.source=${{ github.repositoryUrl }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build (no push for PRs)
+        if: github.event_name == 'pull_request'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./server
+          file: ./server/Dockerfile
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Build & Push (main)
+        if: github.event_name == 'push'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./server
+          file: ./server/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Pick primary tag
+        id: pick
+        run: |
+          echo "tag=$(echo '${{ steps.meta.outputs.tags }}' | tr ' ' '\n' | head -n1)" >> "$GITHUB_OUTPUT"
+
+  deploy-fly:
+    name: Fly.io deploy (optional)
+    needs: build
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'workflow_dispatch' && inputs.deploy) &&
+      secrets.FLY_API_TOKEN != '' &&
+      hashFiles('fly.toml') != ''
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@v1
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          # Option A: deploy using the prebuilt image
+          # flyctl deploy --image ${{ needs.build.outputs.primary_tag }} --strategy immediate --detach
+          # Option B: build on Fly using repo Dockerfile
+          flyctl deploy --remote-only --strategy immediate --detach
+
+  pr-comment:
+    name: Comment image tag on PR
+    needs: build
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment with run instructions
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const tag = process.env.IMAGE;
+            const body = `
+**Build preview** ✅
+
+Docker image (not pushed on PRs): \`${tag}\`
+
+To test locally after checkout:
+
+\`\`\`bash
+# Build
+docker build -t ${tag} -f server/Dockerfile ./server
+
+# Run (example)
+docker run --rm -p 3033:3033 \
+  -e BIND=0.0.0.0:3033 \
+  -e WEBHOOK_URL=${{ secrets.WEBHOOK_URL || "" }} \
+  -e WEBHOOK_SECRET=${{ secrets.WEBHOOK_SECRET || "" }} \
+  ${tag}
+\`\`\`
+            `;
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body
+            })
+        env:
+          IMAGE: ${{ needs.build.outputs.primary_tag || format('{0}:sha-{1}', env.IMAGE_NAME, github.sha) }}

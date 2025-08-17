@@ -1,10 +1,8 @@
-name: Auto PR
+name: Auto PR to main
 
 on:
   push:
-    branches-ignore:
-      - main
-  workflow_dispatch:
+    branches-ignore: [main]
 
 permissions:
   contents: write
@@ -15,52 +13,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
 
       - name: Open or update PR
-        uses: actions/github-script@v7
+        uses: peter-evans/create-pull-request@v6
         with:
-          script: |
-            const { owner, repo } = context.repo;
-            const headRef = context.ref.replace('refs/heads/', '');
-            const base = headRef === 'dev' ? 'main' : 'dev';
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: main
+          branch: ${{ github.ref_name }}
+          title: 'chore: merge `${{ github.ref_name }}` → main'
+          body: |
+            Auto-opened PR for `${{ github.ref_name }}`.
 
-            // Find existing open PRs from this head
-            const { data: prs } = await github.rest.pulls.list({
-              owner, repo, state: 'open', head: `${owner}:${headRef}`
-            });
-
-            if (prs.length) {
-              const pr = prs[0];
-              // If base differs, update it; else just log and exit
-              if (pr.base.ref !== base) {
-                await github.rest.pulls.update({ owner, repo, pull_number: pr.number, base });
-                core.info(`Updated PR #${pr.number} base → ${base}`);
-              } else {
-                core.info(`PR already open: #${pr.number} (${headRef} → ${base})`);
-              }
-              return;
-            }
-
-            // Create a new PR
-            const title =
-              headRef === 'dev'
-                ? 'Auto PR: dev → main'
-                : `Auto PR: ${headRef} → dev`;
-
-            const body =
-              headRef === 'dev'
-                ? 'Automated PR opened on push to `dev` to merge into `main`.'
-                : 'Automated PR opened from feature branch into `dev`.';
-
-            const { data: pr } = await github.rest.pulls.create({
-              owner, repo, head: headRef, base, title, body, draft: false
-            });
-
-            // Optional labels
-            try {
-              await github.rest.issues.addLabels({
-                owner, repo, issue_number: pr.number, labels: ['auto-pr','ci']
-              });
-            } catch (_) {}
-            core.info(`Opened PR #${pr.number}: ${headRef} → ${base}`);
+            - CI runs on PRs
+            - Image builds but **does not deploy** unless manually triggered
+          labels: |
+            ci
+            auto-pr
+          draft: false
+          commit-message: 'chore: sync `${{ github.ref_name }}` to PR'

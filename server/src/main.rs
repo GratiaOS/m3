@@ -1,3 +1,11 @@
+mod config;
+mod webhook;
+// mod auth; // keep if you actually use guards later
+
+use config::Config;
+use webhook::Webhook;
+// use auth::WriteGuard;
+
 mod bus;
 mod db;
 mod models;
@@ -8,7 +16,6 @@ use db::*;
 use models::*;
 use std::{
     fs,
-    net::SocketAddr,
     path::PathBuf,
     sync::{Arc, Mutex},
 };
@@ -16,21 +23,19 @@ use std::{
 use axum::{
     extract::Query,
     http::{HeaderMap, Method},
+    response::sse::{Event, Sse},
     routing::{get, post},
     Json, Router,
 };
+use futures_util::stream::StreamExt;
 use serde::Deserialize;
+use serde_json::{json, Value};
+use tokio::net::TcpListener;
+use tokio_stream::wrappers::IntervalStream;
 use tower_http::cors::{Any, CorsLayer};
 use tracing_subscriber::EnvFilter;
 
-use axum::response::sse::{Event, Sse};
-use futures_util::stream::StreamExt;
-use std::time::Duration;
-use tokio_stream::wrappers::IntervalStream;
-
 use std::convert::Infallible;
-
-use serde_json::{json, Value};
 
 // rusqlite types are used **inside** tokio-rusqlite .call closures
 use rusqlite::params;
@@ -95,10 +100,12 @@ fn default_team_state() -> Value {
 
 #[derive(Clone)]
 struct AppState {
-    db: Arc<Database>,
-    bus: Arc<Bus>,
+    db: Database,
+    bus: Bus,
     // session key lives only in RAM
     key: Arc<Mutex<Option<[u8; 32]>>>,
+    config: Config,
+    webhook: Webhook,
 }
 
 // --- helper: decrypt sealed text if key present ---
@@ -115,18 +122,30 @@ fn decrypt_if_needed(key_opt: &Option<[u8; 32]>, privacy: &str, text: String) ->
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(EnvFilter::from_default_env())
         .init();
 
-    let db = init_db().await.expect("db");
-    let thread_id = ensure_default_thread(&db).await;
+    let db = init_db().await?;
+    let _ = ensure_default_thread(&db).await; // or keep the id if you need it
+    let config = Config::from_env();
+    let webhook = Webhook::new(config.webhook_url.clone(), config.webhook_secret.clone());
 
+    // Touch bearer so the field isn’t “dead” & emit a useful log.
+    if config.bearer.as_deref().is_some() {
+        tracing::info!("Bearer auth: ENABLED (requests must include Authorization: Bearer …)");
+    } else {
+        tracing::info!("Bearer auth: disabled");
+    }
+
+    let bus = Bus::default();
     let state = AppState {
-        db: Arc::new(db),
-        bus: Arc::new(Bus::default()),
+        db,
+        bus,
         key: Arc::new(Mutex::new(None)),
+        config,
+        webhook,
     };
 
     #[derive(Deserialize)]
@@ -212,7 +231,7 @@ async fn main() {
             "/ingest",
             post({
                 let state = state.clone();
-                let thread_id_val = thread_id;
+                let thread_id_val = 1i64; // default thread (ensure_default_thread ran)
                 move |headers: HeaderMap, Json(req): Json<IngestRequest>| async move {
                     // HARD INCOGNITO: if header set, don't write—pretend success
                     if headers.get("x-incognito").is_some() {
@@ -343,11 +362,7 @@ async fn main() {
                                  ORDER BY m.id DESC
                                  LIMIT ?3"
                                     .to_string(),
-                                vec![
-                                    q.clone().into(),
-                                    bid.into(),
-                                    limit.into(),
-                                ],
+                                vec![q.clone().into(), bid.into(), limit.into()],
                             ),
                             (None, Some(bid)) => (
                                 "SELECT m.id, m.text, m.tags, p.name, m.ts, m.privacy
@@ -356,11 +371,7 @@ async fn main() {
                                  ORDER BY m.id DESC
                                  LIMIT ?3"
                                     .to_string(),
-                                vec![
-                                    q.clone().into(),
-                                    bid.into(),
-                                    limit.into(),
-                                ],
+                                vec![q.clone().into(), bid.into(), limit.into()],
                             ),
                             (None, None) if include_sealed => (
                                 "SELECT m.id, m.text, m.tags, p.name, m.ts, m.privacy
@@ -778,7 +789,7 @@ async fn main() {
         // --- readiness lights: get snapshot ---
         .route(
             "/status",
-            axum::routing::get({
+            get({
                 let state = state.clone();
                 move || {
                     let state = state.clone();
@@ -806,12 +817,12 @@ async fn main() {
         // --- readiness lights: SSE stream ---
         .route(
             "/status/stream",
-            axum::routing::get({
+            get({
                 let state = state.clone();
                 move || {
                     let state = state.clone();
                     async move {
-                        let interval = IntervalStream::new(tokio::time::interval(Duration::from_millis(500)));
+                        let interval = IntervalStream::new(tokio::time::interval(std::time::Duration::from_millis(500)));
 
                         let stream = interval.map(move |_| {
                             let drained = state.bus.drain();
@@ -838,7 +849,7 @@ async fn main() {
                         });
 
                         Sse::new(stream)
-                            .keep_alive(axum::response::sse::KeepAlive::new().interval(Duration::from_secs(15)).text("ping"))
+                            .keep_alive(axum::response::sse::KeepAlive::new().interval(std::time::Duration::from_secs(15)).text("ping"))
                     }
                 }
             }),
@@ -865,23 +876,29 @@ async fn main() {
                     let now = chrono::Utc::now();
                     let mut expires_at: Option<chrono::DateTime<chrono::Utc>> = None;
                     if let Some(expires) = expires_at_opt.as_deref() {
-                        if let Ok(ts) = chrono::DateTime::parse_from_rfc3339(expires) {
-                            let exp = ts.with_timezone(&chrono::Utc);
-                            if now >= exp && color != "green" {
-                                color = "green".into();
-                                note.clear();
-                                updated_at = now.to_rfc3339();
-                                let updated_at_db = updated_at.clone(); // <— keep original for later parsing
-                                state.db.0.call(move |c: &mut rusqlite::Connection| -> tokio_rusqlite::Result<()> {
-                                    c.execute(
-                                        "UPDATE status SET color='green', note='', updated_at=?1, expires_at=NULL WHERE id=1",
-                                        rusqlite::params![updated_at_db],
-                                    )?;
-                                    Ok(())
-                                }).await.ok();
+                        match chrono::DateTime::parse_from_rfc3339(expires) {
+                            Ok(ts) => {
+                                let exp = ts.with_timezone(&chrono::Utc);
+                                if now >= exp && color != "green" {
+                                    color = "green".into();
+                                    note.clear();
+                                    updated_at = now.to_rfc3339();
+                                    let updated_at_db = updated_at.clone();
+                                    state.db.0.call(move |c: &mut rusqlite::Connection| {
+                                        c.execute(
+                                            "UPDATE status SET color='green', note='', updated_at=?1, expires_at=NULL WHERE id=1",
+                                            rusqlite::params![updated_at_db],
+                                        )?;
+                                        Ok(())
+                                    }).await.ok();
+                                    expires_at = None;
+                                } else {
+                                    expires_at = Some(exp);
+                                }
+                            }
+                            Err(e) => {
+                                tracing::warn!("Invalid expires_at '{}': {:?}", expires, e);
                                 expires_at = None;
-                            } else {
-                                expires_at = Some(exp);
                             }
                         }
                     }
@@ -902,24 +919,40 @@ async fn main() {
                 let state = state.clone();
                 move |Json(req): Json<models::StatusSetRequest>| async move {
                     let now = chrono::Utc::now();
-                    let expires_at =
-                        req.ttl_minutes.map(|m| (now + chrono::Duration::minutes(m)).to_rfc3339());
+                    let ttl = req.ttl_minutes;
+                    let expires_at = ttl.map(|m| (now + chrono::Duration::minutes(m)).to_rfc3339());
                     let note = req.note.unwrap_or_default();
-                    let color = req.color;
+                    let color = req.color.clone(); // keep a copy for webhook after the DB write
 
+                    // DB write (use clones inside the closure)
+                    let ts_str = now.to_rfc3339();
+                    let color_db = color.clone();
+                    let note_db = note.clone();
+                    let expires_db = expires_at.clone();
                     state
                         .db
                         .0
                         .call(move |c: &mut rusqlite::Connection| -> tokio_rusqlite::Result<()> {
                             c.execute(
                                 "UPDATE status SET color=?1, note=?2, updated_at=?3, expires_at=?4 WHERE id=1",
-                                rusqlite::params![color, note, now.to_rfc3339(), expires_at],
+                                rusqlite::params![color_db, note_db, ts_str, expires_db],
                             )?;
                             Ok(())
                         })
                         .await
                         .unwrap();
 
+                    // Fire webhook (best-effort)
+                    let payload = serde_json::json!({
+                        "event": "status.set",
+                        "status": color,             // "green" | "yellow" | "red"
+                        "note": note,
+                        "updated_at": now.to_rfc3339(),
+                        "ttl_minutes": ttl
+                    });
+                    let _ = state.webhook.send("status.set", &payload).await;
+
+                    // Respond
                     Json(models::StatusOk { ok: true })
                 }
             }),
@@ -1003,10 +1036,11 @@ async fn main() {
     let app = app.layer(cors);
 
     // ---- serve ----
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3033));
-    tracing::info!("listening on {}", addr);
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    let listener = TcpListener::bind(&state.config.bind).await?;
+    tracing::info!("listening on {}", state.config.bind);
+    axum::serve(listener, app).await?;
+
+    Ok(())
 }
 
 // ensure a profile name exists, return id

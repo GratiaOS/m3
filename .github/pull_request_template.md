@@ -6,12 +6,20 @@
 
 -
 
-## Screenshots / Logs
+## How to test
+
+Steps for a reviewer to test this locally (commands, sample curl, etc.)
+
+## Screenshots / Logs (if applicable)
 
 -
 
 ## Checks
 
-- [ ] Builds locally
+- [ ] Builds locally (`cargo build`)
+- [ ] Tests pass (`cargo test`)
+- [ ] Clippy passes (`cargo clippy`)
+- [ ] Formatted (`cargo fmt`)
 - [ ] No API contract breaks
-- [ ] Tests/CI green
+- [ ] CI green
+- [ ] Linked issue/ticket (if any)

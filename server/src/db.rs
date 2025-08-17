@@ -1,5 +1,6 @@
 use tokio_rusqlite::Connection as AsyncConnection;
 
+#[derive(Clone)]
 pub struct Database(pub AsyncConnection);
 
 pub async fn init_db() -> tokio_rusqlite::Result<Database> {

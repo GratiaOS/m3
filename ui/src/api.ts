@@ -3,8 +3,19 @@ import { notify } from './utils/joy';
 const BASE = 'http://127.0.0.1:3033';
 const TIMEOUT_MS = 12_000;
 
+const BEARER = localStorage.getItem('m3_token') || '';
+
 type Method = 'POST' | 'GET';
 type HeadersMap = Record<string, string | undefined>;
+
+function cleanHeaders(h: HeadersMap): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(h)) {
+    if (typeof v === 'string') out[k] = v;
+  }
+  return out;
+}
+
 export type LightStatus = 'green' | 'yellow' | 'red';
 
 // Generic fetch wrapper with timeout + friendly toasts
@@ -50,11 +61,14 @@ async function request<T = any>(path: string, body?: Record<string, unknown>, me
 // ---- API surface ----
 
 async function postJSON<T>(path: string, body: any, extraHeaders: HeadersMap = {}): Promise<T> {
-  const r = await fetch(`${BASE}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...extraHeaders },
-    body: JSON.stringify(body),
-  });
+  const baseHeaders: HeadersMap = {
+    'Content-Type': 'application/json',
+    Authorization: BEARER ? `Bearer ${BEARER}` : undefined,
+    ...extraHeaders,
+  };
+  const headers = cleanHeaders(baseHeaders);
+  const r = await fetch(`${BASE}${path}`, { method: 'POST', headers, body: JSON.stringify(body) });
+  if (!r.ok) throw new Error(await r.text());
   return r.json();
 }
 

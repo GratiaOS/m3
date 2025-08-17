@@ -1,33 +1,41 @@
 name: PR Housekeeping
+
 on:
-  pull_request_target:
-    types: [opened, edited, synchronize, reopened, ready_for_review]
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   pull-requests: write
   contents: read
 
 jobs:
-  label:
+  annotate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Add labels by branch
+      - name: Add helpful labels
         uses: actions-ecosystem/action-add-labels@v1
-        if: ${{ startsWith(github.head_ref, 'feature/') }}
         with:
           labels: |
-            feature
-      - name: Enforce PR title convention
-        uses: amannn/action-semantic-pull-request@v5
+            needs-review
+
+  size-label:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: pascalgn/size-label-action@v0.5.4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IGNORED: 'package-lock.json yarn.lock pnpm-lock.yaml Cargo.lock'
+
+  welcome:
+    if: github.event.action == 'opened'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
         with:
-          types: |
-            feat
-            fix
-            chore
-            refactor
-            docs
-            test
-            ci
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: "Thanks for the PR! CI will build a preview image. Deployment is **disabled** by default for privacy. :lock:"
+            })
