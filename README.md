@@ -106,6 +106,20 @@ git config core.hooksPath .githooks
 
 ---
 
+## 🦀 Rust Editions Timeline (for devs)
+
+Rust evolves through **editions**, which are always backward-compatible:
+
+- **2015** → the OG Rust (no async, `try!()` macro, strict borrow checker)
+- **2018** → `?` operator, async/await, revamped modules, non-lexical lifetimes
+- **2021** → (our edition) or-patterns, `IntoIterator` for arrays, cleaner closures
+- **2024** → 🚧 async in traits, new solver, further polish
+
+👉 We’re on **2021 edition** for this project.  
+You can always upgrade with `cargo fix --edition`.
+
+---
+
 ## 📚 API Reference
 
 > Base URL: `http://127.0.0.1:3033`
