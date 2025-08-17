@@ -6,11 +6,6 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      deploy:
-        description: 'Deploy to Fly'
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -54,7 +49,7 @@ jobs:
             type=sha
             type=raw,value=latest,enable=${{ github.event_name == 'push' }}
           labels: |
-            org.opencontainers.image.source=${{ github.repositoryUrl }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -84,37 +79,6 @@ jobs:
         run: |
           echo "tag=$(echo '${{ steps.meta.outputs.tags }}' | tr ' ' '\n' | head -n1)" >> "$GITHUB_OUTPUT"
 
-  deploy-fly:
-    name: Fly.io deploy (optional)
-    needs: build
-    runs-on: ubuntu-latest
-    if: >
-      (github.event_name == 'workflow_dispatch' && inputs.deploy) &&
-      secrets.FLY_API_TOKEN != '' &&
-      hashFiles('fly.toml') != ''
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install Flyctl
-        uses: superfly/flyctl-actions/setup-flyctl@v1
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Deploy
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-        run: |
-          # Option A: deploy using the prebuilt image
-          # flyctl deploy --image ${{ needs.build.outputs.primary_tag }} --strategy immediate --detach
-          # Option B: build on Fly using repo Dockerfile
-          flyctl deploy --remote-only --strategy immediate --detach
-
   pr-comment:
     name: Comment image tag on PR
     needs: build
@@ -126,30 +90,31 @@ jobs:
         with:
           script: |
             const tag = process.env.IMAGE;
-            const body = `
-**Build preview** ✅
-
-Docker image (not pushed on PRs): \`${tag}\`
-
-To test locally after checkout:
-
-\`\`\`bash
-# Build
-docker build -t ${tag} -f server/Dockerfile ./server
-
-# Run (example)
-docker run --rm -p 3033:3033 \
-  -e BIND=0.0.0.0:3033 \
-  -e WEBHOOK_URL=${{ secrets.WEBHOOK_URL || "" }} \
-  -e WEBHOOK_SECRET=${{ secrets.WEBHOOK_SECRET || "" }} \
-  ${tag}
-\`\`\`
-            `;
-            github.rest.issues.createComment({
+            const lines = [
+              '**Build preview** ✅',
+              '',
+              `Docker image (not pushed on PRs): ${tag}`,
+              '',
+              'To test locally after checkout:',
+              '',
+              '```bash',
+              '# Build',
+              `docker build -t ${tag} -f server/Dockerfile ./server`,
+              '',
+              '# Run (example)',
+              'docker run --rm -p 3033:3033 \\',
+              '  -e BIND=0.0.0.0:3033 \\',
+              '  -e WEBHOOK_URL=$WEBHOOK_URL \\',
+              '  -e WEBHOOK_SECRET=$WEBHOOK_SECRET \\',
+              `  ${tag}`,
+              '```'
+            ];
+            const body = lines.join('\n');
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
               body
-            })
+            });
         env:
           IMAGE: ${{ needs.build.outputs.primary_tag || format('{0}:sha-{1}', env.IMAGE_NAME, github.sha) }}
