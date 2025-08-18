@@ -13,7 +13,7 @@ permissions:
   pull-requests: write
 
 env:
-  IMAGE_NAME: ghcr.io/${{ github.repository }}-server
+  IMAGE_NAME: ghcr.io/${{ github.repository }}/m3-memory-server
 
 concurrency:
   group: deploy-${{ github.ref }}
@@ -23,9 +23,6 @@ jobs:
   build:
     name: Build server image
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: server
     outputs:
       primary_tag: ${{ steps.pick.outputs.tag }}
     steps:
@@ -58,8 +55,8 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: docker/build-push-action@v6
         with:
-          context: ./server
-          file: ./server/Dockerfile
+          context: .
+          file: server/Dockerfile
           push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -68,16 +65,17 @@ jobs:
         if: github.event_name == 'push'
         uses: docker/build-push-action@v6
         with:
-          context: ./server
-          file: ./server/Dockerfile
+          context: .
+          file: server/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Pick primary tag
         id: pick
+        shell: bash
         run: |
-          echo "tag=$(echo '${{ steps.meta.outputs.tags }}' | tr ' ' '\n' | head -n1)" >> "$GITHUB_OUTPUT"
+          echo '${{ steps.meta.outputs.tags }}' | tr ' ' '\n' | head -n1 | awk '{print "tag="$0}' >> "$GITHUB_OUTPUT"
 
   pr-comment:
     name: Comment image tag on PR
@@ -87,6 +85,8 @@ jobs:
     steps:
       - name: Comment with run instructions
         uses: actions/github-script@v7
+        env:
+          IMAGE: ${{ needs.build.outputs.primary_tag || format('{0}:sha-{1}', env.IMAGE_NAME, github.sha) }}
         with:
           script: |
             const tag = process.env.IMAGE;
@@ -99,22 +99,19 @@ jobs:
               '',
               '```bash',
               '# Build',
-              `docker build -t ${tag} -f server/Dockerfile ./server`,
+              `docker build -t ${tag} -f server/Dockerfile .`,
               '',
               '# Run (example)',
               'docker run --rm -p 3033:3033 \\',
-              '  -e BIND=0.0.0.0:3033 \\',
-              '  -e WEBHOOK_URL=$WEBHOOK_URL \\',
-              '  -e WEBHOOK_SECRET=$WEBHOOK_SECRET \\',
+              '  -e M3_BIND=0.0.0.0:3033 \\',
+              '  -e M3_WEBHOOK_URL=$M3_WEBHOOK_URL \\',
+              '  -e M3_WEBHOOK_SECRET=$M3_WEBHOOK_SECRET \\',
               `  ${tag}`,
               '```'
             ];
-            const body = lines.join('\n');
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body
+              body: lines.join('\n')
             });
-        env:
-          IMAGE: ${{ needs.build.outputs.primary_tag || format('{0}:sha-{1}', env.IMAGE_NAME, github.sha) }}

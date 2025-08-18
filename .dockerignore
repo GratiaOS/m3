@@ -1,0 +1,11 @@
+.git
+target
+**/target
+node_modules
+ui/dist
+ui/.vite
+**/.DS_Store
+exports
+server/exports
+memory.db*
+server/memory.db*
