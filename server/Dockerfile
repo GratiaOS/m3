@@ -1,7 +1,8 @@
 # syntax=docker/dockerfile:1.6
 
 # ---- builder ----
-FROM rust:1.78-slim AS builder
+ARG RUST_VERSION=1.85
+FROM rust:${RUST_VERSION}-slim AS builder
 WORKDIR /build
 
 # Copy workspace manifests first to maximize caching
