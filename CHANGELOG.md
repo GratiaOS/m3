@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.1.3] — 2025-08-21
+
+### Added
+
+- **Reply Engine (nudges):**
+  - Weekly random activation windows with configurable length.
+  - Modes: Poetic, Sarcastic, Paradox, Random (weighted).
+  - Energy estimation heuristic + alternative actions (“bill” display).
+  - Axum preview endpoint (`/replies/preview`).
+- Expanded **.env.example** with reply engine configuration variables.
+
+### Fixed
+
+- Main server boot fixed for Axum 0.7 (removed `into_make_service`).
+- Clippy lint fixes (e.g. replaced manual `min/max` with `clamp`).
+- ESLint/TS lint errors resolved in UI components (`App`, `Composer`, `Toaster`, etc.).
+
+### Changed
+
+- Unified formatting (`cargo fmt` + ESLint/prettier rules for TS/React).
+- README updated with Reply Engine documentation and `.env` examples.
+
 ## [0.1.2] — 2025-08-18
 
 ### Added

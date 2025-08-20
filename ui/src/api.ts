@@ -1,11 +1,6 @@
-import { notify } from './utils/joy';
-
 const BASE = 'http://127.0.0.1:3033';
-const TIMEOUT_MS = 12_000;
-
 const BEARER = localStorage.getItem('m3_token') || '';
 
-type Method = 'POST' | 'GET';
 type HeadersMap = Record<string, string | undefined>;
 
 function cleanHeaders(h: HeadersMap): Record<string, string> {
@@ -18,49 +13,9 @@ function cleanHeaders(h: HeadersMap): Record<string, string> {
 
 export type LightStatus = 'green' | 'yellow' | 'red';
 
-// Generic fetch wrapper with timeout + friendly toasts
-async function request<T = any>(path: string, body?: Record<string, unknown>, method: Method = 'POST', friendly?: string): Promise<T> {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
-
-  try {
-    const res = await fetch(`${BASE}${path}`, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: method === 'POST' ? JSON.stringify(body ?? {}) : undefined,
-      signal: ctrl.signal,
-    });
-
-    clearTimeout(t);
-
-    if (!res.ok) {
-      let msg = `${res.status} ${res.statusText}`;
-      try {
-        const j = await res.json();
-        if (j?.error) msg = j.error;
-      } catch {
-        /* ignore */
-      }
-
-      notify(friendly ? `Couldn’t ${friendly.toLowerCase()} — ${msg}` : `Request failed — ${msg}`, res.status >= 500 ? 'error' : 'warning');
-      throw new Error(msg);
-    }
-
-    return (await res.json()) as T;
-  } catch (err: any) {
-    clearTimeout(t);
-    if (err?.name === 'AbortError') {
-      notify(friendly ? `${friendly} is taking a nap — timed out` : 'Request timed out', 'warning');
-    } else {
-      notify(friendly ? `Network hiccup while trying to ${friendly.toLowerCase()}` : 'Network hiccup', 'error');
-    }
-    throw err;
-  }
-}
-
 // ---- API surface ----
 
-async function postJSON<T>(path: string, body: any, extraHeaders: HeadersMap = {}): Promise<T> {
+async function postJSON<T>(path: string, body: Record<string, unknown>, extraHeaders: HeadersMap = {}): Promise<T> {
   const baseHeaders: HeadersMap = {
     'Content-Type': 'application/json',
     Authorization: BEARER ? `Bearer ${BEARER}` : undefined,
@@ -72,7 +27,17 @@ async function postJSON<T>(path: string, body: any, extraHeaders: HeadersMap = {
   return r.json();
 }
 
-export function ingest(payload: any, extraHeaders: HeadersMap = {}) {
+export type IngestPayload = {
+  text: string;
+  tags?: string[];
+  profile?: string;
+  privacy?: 'public' | 'sealed' | 'private';
+  importance?: number;
+  // allow forward-compat extension
+  [k: string]: unknown;
+};
+
+export function ingest(payload: IngestPayload, extraHeaders: HeadersMap = {}) {
   return postJSON('/ingest', payload, extraHeaders);
 }
 
@@ -158,7 +123,9 @@ export function streamStatus(onUpdate: (updates: { name: string; status: LightSt
     try {
       const data = JSON.parse(e.data);
       if (Array.isArray(data)) onUpdate(data);
-    } catch {}
+    } catch {
+      // Ignore malformed status events
+    }
   };
   return () => es.close();
 }

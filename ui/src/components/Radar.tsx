@@ -28,10 +28,29 @@ export default function Radar({ intervalMs = 10000, includeSealed = false }: Rad
   }
 
   useEffect(() => {
+    let active = true;
+    async function tick() {
+      if (!active) return;
+      if (busy) return;
+      setBusy(true);
+      try {
+        const rows: unknown = await retrieve('*', 5, includeSealed);
+        if (Array.isArray(rows) && rows.length) {
+          const r0 = rows[0] as Row;
+          if (r0?.ts) setLast({ ts: r0.ts, count: rows.length });
+        }
+      } finally {
+        setBusy(false);
+      }
+    }
+
     tick();
     const id = setInterval(tick, intervalMs);
-    return () => clearInterval(id);
-  }, [intervalMs, includeSealed]);
+    return () => {
+      active = false;
+      clearInterval(id);
+    };
+  }, [intervalMs, includeSealed, busy]);
 
   return (
     <div

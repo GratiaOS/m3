@@ -86,7 +86,9 @@ export default function BoundaryComposer({ to = 'sister.exe' }: { to?: string })
           alert(`Boundary ready to send to ${item.to}:\n\n${item.text}\n\nCopied to clipboard.`);
           try {
             await navigator.clipboard.writeText(item.text);
-          } catch {}
+          } catch {
+            /* ignore clipboard errors */
+          }
         });
         const remaining = queue.filter((q) => q.scheduledAt > now);
         setQueue(remaining);
@@ -96,7 +98,7 @@ export default function BoundaryComposer({ to = 'sister.exe' }: { to?: string })
     return () => clearInterval(timer);
   }, [queue]);
 
-  async function log(action: string, extra: Record<string, any> = {}) {
+  async function log(action: string, extra: Record<string, unknown> = {}) {
     await ingest({
       text: `[boundary ${action}] to=${to} mood=${mood} lang=${lang} tone=${tone} :: ${text}`,
       tags: ['boundary', action, tone, lang, `mood-${mood}`],
@@ -130,7 +132,9 @@ export default function BoundaryComposer({ to = 'sister.exe' }: { to?: string })
     await log('approved_send_now');
     try {
       await navigator.clipboard.writeText(text);
-    } catch {}
+    } catch {
+      /* ignore clipboard errors */
+    }
     alert('Message copied. Paste in WhatsApp to send.');
     // Optional deep link (commented; enable if you want):
     // window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
@@ -185,11 +189,11 @@ export default function BoundaryComposer({ to = 'sister.exe' }: { to?: string })
 
       {/* Language / Tone */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <select value={lang} onChange={(e) => setLang(e.target.value as any)}>
+        <select value={lang} onChange={(e) => setLang(e.target.value as 'ro' | 'es')}>
           <option value="ro">RO</option>
           <option value="es">ES</option>
         </select>
-        <select value={tone} onChange={(e) => setTone(e.target.value as any)}>
+        <select value={tone} onChange={(e) => setTone(e.target.value as 'firm' | 'warm' | 'gentle')}>
           <option value="firm">firm</option>
           <option value="warm">warm</option>
           <option value="gentle">gentle</option>
@@ -249,7 +253,9 @@ export default function BoundaryComposer({ to = 'sister.exe' }: { to?: string })
                     onClick={async () => {
                       try {
                         await navigator.clipboard.writeText(item.text);
-                      } catch {}
+                      } catch {
+                        /* ignore clipboard errors */
+                      }
                       alert('Copied. Paste in WhatsApp to send.');
                       void log('manual_send_from_queue', { id: item.id });
                     }}>

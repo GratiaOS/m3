@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { getState, setState, TeamState, MemberEnergy, PillarStatus } from '../api';
+import { getState, setState, TeamState, PillarStatus } from '../api';
 
 const PILLAR_KEYS: (keyof PillarStatus)[] = ['crown', 'void', 'play', 'dragon', 'life_force'];
 const COLORS: Record<PillarStatus[keyof PillarStatus], string> = { good: '#22c55e', watch: '#f59e0b', rest: '#ef4444' };

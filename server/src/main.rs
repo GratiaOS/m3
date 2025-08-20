@@ -9,6 +9,7 @@ use webhook::Webhook;
 mod bus;
 mod db;
 mod models;
+mod replies;
 
 use bus::Bus;
 use chrono::Utc;
@@ -20,6 +21,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
+use axum::extract::State;
 use axum::{
     extract::Query,
     http::{HeaderMap, Method},
@@ -28,10 +30,12 @@ use axum::{
     Json, Router,
 };
 use futures_util::stream::StreamExt;
+use replies::ReplyEngine;
 use serde::Deserialize;
 use serde_json::{json, Value};
 use tokio::net::TcpListener;
 use tokio_stream::wrappers::IntervalStream;
+use tower::make::Shared;
 use tower_http::cors::{Any, CorsLayer};
 use tracing_subscriber::EnvFilter;
 
@@ -106,6 +110,7 @@ struct AppState {
     key: Arc<Mutex<Option<[u8; 32]>>>,
     config: Config,
     webhook: Webhook,
+    reply_engine: replies::ReplyEngine,
 }
 
 // --- helper: decrypt sealed text if key present ---
@@ -131,6 +136,8 @@ async fn main() -> anyhow::Result<()> {
     let _ = ensure_default_thread(&db).await; // or keep the id if you need it
     let config = Config::from_env();
     let webhook = Webhook::new(config.webhook_url.clone(), config.webhook_secret.clone());
+    // spin up the reply engine (reads env: M3_REPLIES_*)
+    let reply_engine = ReplyEngine::from_env();
 
     // Touch bearer so the field isn’t “dead” & emit a useful log.
     if config.bearer.as_deref().is_some() {
@@ -146,6 +153,7 @@ async fn main() -> anyhow::Result<()> {
         key: Arc::new(Mutex::new(None)),
         config,
         webhook,
+        reply_engine,
     };
 
     #[derive(Deserialize)]
@@ -159,6 +167,11 @@ async fn main() -> anyhow::Result<()> {
         members: Option<serde_json::Value>,
         pillars: Option<serde_json::Value>,
         note: Option<String>,
+    }
+
+    #[derive(Deserialize)]
+    struct ReplyPreviewReq {
+        input: String,
     }
 
     // ---- build router ----
@@ -903,10 +916,19 @@ async fn main() -> anyhow::Result<()> {
                         }
                     }
 
+                    // Parse updated_at robustly; default to now if missing/invalid
+                    let updated_at_dt = match chrono::DateTime::parse_from_rfc3339(&updated_at) {
+                        Ok(ts) => ts.with_timezone(&chrono::Utc),
+                        Err(e) => {
+                            tracing::warn!("status.get: invalid updated_at '{}': {:?} — defaulting to now()", updated_at, e);
+                            chrono::Utc::now()
+                        }
+                    };
+
                     Json(models::StatusGetResponse {
                         color,
                         note,
-                        updated_at: chrono::DateTime::parse_from_rfc3339(&updated_at).unwrap().with_timezone(&chrono::Utc),
+                        updated_at: updated_at_dt,
                         expires_at,
                     })
                 }
@@ -1025,7 +1047,24 @@ async fn main() -> anyhow::Result<()> {
                     Json(v)
                 }
             }),
+        )
+        // --- replies ---
+        .route(
+            "/replies/preview",
+            post({
+                let _state = state.clone();
+                move |State(state): State<AppState>, Json(req): Json<ReplyPreviewReq>| {
+                    async move {
+                        // generate reply (engine decides if the weekly window is active)
+                        let preview = state.reply_engine.generate(&req.input).await;
+                        Json(preview)
+                    }
+                }
+            }),
         );
+
+    // provide AppState to routes that extract `State<AppState>`
+    let app = app.with_state(state.clone());
 
     // ---- CORS ----
     let cors = CorsLayer::new()
@@ -1038,7 +1077,7 @@ async fn main() -> anyhow::Result<()> {
     // ---- serve ----
     let listener = TcpListener::bind(&state.config.bind).await?;
     tracing::info!("listening on {}", state.config.bind);
-    axum::serve(listener, app).await?;
+    axum::serve(listener, Shared::new(app)).await?;
 
     Ok(())
 }

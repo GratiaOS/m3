@@ -1,4 +1,3 @@
-cat > .gitignore <<'EOF'
 # macOS
 .DS_Store
 
@@ -17,7 +16,7 @@ ui/dist
 /memory.db
 /memory.db-shm
 /memory.db-wal
-exports/
+/exports
 /server/memory.db
 /server/memory.db-shm
 /server/memory.db-wal
@@ -32,4 +31,3 @@ exports/
 
 # dotenv (if you add later)
 .env
-EOF

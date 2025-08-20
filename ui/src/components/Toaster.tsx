@@ -1,23 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import type { JoyMessage } from '../utils/joy';
 
+type ToastMessage = JoyMessage & { id: string };
+
+function isJoyEvent(e: Event): e is CustomEvent<JoyMessage> {
+  return 'detail' in e;
+}
+
 export default function Toaster() {
-  const [items, setItems] = useState<JoyMessage[]>([]);
+  const [items, setItems] = useState<ToastMessage[]>([]);
 
   useEffect(() => {
-    function onToast(e: Event) {
-      const detail = (e as CustomEvent<JoyMessage>).detail;
+    const onToast = (e: Event) => {
+      if (!isJoyEvent(e)) return;
+      const detail = e.detail;
       const id = crypto.randomUUID();
-      const withId = { ...detail, id };
+      const withId: ToastMessage = { ...detail, id };
       setItems((prev) => [...prev, withId]);
 
       const ttl = detail.ttl ?? 3500;
       setTimeout(() => {
         setItems((prev) => prev.filter((t) => t.id !== id));
       }, ttl);
-    }
-    window.addEventListener('joy:toast', onToast as any);
-    return () => window.removeEventListener('joy:toast', onToast as any);
+    };
+
+    window.addEventListener('joy:toast', onToast as EventListener);
+    return () => window.removeEventListener('joy:toast', onToast as EventListener);
   }, []);
 
   return (

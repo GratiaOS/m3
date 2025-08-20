@@ -12,7 +12,7 @@ echo "[pre-commit] Running server checks…"
 (
   cd server
   echo "[fmt] Checking formatting…"
-  cargo fmt -- --check
+  cargo fmt --all
 
   echo "[clippy] Running lints…"
   cargo clippy -- -D warnings

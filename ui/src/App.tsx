@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ingest, retrieve, snapshot, exportThread, exportCSV, unlock, setPassphrase } from './api';
 import Composer from './components/Composer';
 import MemoryDrawer from './components/MemoryDrawer';
@@ -36,17 +36,17 @@ export default function App() {
 
   const searchRef = useRef<HTMLInputElement | null>(null);
 
-  async function doSearch() {
+  const doSearch = useCallback(async () => {
     const rows = (await retrieve(q || '*', 12, unlocked)) as RetrievedChunk[];
     setChunks(rows);
-  }
+  }, [q, unlocked]);
 
-  async function onIngest(text: string, tags: string[], privacy?: string) {
-    const finalPrivacy = incognito ? 'sealed' : privacy || 'public';
+  async function onIngest(text: string, tags: string[], privacy?: 'sealed' | 'public' | 'private') {
+    const finalPrivacy: 'sealed' | 'public' | 'private' = incognito ? 'sealed' : privacy ?? 'public';
     const finalTags = incognito ? Array.from(new Set([...(tags || []), 'incognito'])) : tags || [];
-    const headers = hardIncog ? { 'x-incognito': '1' } : {};
+    const headers: HeadersInit | undefined = hardIncog ? { 'x-incognito': '1' } : undefined;
 
-    await ingest({ text, tags: finalTags, profile: 'Raz', privacy: finalPrivacy, importance: 1 }, headers as any);
+    await ingest({ text, tags: finalTags, profile: 'Raz', privacy: finalPrivacy, importance: 1 }, headers);
 
     // If hard-incognito, nothing was saved; avoid confusing refresh
     if (!hardIncog) {
@@ -62,7 +62,7 @@ export default function App() {
       if (!document.hidden) doSearch();
     }, 10_000);
     return () => clearInterval(id);
-  }, [unlocked]);
+  }, [doSearch]);
 
   // Keyboard shortcuts: i,u,l,r,/
   useEffect(() => {
@@ -89,7 +89,7 @@ export default function App() {
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, [doSearch]);
 
   return (
     <div style={{ fontFamily: 'system-ui', padding: 16, display: 'grid', gap: 12 }}>

@@ -3,7 +3,7 @@ export type JoyLevel = 'info' | 'success' | 'warning' | 'error';
 export interface JoyMessage {
   id?: string;
   title: string;
-  body: string;
+  body?: string;
   icon: string;
   level: JoyLevel;
   ttl?: number; // ms

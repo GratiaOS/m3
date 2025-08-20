@@ -969,6 +969,7 @@ dependencies = [
  "tokio",
  "tokio-rusqlite",
  "tokio-stream",
+ "tower",
  "tower-http 0.5.2",
  "tracing",
  "tracing-subscriber",
