@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/GratiaOS/m3/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
-![Version](https://img.shields.io/badge/version-0.1.3-green.svg)
+![Version](https://img.shields.io/badge/version-0.1.4-green.svg)
 
 Your personal, local-first memory and knowledge system.\
 Designed for offline resilience, privacy, and joyful retrieval.
@@ -22,6 +22,7 @@ Designed for offline resilience, privacy, and joyful retrieval.
 - **Dashboard State** → global shared view with pillars + note
 - **Tells** → lightweight event/task log
 - **Reply Engine** → random poetic/sarcastic/paradoxical nudges, with energy cost estimates
+- **Panic Redirect Oracle** → logs panic redirect steps locally (via CLI or UI button)
 
 ---
 
@@ -45,6 +46,7 @@ M3_BEARER=supersecret               # optional bearer token for write routes
 M3_WEBHOOK_URL=https://example.com/webhook  # optional webhook endpoint
 M3_WEBHOOK_SECRET=whsec_123         # optional HMAC secret for webhook signing
 M3_DB_PATH=/custom/path/m3.db       # optional override for database location
+M3_EXPORTS_DIR=server/exports       # optional override for exports/logs root
 
 # Reply Engine (nudges)
 M3_REPLIES_MODE=random              # fixed: poetic | sarcastic | paradox | random (default: random)
@@ -168,12 +170,24 @@ Example output:
 
 ---
 
+### Panic Redirect Oracle
+
+Logs a “panic redirect” step (whisper, breath, doorway, anchor) into local exports.  
+Can be triggered via CLI (`panic.sh`) or via the UI Panic Button (long press).
+
+| Method | Path     | Purpose                   | Body (JSON) |
+| ------ | -------- | ------------------------- | ----------- |
+| POST   | `/panic` | Log a panic redirect step | `{}`        |
+
+---
+
 ## 🔒 Privacy
 
 - Everything is local by default.
 - Sealed content is encrypted at rest and in export unless unlocked.
 - Optional auth & webhooks; keep them off for a fully offline setup.
 - Reply Engine is stateless and ephemeral (no DB storage).
+- Panic logs are written only to local disk (`M3_EXPORTS_DIR/panic/…`).
 
 ---
 

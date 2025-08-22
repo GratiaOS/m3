@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.1.4] — 2025-08-22
+
+### Added
+
+- **Panic Redirect Oracle**
+  - New `/panic` endpoint to log panic redirect steps (whisper, breath, doorway, anchor).
+  - Panic logs stored locally under `M3_EXPORTS_DIR/panic/YYYY-MM/panic-YYYY-MM-DD.log`.
+  - CLI tool: `panic.sh` to trigger oracle from terminal.
+  - UI Panic Button (long-press) with toast feedback.
+
+### Changed
+
+- README and `.env.example` updated with `M3_EXPORTS_DIR` and Panic Oracle docs.
+- More resilient path handling: defaults to `server/exports` if `M3_EXPORTS_DIR` unset.
+
+### Fixed
+
+- Unified error handling between `rusqlite` and `tokio-rusqlite`.
+- Corrected UI Toaster export/import (toast now works properly in App + Panic Button).
+
+---
+
+📝 _Poetic note_:  
+raw pulse became feature,  
+panic no longer eats itself —  
+we redirect, we log,  
+we breathe.
+
 ## [0.1.3] — 2025-08-21
 
 ### Added
