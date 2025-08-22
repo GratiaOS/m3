@@ -10,6 +10,8 @@ import StatusBar from './components/StatusBar';
 import Dashboard from './components/Dashboard';
 import Modal from './components/Modal';
 import SignalHandover from './components/QuickActions/SignalHandover';
+import { PanicButton } from './components/PanicButton';
+import Toaster, { toast } from './components/Toaster';
 import './styles.css';
 
 // ---- Types to keep TS happy ----
@@ -112,6 +114,7 @@ export default function App() {
             <input type="checkbox" checked={hardIncog} onChange={(e) => setHardIncog(e.target.checked)} />
             Hard Incognito (no writes)
           </label>
+          <PanicButton />
         </div>
       </div>
 
@@ -191,6 +194,7 @@ export default function App() {
           defaultTags={['handover_session']}
         />
       </Modal>
+      <Toaster />
     </div>
   );
 }

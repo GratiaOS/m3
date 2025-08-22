@@ -16,11 +16,12 @@ ui/dist
 /memory.db
 /memory.db-shm
 /memory.db-wal
-/exports
 /server/memory.db
 /server/memory.db-shm
 /server/memory.db-wal
-/server/exports
+server/exports/*
+!server/exports/.gitkeep
+!server/exports/panic/.gitkeep
 
 # OS/editor noise
 .DS_Store

@@ -47,3 +47,13 @@ jobs:
 
       - name: Test
         run: cargo test --all --all-features --no-fail-fast
+
+      - name: Panic redirect script – smoke test
+        working-directory: .
+        run: |
+          set -euxo pipefail
+          chmod +x ./panic.sh
+          # Write logs into repo's server/exports so they persist in workspace
+          M3_EXPORTS_DIR="$GITHUB_WORKSPACE/server/exports" ./panic.sh
+          # Assert at least one panic log was created
+          find server/exports/panic -type f -name '*.log' -print -quit | grep -q .

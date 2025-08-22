@@ -16,7 +16,7 @@ use chrono::Utc;
 use db::*;
 use models::*;
 use std::{
-    fs,
+    fs as sfs,
     path::PathBuf,
     sync::{Arc, Mutex},
 };
@@ -29,10 +29,14 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
+use chrono::Datelike;
 use futures_util::stream::StreamExt;
 use replies::ReplyEngine;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use tokio::fs as afs;
+use tokio::fs::OpenOptions;
+use tokio::io::AsyncWriteExt;
 use tokio::net::TcpListener;
 use tokio_stream::wrappers::IntervalStream;
 use tower::make::Shared;
@@ -52,7 +56,35 @@ use chacha20poly1305::{
     aead::{Aead, KeyInit},
     Key, XChaCha20Poly1305, XNonce,
 };
+use rand::seq::SliceRandom;
 use rand::RngCore;
+use std::env;
+use std::path::PathBuf as StdPathBuf;
+
+/// repo root = parent of the `server/` crate dir
+fn repo_root() -> StdPathBuf {
+    let server_dir = StdPathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    server_dir
+        .parent()
+        .map(|p| p.to_path_buf())
+        .unwrap_or(server_dir)
+}
+
+/// Resolve the exports directory:
+/// - if `M3_EXPORTS_DIR` is absolute, use it as-is
+/// - if `M3_EXPORTS_DIR` is relative, resolve from **repo root**
+/// - otherwise, default to `<repo>/server/exports`
+fn resolve_exports_dir() -> StdPathBuf {
+    if let Ok(val) = std::env::var("M3_EXPORTS_DIR") {
+        let p = StdPathBuf::from(val);
+        return if p.is_absolute() {
+            p
+        } else {
+            repo_root().join(p)
+        };
+    }
+    repo_root().join("server/exports")
+}
 
 fn derive_key(pass: &str, salt: &[u8]) -> [u8; 32] {
     use argon2::password_hash::{PasswordHasher as _, SaltString};
@@ -85,6 +117,11 @@ fn open_text(key: &[u8; 32], blob_b64: &str) -> Option<String> {
     let cipher = XChaCha20Poly1305::new(Key::from_slice(key));
     let pt = cipher.decrypt(XNonce::from_slice(n), c).ok()?;
     String::from_utf8(pt).ok()
+}
+
+// --- panic logs base dir resolver (unified) ---
+fn panic_dir_base() -> StdPathBuf {
+    resolve_exports_dir().join("panic")
 }
 
 fn default_team_state() -> Value {
@@ -124,6 +161,85 @@ fn decrypt_if_needed(key_opt: &Option<[u8; 32]>, privacy: &str, text: String) ->
     } else {
         text
     }
+}
+
+// --- panic redirect: output shape (used by logger + handler) ---
+#[derive(Serialize)]
+struct PanicOut {
+    whisper: String,
+    breath: String,
+    doorway: String,
+    anchor: String,
+    logged: bool,
+}
+
+// Async compact logger used by the /panic route (UI).
+async fn log_panic_compact(
+    whisper: &str,
+    breath: &str,
+    doorway: &str,
+    anchor: &str,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    // .../panic/YYYY-MM/panic-YYYY-MM-DD.log
+    let now = Utc::now();
+    let ym = format!("{:04}-{:02}", now.year(), now.month());
+    let ymd = format!("{:04}-{:02}-{:02}", now.year(), now.month(), now.day());
+    let dir = panic_dir_base().join(ym);
+    let path = dir.join(format!("panic-{}.log", ymd));
+
+    // ensure directory
+    afs::create_dir_all(&dir).await?;
+
+    // structured single line
+    let ts = now.to_rfc3339();
+    let line = format!(
+        "[{}] whisper=\"{}\" breath=\"{}\" doorway=\"{}\" anchor=\"{}\"\n",
+        ts, whisper, breath, doorway, anchor
+    );
+
+    let mut file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&path)
+        .await?;
+    file.write_all(line.as_bytes()).await?;
+    file.flush().await?;
+    Ok(())
+}
+
+// --- add log export for panic runs ---
+// This ensures /panic/run mirrors panic.sh behavior by writing to ./exports/panic/YYYY-MM/panic-YYYY-MM-DD.log
+// so both CLI + UI invocations create the same audit trail.
+fn write_panic_log(out: &PanicOut) {
+    use std::io::Write;
+    let ts = chrono::Utc::now();
+    let dir = panic_dir_base().join(format!("{}", ts.format("%Y-%m")));
+    if let Err(e) = sfs::create_dir_all(&dir) {
+        eprintln!("panic log: mkdir failed: {:?}", e);
+        return;
+    }
+    let path = dir.join(format!("panic-{}.log", ts.format("%Y-%m-%d")));
+    let mut f = match sfs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&path)
+    {
+        Ok(f) => f,
+        Err(e) => {
+            eprintln!("panic log: open failed: {:?}", e);
+            return;
+        }
+    };
+    let _ = writeln!(
+        f,
+        "🌬️  {}-PANIC REDIRECT ORACLE\n\nwhisper : {}\nbreath  : {}\ndoorway : {}\nanchor  : {}\n\n✅ one redirect step chosen — act now.\n📝  logged to {}\n",
+        std::process::id(),
+        out.whisper,
+        out.breath,
+        out.doorway,
+        out.anchor,
+        path.display()
+    );
 }
 
 #[tokio::main]
@@ -564,14 +680,14 @@ async fn main() -> anyhow::Result<()> {
                         .unwrap();
 
                     let dir = PathBuf::from("./exports");
-                    fs::create_dir_all(&dir).ok();
+                    sfs::create_dir_all(&dir).ok();
                     let fname = format!(
                         "{}-thread-{}.md",
                         Utc::now().format("%Y-%m-%d_%H-%M"),
                         thread
                     );
                     let path = dir.join(fname);
-                    fs::write(&path, out.0).unwrap();
+                    sfs::write(&path, out.0).unwrap();
                     Json(ExportResponse {
                         path: path.to_string_lossy().into(),
                         count: out.1,
@@ -640,14 +756,14 @@ async fn main() -> anyhow::Result<()> {
                         .unwrap();
 
                     let dir = PathBuf::from("./exports");
-                    fs::create_dir_all(&dir).ok();
+                    sfs::create_dir_all(&dir).ok();
                     let fname = format!(
                         "{}-thread-{}.csv",
                         Utc::now().format("%Y-%m-%d_%H-%M"),
                         thread
                     );
                     let path = dir.join(fname);
-                    fs::write(&path, csv).unwrap();
+                    sfs::write(&path, csv).unwrap();
                     Json(ExportResponse {
                         path: path.to_string_lossy().into(),
                         count: 1,
@@ -1058,6 +1174,106 @@ async fn main() -> anyhow::Result<()> {
                         // generate reply (engine decides if the weekly window is active)
                         let preview = state.reply_engine.generate(&req.input).await;
                         Json(preview)
+                    }
+                }
+            }),
+        )
+        // --- panic (compact, UI) ---
+        .route(
+            "/panic",
+            post({
+                move || async move {
+                    let whispers = [
+                        "This is Empire’s choke, not my truth.",
+                        "Pause. Presence first, problems after.",
+                        "I don’t owe panic my attention.",
+                    ];
+                    let breaths = [
+                        "double_exhale:in2-out4",
+                        "box:in4-hold4-out4-hold2",
+                        "phys_sigh:inhale+top-up, slow exhale",
+                    ];
+                    let doorways = ["drink_water", "stand_and_stretch", "cold_splash", "step_outside"];
+                    let anchors = ["Flow > Empire.", "Sovereignty over spectacle.", "One true next action."];
+
+                    let whisper = whispers.choose(&mut rand::thread_rng()).unwrap().to_string();
+                    let breath  = breaths .choose(&mut rand::thread_rng()).unwrap().to_string();
+                    let doorway = doorways.choose(&mut rand::thread_rng()).unwrap().to_string();
+                    let anchor  = anchors .choose(&mut rand::thread_rng()).unwrap().to_string();
+
+                    // write compact line (async, best-effort)
+                    let mut logged = false;
+                    if log_panic_compact(&whisper, &breath, &doorway, &anchor).await.is_ok() {
+                        logged = true;
+                    }
+                    Json(PanicOut { whisper, breath, doorway, anchor, logged })
+                }
+            }),
+        )
+        // --- panic redirect oracle (POST /panic/run) ---
+        .route(
+            "/panic/run",
+            post({
+                let state = state.clone();
+                move || {
+                    let state = state.clone();
+                    async move {
+                        // 1) choose small, safe defaults
+                        let whispers = [
+                            "This is Empire’s choke, not my truth.",
+                            "Pause. Presence first, problems after.",
+                            "I don’t owe panic my attention.",
+                        ];
+                        let breaths = [
+                            "double_exhale:in2-out4",
+                            "box:in4-hold4-out4-hold2",
+                            "phys_sigh:inhale+top-up, slow exhale",
+                        ];
+                        let doorways = [
+                            "drink_water",
+                            "stand_and_stretch",
+                            "cold_splash",
+                            "step_outside",
+                        ];
+                        let anchors = [
+                            "Flow > Empire.",
+                            "Sovereignty over spectacle.",
+                            "One true next action.",
+                        ];
+
+                        let whisper = whispers.choose(&mut rand::thread_rng()).unwrap().to_string();
+                        let breath  = breaths .choose(&mut rand::thread_rng()).unwrap().to_string();
+                        let doorway = doorways.choose(&mut rand::thread_rng()).unwrap().to_string();
+                        let anchor  = anchors .choose(&mut rand::thread_rng()).unwrap().to_string();
+                        // full log to disk (sync), then mark logged=true
+                        let mut out = PanicOut { whisper, breath, doorway, anchor, logged: false };
+                        write_panic_log(&out);
+                        out.logged = true;
+
+                        // 2) log to DB as a Tell (best-effort)
+                        let node = "panic".to_string();
+                        let pre = format!("whisper:{} | breath:{}", out.whisper, out.breath);
+                        let act = format!("doorway:{} | anchor:{}", out.doorway, out.anchor);
+                        let ts = chrono::Utc::now().to_rfc3339();
+                        let _ = state.db.0.call(move |c| {
+                            c.execute(
+                                "INSERT INTO tells(node,pre_activation,action,created_at) VALUES(?,?,?,?)",
+                                rusqlite::params![node, pre, act, ts],
+                            )?;
+                            Ok(())
+                        }).await;
+
+                        // 3) write panic log to disk (mirrors panic.sh)
+                        write_panic_log(&out);
+
+                        // 4) (optional) webhook
+                        let _ = state.webhook.send("panic.run", &serde_json::json!({
+                            "event": "panic.run",
+                            "payload": out,
+                            "ts": chrono::Utc::now().to_rfc3339(),
+                        })).await;
+
+                        Json(out)
                     }
                 }
             }),

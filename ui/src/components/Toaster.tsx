@@ -3,6 +3,11 @@ import type { JoyMessage } from '../utils/joy';
 
 type ToastMessage = JoyMessage & { id: string };
 
+// Fire-and-forget helper so callers can trigger a toast from anywhere.
+export function toast(detail: JoyMessage) {
+  window.dispatchEvent(new CustomEvent<JoyMessage>('joy:toast', { detail }));
+}
+
 function isJoyEvent(e: Event): e is CustomEvent<JoyMessage> {
   return 'detail' in e;
 }

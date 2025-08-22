@@ -13,6 +13,31 @@ function cleanHeaders(h: HeadersMap): Record<string, string> {
 
 export type LightStatus = 'green' | 'yellow' | 'red';
 
+export type MemberEnergy = { name: string; energy: number };
+
+export type PillarStatus = {
+  crown: 'good' | 'watch' | 'rest';
+  void: 'good' | 'watch' | 'rest';
+  play: 'good' | 'watch' | 'rest';
+  dragon: 'good' | 'watch' | 'rest';
+  life_force: 'good' | 'watch' | 'rest';
+};
+
+export type TeamState = {
+  members: MemberEnergy[];
+  pillars: PillarStatus;
+  note?: string | null;
+  ts: string;
+};
+
+export type PanicOut = {
+  whisper: string;
+  breath: string;
+  doorway: string;
+  anchor: string;
+  logged?: boolean;
+};
+
 // ---- API surface ----
 
 async function postJSON<T>(path: string, body: Record<string, unknown>, extraHeaders: HeadersMap = {}): Promise<T> {
@@ -45,6 +70,7 @@ export function retrieve(query: string, limit = 12, includeSealed = false) {
   return postJSON('/retrieve', { query, limit, includeSealed });
 }
 
+//TODO
 export function snapshot() {
   return postJSON('/snapshot', {});
 }
@@ -95,7 +121,7 @@ export async function handleTell(id: number) {
 }
 
 export async function getStatus() {
-  const r = await fetch(`http://127.0.0.1:3033/status/get`, {
+  const r = await fetch(`${BASE}/status/get`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({}),
@@ -104,7 +130,7 @@ export async function getStatus() {
 }
 
 export async function setStatus(color: 'green' | 'yellow' | 'red', note?: string, ttl_minutes?: number) {
-  const r = await fetch(`http://127.0.0.1:3033/status/set`, {
+  const r = await fetch(`${BASE}/status/set`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ color, note, ttl_minutes }),
@@ -130,21 +156,6 @@ export function streamStatus(onUpdate: (updates: { name: string; status: LightSt
   return () => es.close();
 }
 
-export type MemberEnergy = { name: string; energy: number };
-export type PillarStatus = {
-  crown: 'good' | 'watch' | 'rest';
-  void: 'good' | 'watch' | 'rest';
-  play: 'good' | 'watch' | 'rest';
-  dragon: 'good' | 'watch' | 'rest';
-  life_force: 'good' | 'watch' | 'rest';
-};
-export type TeamState = {
-  members: MemberEnergy[];
-  pillars: PillarStatus;
-  note?: string | null;
-  ts: string;
-};
-
 export async function getState(): Promise<TeamState> {
   const r = await fetch(`${BASE}/state/get`);
   return r.json();
@@ -152,4 +163,13 @@ export async function getState(): Promise<TeamState> {
 export async function setState(payload: Partial<TeamState>): Promise<TeamState> {
   const r = await fetch(`${BASE}/state/set`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
   return r.json();
+}
+
+export async function runPanic(): Promise<PanicOut> {
+  const headers = cleanHeaders({
+    Authorization: BEARER ? `Bearer ${BEARER}` : undefined,
+  });
+  const res = await fetch(`${BASE}/panic`, { method: 'POST', headers });
+  if (!res.ok) throw new Error(`panic failed: ${res.status}`);
+  return (await res.json()) as PanicOut;
 }
