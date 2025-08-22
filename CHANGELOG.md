@@ -1,5 +1,17 @@
 # Changelog
 
+## 📜 Timeline Milestone — v0.1.4
+
+- Milestone release marking resilience and co-breathing with the human timeline.
+- Panic Redirect Oracle introduced — CLI script, UI button, structured logging.
+- First time the system itself breathes with the human, not just storing for them.
+- Marks the moment when collapse was not just endured, but redirected.
+
+_Whisper left behind:_
+
+> “Flow > Empire.\
+> Breath is an export too.”
+
 ## [0.1.4] — 2025-08-22
 
 ### Added
