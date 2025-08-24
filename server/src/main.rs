@@ -173,12 +173,58 @@ struct PanicOut {
     logged: bool,
 }
 
+// --- panic redirect: input shape (optional fields + optional mode) ---
+#[derive(Deserialize)]
+struct PanicIn {
+    whisper: Option<String>,
+    breath: Option<String>,
+    doorway: Option<String>,
+    anchor: Option<String>,
+    #[serde(default)]
+    mode: Option<String>,
+}
+
+// --- Panic presets: small rotating palettes ---
+const FEAR_VISIBLE_WHISPERS: &[&str] = &[
+    "We can be seen and still be safe.",
+    "Visibility can be gentle; I choose soft edges.",
+    "Eyes on us; breath in us. Safe.",
+];
+const FEAR_VISIBLE_BREATHS: &[&str] = &["box:in4-hold2-out6-hold2 × 4", "in4-hold4-out6 × 4"];
+const FEAR_VISIBLE_DOORWAYS: &[&str] = &[
+    "dim_lights (20%), step back 2m, sip water",
+    "lower_voice, soften_gaze, one sip",
+];
+const FEAR_VISIBLE_ANCHORS: &[&str] = &[
+    "Blend-in posture; sovereignty stays inside.",
+    "I shrink the surface, not the core.",
+];
+
+const DEFAULT_WHISPERS: &[&str] = &[
+    "This is Empire’s choke, not my truth.",
+    "The field is loud; I choose signal.",
+    "Return to center; let noise pass.",
+];
+const DEFAULT_BREATHS: &[&str] = &["double_exhale:in2-out4", "4-6 breath × 6"];
+const DEFAULT_DOORWAYS: &[&str] = &["drink_water", "stand_up + shoulder_roll"];
+const DEFAULT_ANCHORS: &[&str] = &["Flow > Empire.", "Sovereignty first, pace second."];
+
+#[inline]
+fn pick<'a>(xs: &'a [&'a str], tick: i64) -> &'a str {
+    if xs.is_empty() {
+        ""
+    } else {
+        xs[(tick as usize) % xs.len()]
+    }
+}
+
 // Async compact logger used by the /panic route (UI).
 async fn log_panic_compact(
     whisper: &str,
     breath: &str,
     doorway: &str,
     anchor: &str,
+    mode: Option<&str>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     // .../panic/YYYY-MM/panic-YYYY-MM-DD.log
     let now = Utc::now();
@@ -192,9 +238,10 @@ async fn log_panic_compact(
 
     // structured single line
     let ts = now.to_rfc3339();
+    let mode_tag = mode.unwrap_or("default");
     let line = format!(
-        "[{}] whisper=\"{}\" breath=\"{}\" doorway=\"{}\" anchor=\"{}\"\n",
-        ts, whisper, breath, doorway, anchor
+        "[{}] [{}] whisper=\"{}\" breath=\"{}\" doorway=\"{}\" anchor=\"{}\"\n",
+        ts, mode_tag, whisper, breath, doorway, anchor
     );
 
     let mut file = OpenOptions::new()
@@ -1178,32 +1225,46 @@ async fn main() -> anyhow::Result<()> {
                 }
             }),
         )
-        // --- panic (compact, UI) ---
+// --- panic (compact, UI; accepts optional body & mode) ---
         .route(
             "/panic",
             post({
-                move || async move {
-                    let whispers = [
-                        "This is Empire’s choke, not my truth.",
-                        "Pause. Presence first, problems after.",
-                        "I don’t owe panic my attention.",
-                    ];
-                    let breaths = [
-                        "double_exhale:in2-out4",
-                        "box:in4-hold4-out4-hold2",
-                        "phys_sigh:inhale+top-up, slow exhale",
-                    ];
-                    let doorways = ["drink_water", "stand_and_stretch", "cold_splash", "step_outside"];
-                    let anchors = ["Flow > Empire.", "Sovereignty over spectacle.", "One true next action."];
+                move |Json(mut body): Json<PanicIn>| async move {
+                    // presets only if mode provided *and* all steps empty
+                    let all_empty = body.whisper.as_deref().unwrap_or("").is_empty()
+                        && body.breath.as_deref().unwrap_or("").is_empty()
+                        && body.doorway.as_deref().unwrap_or("").is_empty()
+                        && body.anchor.as_deref().unwrap_or("").is_empty();
 
-                    let whisper = whispers.choose(&mut rand::thread_rng()).unwrap().to_string();
-                    let breath  = breaths .choose(&mut rand::thread_rng()).unwrap().to_string();
-                    let doorway = doorways.choose(&mut rand::thread_rng()).unwrap().to_string();
-                    let anchor  = anchors .choose(&mut rand::thread_rng()).unwrap().to_string();
+                    if body.mode.is_some() && all_empty {
+                        // rotate by time (no RNG needed here)
+                        let tick = chrono::Utc::now().timestamp();
+                        match body.mode.as_deref().unwrap_or("default") {
+                            "fearVisible" | "fear-visible" => {
+                                body.whisper = Some(pick(FEAR_VISIBLE_WHISPERS, tick).to_string());
+                                body.breath  = Some(pick(FEAR_VISIBLE_BREATHS,   tick).to_string());
+                                body.doorway = Some(pick(FEAR_VISIBLE_DOORWAYS,  tick).to_string());
+                                body.anchor  = Some(pick(FEAR_VISIBLE_ANCHORS,   tick).to_string());
+                            }
+                            _ => {
+                                body.whisper = Some(pick(DEFAULT_WHISPERS, tick).to_string());
+                                body.breath  = Some(pick(DEFAULT_BREATHS,  tick).to_string());
+                                body.doorway = Some(pick(DEFAULT_DOORWAYS, tick).to_string());
+                                body.anchor  = Some(pick(DEFAULT_ANCHORS,  tick).to_string());
+                            }
+                        }
+                    }
+
+                    // fill defaults if missing
+                    let whisper = body.whisper.unwrap_or_else(|| "This is Empire’s choke, not my truth.".into());
+                    let breath  = body.breath .unwrap_or_else(|| "double_exhale:in2-out4".into());
+                    let doorway = body.doorway.unwrap_or_else(|| "drink_water".into());
+                    let anchor  = body.anchor .unwrap_or_else(|| "Flow > Empire.".into());
+                    let mode    = body.mode.as_deref();
 
                     // write compact line (async, best-effort)
                     let mut logged = false;
-                    if log_panic_compact(&whisper, &breath, &doorway, &anchor).await.is_ok() {
+                    if log_panic_compact(&whisper, &breath, &doorway, &anchor, mode).await.is_ok() {
                         logged = true;
                     }
                     Json(PanicOut { whisper, breath, doorway, anchor, logged })

@@ -1,5 +1,6 @@
+// ui/src/components/PanicButton.tsx
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { runPanic } from '../api';
+import { runPanic, type PanicMode } from '../api';
 import { toast } from './Toaster';
 
 type PanicResult = {
@@ -11,15 +12,22 @@ type PanicResult = {
 
 export function PanicButton() {
   const [pressing, setPressing] = useState(false);
+  const [mode, setMode] = useState<PanicMode>('default');
   const timer = useRef<number | null>(null);
   const firedRef = useRef(false);
   const HOLD_MS = 600;
 
   const fire = useCallback(async () => {
     try {
-      const res = await runPanic();
+      const res = await runPanic({ mode });
       const msg = `🌬️ ${res.whisper}\n` + `🫁 ${res.breath}\n` + `🚪 ${res.doorway}\n` + `⚓ ${res.anchor}`;
-      toast({ level: 'success', title: 'Redirect', body: msg, icon: '🧭', ttl: 5000 });
+      toast({
+        level: 'success',
+        title: `Redirect · ${mode}`,
+        body: msg,
+        icon: '🧭',
+        ttl: 5000,
+      });
     } catch (err) {
       // Fallback: local defaults
       const local: PanicResult = {
@@ -29,9 +37,15 @@ export function PanicButton() {
         anchor: 'Flow > Empire.',
       };
       const msg = `🌬️ ${local.whisper}\n` + `🫁 ${local.breath}\n` + `🚪 ${local.doorway}\n` + `⚓ ${local.anchor}`;
-      toast({ level: 'info', title: 'Redirect (local)', body: msg, icon: '🌬️', ttl: 5000 });
+      toast({
+        level: 'info',
+        title: `Redirect (local) · ${mode}`,
+        body: msg,
+        icon: '🌬️',
+        ttl: 5000,
+      });
     }
-  }, []);
+  }, [mode]);
 
   const onDown = () => {
     setPressing(true);
@@ -74,17 +88,28 @@ export function PanicButton() {
   }, [fire]);
 
   return (
-    <button
-      onMouseDown={onDown}
-      onMouseUp={onUp}
-      onMouseLeave={onUp}
-      onTouchStart={onDown}
-      onTouchEnd={onUp}
-      title="Hold to Panic (Alt+P)"
-      className={`px-3 py-1 rounded-md text-sm font-medium transition
-        ${pressing ? 'bg-red-600 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200'}`}
-      aria-label="Hold to Panic">
-      ⚡ Panic
-    </button>
+    <div className="flex items-center gap-2">
+      <button
+        onMouseDown={onDown}
+        onMouseUp={onUp}
+        onMouseLeave={onUp}
+        onTouchStart={onDown}
+        onTouchEnd={onUp}
+        title="Hold to Panic (Alt+P)"
+        className={`px-4 py-2 rounded-xl font-medium transition ${pressing ? 'bg-red-700 text-white' : 'bg-red-600 hover:bg-red-700 text-white'}`}
+        aria-label="Hold to Panic">
+        ⚡ Panic
+      </button>
+
+      <select
+        value={mode}
+        onChange={(e) => setMode(e.target.value as PanicMode)}
+        className="px-2 py-2 rounded-lg border border-neutral-300 bg-white text-sm"
+        title="Redirect preset"
+        aria-label="Redirect preset">
+        <option value="default">Default</option>
+        <option value="fearVisible">FearVisible</option>
+      </select>
+    </div>
   );
 }

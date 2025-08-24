@@ -38,6 +38,16 @@ export type PanicOut = {
   logged?: boolean;
 };
 
+export type PanicMode = 'default' | 'fearVisible';
+
+export type PanicRequest = {
+  whisper?: string;
+  breath?: string;
+  doorway?: string;
+  anchor?: string;
+  mode?: PanicMode; // when present, server fills defaults
+};
+
 // ---- API surface ----
 
 async function postJSON<T>(path: string, body: Record<string, unknown>, extraHeaders: HeadersMap = {}): Promise<T> {
@@ -165,11 +175,16 @@ export async function setState(payload: Partial<TeamState>): Promise<TeamState> 
   return r.json();
 }
 
-export async function runPanic(): Promise<PanicOut> {
+export async function runPanic(req: PanicRequest = { mode: 'default' }): Promise<PanicOut> {
   const headers = cleanHeaders({
+    'Content-Type': 'application/json',
     Authorization: BEARER ? `Bearer ${BEARER}` : undefined,
   });
-  const res = await fetch(`${BASE}/panic`, { method: 'POST', headers });
+  const res = await fetch(`${BASE}/panic`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(req ?? {}),
+  });
   if (!res.ok) throw new Error(`panic failed: ${res.status}`);
   return (await res.json()) as PanicOut;
 }
