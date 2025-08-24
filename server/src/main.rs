@@ -24,8 +24,9 @@ use std::{
 use axum::extract::State;
 use axum::{
     extract::Query,
-    http::{HeaderMap, Method},
+    http::{HeaderMap, Method, StatusCode},
     response::sse::{Event, Sse},
+    response::IntoResponse,
     routing::{get, post},
     Json, Router,
 };
@@ -289,6 +290,135 @@ fn write_panic_log(out: &PanicOut) {
     );
 }
 
+/// Payload returned by `/panic/last`
+#[derive(serde::Serialize)]
+struct PanicLast {
+    ts: String,
+    whisper: String,
+    breath: String,
+    doorway: String,
+    anchor: String,
+    path: String,
+}
+
+/// Helper: where exports live (env or default)
+fn exports_base_dir() -> PathBuf {
+    // unify with panic_dir_base()/resolve_exports_dir() so CLI & UI read same logs
+    resolve_exports_dir()
+}
+
+/// GET /panic/last — read the newest panic log line and parse fields
+async fn panic_last() -> Result<Json<PanicLast>, StatusCode> {
+    use tokio::fs;
+    use tokio::io::AsyncReadExt;
+
+    let base = exports_base_dir().join("panic");
+    // Find newest YYYY-MM dir
+    let mut newest_dir: Option<(String, std::time::SystemTime)> = None;
+    let Ok(mut rd) = fs::read_dir(&base).await else {
+        return Err(StatusCode::NOT_FOUND);
+    };
+    while let Ok(Some(e)) = rd.next_entry().await {
+        let name = e.file_name().to_string_lossy().to_string();
+        if name.len() == 7 && name.chars().nth(4) == Some('-') {
+            if let Ok(md) = e.metadata().await {
+                if let Ok(modt) = md.modified() {
+                    if newest_dir.as_ref().map(|(_, t)| modt > *t).unwrap_or(true) {
+                        newest_dir = Some((name, modt));
+                    }
+                }
+            }
+        }
+    }
+    let Some((ym, _)) = newest_dir else {
+        return Err(StatusCode::NOT_FOUND);
+    };
+
+    // Find newest file in newest_dir (panic-YYYY-MM-DD.log)
+    let dir = base.join(&ym);
+    let mut newest_file: Option<(PathBuf, std::time::SystemTime)> = None;
+    let Ok(mut rd2) = fs::read_dir(&dir).await else {
+        return Err(StatusCode::NOT_FOUND);
+    };
+    while let Ok(Some(e)) = rd2.next_entry().await {
+        let path = e.path();
+        if path.extension().and_then(|s| s.to_str()) == Some("log") {
+            if let Ok(md) = e.metadata().await {
+                if let Ok(modt) = md.modified() {
+                    if newest_file.as_ref().map(|(_, t)| modt > *t).unwrap_or(true) {
+                        newest_file = Some((path, modt));
+                    }
+                }
+            }
+        }
+    }
+    let Some((file_path, _)) = newest_file else {
+        return Err(StatusCode::NOT_FOUND);
+    };
+
+    // Read file & take the last non-empty line
+    let mut file = fs::File::open(&file_path)
+        .await
+        .map_err(|_| StatusCode::NOT_FOUND)?;
+    let mut buf = String::new();
+    file.read_to_string(&mut buf)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let last = buf
+        .lines()
+        .rev()
+        .find(|l| !l.trim().is_empty())
+        .ok_or(StatusCode::NOT_FOUND)?;
+
+    // Expected format (from panic.sh & server writer):
+    // [YYYY-MM-DDTHH:MM:SSZ] whisper="..." breath="..." doorway="..." anchor="..."
+    let ts = last
+        .split(']')
+        .next()
+        .unwrap_or("")
+        .trim_start_matches('[')
+        .to_string();
+    let mut whisper = String::new();
+    let mut breath = String::new();
+    let mut doorway = String::new();
+    let mut anchor = String::new();
+    for key in ["whisper", "breath", "doorway", "anchor"] {
+        if let Some(start) = last.find(&format!(r#"{key}=""#)) {
+            let s = start + key.len() + 2;
+            if let Some(end) = last[s..].find('"') {
+                let val = &last[s..s + end];
+                match key {
+                    "whisper" => whisper = val.to_string(),
+                    "breath" => breath = val.to_string(),
+                    "doorway" => doorway = val.to_string(),
+                    _ => anchor = val.to_string(),
+                }
+            }
+        }
+    }
+
+    Ok(Json(PanicLast {
+        ts,
+        whisper,
+        breath,
+        doorway,
+        anchor,
+        path: file_path.to_string_lossy().to_string(),
+    }))
+}
+
+async fn reply_handler(
+    State(state): State<AppState>,
+    Json(payload): Json<serde_json::Value>,
+) -> impl IntoResponse {
+    let text = payload.get("text").and_then(|v| v.as_str()).unwrap_or("");
+    if let Some(reply) = state.reply_engine.generate(text).await {
+        (StatusCode::OK, Json(reply)).into_response()
+    } else {
+        StatusCode::NO_CONTENT.into_response()
+    }
+}
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt()
@@ -296,7 +426,9 @@ async fn main() -> anyhow::Result<()> {
         .init();
 
     let db = init_db().await?;
-    let _ = ensure_default_thread(&db).await; // or keep the id if you need it
+    let _ = ensure_default_thread(&db).await;
+    // make sure default profile exists so old rows don't get filtered by the JOIN
+    let _ = ensure_profile(&db, "Raz").await;
     let config = Config::from_env();
     let webhook = Webhook::new(config.webhook_url.clone(), config.webhook_secret.clone());
     // spin up the reply engine (reads env: M3_REPLIES_*)
@@ -421,21 +553,8 @@ async fn main() -> anyhow::Result<()> {
                         serde_json::to_string(&req.tags.unwrap_or_default()).unwrap();
                     let ts = chrono::Utc::now().to_rfc3339();
 
-                    // profile_id via .call
-                    let prof = profile.clone();
-                    let profile_id: i64 = state
-                        .db
-                        .0
-                        .call(move |c| {
-                            let r: Result<i64, rusqlite::Error> = c.query_row(
-                                "SELECT id FROM profiles WHERE name=?1",
-                                [prof.as_str()],
-                                |r| r.get(0),
-                            );
-                            Ok(r.unwrap_or(1))
-                        })
-                        .await
-                        .unwrap();
+                    // ensure the profile exists and get its id
+                    let profile_id = ensure_profile(&state.db, &profile).await;
 
                     let text = if privacy == "sealed" {
                         if let Some(k) = *state.key.lock().unwrap() {
@@ -1212,6 +1331,7 @@ async fn main() -> anyhow::Result<()> {
             }),
         )
         // --- replies ---
+        .route("/reply", post(reply_handler))
         .route(
             "/replies/preview",
             post({
@@ -1225,7 +1345,7 @@ async fn main() -> anyhow::Result<()> {
                 }
             }),
         )
-// --- panic (compact, UI; accepts optional body & mode) ---
+        // --- panic (compact, UI; accepts optional body & mode) ---
         .route(
             "/panic",
             post({
@@ -1306,7 +1426,7 @@ async fn main() -> anyhow::Result<()> {
                         let breath  = breaths .choose(&mut rand::thread_rng()).unwrap().to_string();
                         let doorway = doorways.choose(&mut rand::thread_rng()).unwrap().to_string();
                         let anchor  = anchors .choose(&mut rand::thread_rng()).unwrap().to_string();
-                        // full log to disk (sync), then mark logged=true
+                        // write log once (sync), then mark logged=true
                         let mut out = PanicOut { whisper, breath, doorway, anchor, logged: false };
                         write_panic_log(&out);
                         out.logged = true;
@@ -1324,10 +1444,7 @@ async fn main() -> anyhow::Result<()> {
                             Ok(())
                         }).await;
 
-                        // 3) write panic log to disk (mirrors panic.sh)
-                        write_panic_log(&out);
-
-                        // 4) (optional) webhook
+                        // 3) (optional) webhook
                         let _ = state.webhook.send("panic.run", &serde_json::json!({
                             "event": "panic.run",
                             "payload": out,
@@ -1338,7 +1455,8 @@ async fn main() -> anyhow::Result<()> {
                     }
                 }
             }),
-        );
+        )
+        .route("/panic/last", get(panic_last));
 
     // provide AppState to routes that extract `State<AppState>`
     let app = app.with_state(state.clone());

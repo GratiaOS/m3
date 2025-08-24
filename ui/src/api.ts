@@ -1,4 +1,4 @@
-const BASE = 'http://127.0.0.1:3033';
+const BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:3033';
 const BEARER = localStorage.getItem('m3_token') || '';
 
 type HeadersMap = Record<string, string | undefined>;
@@ -12,6 +12,7 @@ function cleanHeaders(h: HeadersMap): Record<string, string> {
 }
 
 export type LightStatus = 'green' | 'yellow' | 'red';
+export type LightColor = LightStatus;
 
 export type MemberEnergy = { name: string; energy: number };
 
@@ -29,6 +30,34 @@ export type TeamState = {
   note?: string | null;
   ts: string;
 };
+
+// ----- Reply API -----
+export type ReplyMode = 'Poetic' | 'Sarcastic' | 'Paradox';
+export interface ReplyBill {
+  minutes: number;
+  arousal: number;
+}
+export interface ReplyResponse {
+  mode: ReplyMode;
+  text: string;
+  doors: [string, string];
+  bill?: ReplyBill;
+  window_until?: string | null;
+}
+
+export async function fetchReply(text: string): Promise<ReplyResponse | null> {
+  const r = await fetch(`${BASE}/reply`, {
+    method: 'POST',
+    headers: cleanHeaders({
+      'Content-Type': 'application/json',
+      Authorization: BEARER ? `Bearer ${BEARER}` : undefined,
+    }),
+    body: JSON.stringify({ text }),
+  });
+  if (r.status === 204) return null; // gate closed
+  if (!r.ok) throw new Error(await r.text());
+  return (await r.json()) as ReplyResponse;
+}
 
 export type PanicOut = {
   whisper: string;
@@ -62,11 +91,25 @@ async function postJSON<T>(path: string, body: Record<string, unknown>, extraHea
   return r.json();
 }
 
+// Generic request wrapper (GET/POST/etc.)
+export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const headers = cleanHeaders({
+    'Content-Type': 'application/json',
+    Authorization: BEARER ? `Bearer ${BEARER}` : undefined,
+    ...(init.headers || {}),
+  } as HeadersMap);
+  const res = await fetch(`${BASE}${path}`, { ...init, headers });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json() as Promise<T>;
+}
+
+export type IngestPrivacy = 'public' | 'sealed' | 'private';
+
 export type IngestPayload = {
   text: string;
   tags?: string[];
   profile?: string;
-  privacy?: 'public' | 'sealed' | 'private';
+  privacy?: IngestPrivacy;
   importance?: number;
   // allow forward-compat extension
   [k: string]: unknown;
@@ -113,7 +156,15 @@ export async function listTells(limit = 50) {
   const r = await fetch(`${BASE}/tells?limit=${limit}`);
   return r.json();
 }
-export async function createTell(payload: { node: string; pre_activation: string; action: string }) {
+
+export interface CreateTellPayload {
+  node: string;
+  pre_activation?: string;
+  action: string;
+  created_at?: string; // RFC3339 optional
+}
+
+export async function createTell(payload: CreateTellPayload): Promise<unknown> {
   const r = await fetch(`${BASE}/tells`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -121,6 +172,7 @@ export async function createTell(payload: { node: string; pre_activation: string
   });
   return r.json();
 }
+
 export async function handleTell(id: number) {
   const r = await fetch(`${BASE}/tells/handle`, {
     method: 'POST',
@@ -144,6 +196,23 @@ export async function setStatus(color: 'green' | 'yellow' | 'red', note?: string
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ color, note, ttl_minutes }),
+  });
+  return r.json();
+}
+
+// --- Member Light (per-person) ---
+export interface SetMemberLightPayload {
+  name: string;
+  status: LightColor;
+  note?: string;
+  ttl_minutes?: number;
+}
+
+export async function setMemberLight(body: SetMemberLightPayload): Promise<unknown> {
+  const r = await fetch(`${BASE}/status`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
   });
   return r.json();
 }
@@ -187,4 +256,21 @@ export async function runPanic(req: PanicRequest = { mode: 'default' }): Promise
   });
   if (!res.ok) throw new Error(`panic failed: ${res.status}`);
   return (await res.json()) as PanicOut;
+}
+
+export interface PanicLast {
+  ts: string;
+  whisper: string;
+  breath: string;
+  doorway: string;
+  anchor: string;
+  path: string;
+}
+
+export async function getPanicLast(): Promise<PanicLast | null> {
+  try {
+    return await request<PanicLast>('/panic/last', { method: 'GET' });
+  } catch {
+    return null; // endpoint absent or no logs yet
+  }
 }

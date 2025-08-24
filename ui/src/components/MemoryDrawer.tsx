@@ -9,7 +9,7 @@ export type Chunk = {
   tags?: string[];
 };
 
-type Props = { chunks: Chunk[]; append?: boolean }; // append = true means load more at bottom
+type Props = { chunks: Chunk[]; append?: boolean }; // append kept for future pagination, not used here
 
 function fmtTs(ts: string) {
   const d = new Date(ts);
@@ -26,7 +26,6 @@ const Row: React.FC<{ c: Chunk }> = ({ c }) => {
   const tags = Array.isArray(c.tags) ? c.tags : [];
   return (
     <li
-      key={c.id}
       style={{
         padding: '10px 0',
         borderBottom: '1px dashed #eee',
@@ -54,21 +53,17 @@ const Row: React.FC<{ c: Chunk }> = ({ c }) => {
   );
 };
 
-const MemoryDrawer: React.FC<Props> = ({ chunks, append }) => {
-  const [allChunks, setAllChunks] = React.useState<Chunk[]>([]);
-
-  React.useEffect(() => {
-    setAllChunks((prev) => {
-      const seen = new Set(prev.map((c) => c.id));
-      const filtered = chunks.filter((c) => !seen.has(c.id));
-
-      if (append) {
-        return [...prev, ...filtered]; // load more at bottom
-      } else {
-        return [...filtered, ...prev]; // prepend new at top
-      }
-    });
-  }, [chunks, append]);
+const MemoryDrawer: React.FC<Props> = ({ chunks }) => {
+  // Pure view: sort newest first; parent controls pagination/aggregation.
+  const list = React.useMemo(
+    () =>
+      [...chunks].sort((a, b) => {
+        const ta = Date.parse(a.ts);
+        const tb = Date.parse(b.ts);
+        return (isNaN(tb) ? 0 : tb) - (isNaN(ta) ? 0 : ta);
+      }),
+    [chunks]
+  );
 
   return (
     <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 12 }}>
@@ -80,17 +75,17 @@ const MemoryDrawer: React.FC<Props> = ({ chunks, append }) => {
         }}>
         <h3 style={{ margin: 0 }}>Memory</h3>
         <div style={{ fontSize: 12, opacity: 0.6 }}>
-          {allChunks.length} item{allChunks.length === 1 ? '' : 's'}
+          {list.length} item{list.length === 1 ? '' : 's'}
         </div>
       </div>
 
-      {allChunks.length === 0 ? (
+      {list.length === 0 ? (
         <div style={{ padding: '12px 0', fontSize: 13, opacity: 0.7 }}>
           Nothing here yet. Ingest a note, then hit <em>retrieve</em>.
         </div>
       ) : (
         <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-          {allChunks.map((c) => (
+          {list.map((c) => (
             <Row key={c.id} c={c} />
           ))}
         </ul>

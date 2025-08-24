@@ -251,6 +251,8 @@ impl ReplyEngine {
 
         // Compose "show, not tell": mirror cost + offer a door
         let alts = alt_actions(bill);
+        // Take the first two as actionable buttons for the UI.
+        let doors = [alts[0].to_string(), alts[1].to_string()];
         let addendum = match mode {
             Mode::Poetic => format!(
                 "
@@ -289,6 +291,7 @@ When you carry less, the cost shrinks. (~{:.1} min at {:.0}%). Try: {}",
             text,
             window_until,
             bill: Some(bill),
+            doors,
         })
     }
 }
@@ -324,6 +327,8 @@ pub struct Reply {
     pub text: String,
     pub window_until: Option<DateTime<Utc>>, // for client UX
     pub bill: Option<EnergyEstimate>,        // mirrors cost
+    /// two concrete micro‑actions to show as buttons (UI “doors”)
+    pub doors: [String; 2],
 }
 
 // --- style renderers -------------------------------------------------------
@@ -333,11 +338,24 @@ fn poetic_reply(input: &str) -> String {
     if cleaned.is_empty() {
         return "The field is quiet; even silence hums if you lean in.".to_string();
     }
+    // If the theme is forgiveness / betrayal, weave the “mirror that stays” whisper.
+    let lower = cleaned.to_ascii_lowercase();
+    let forgive_theme = ["forgive", "forgiveness", "betray", "betrayal", "betrayed"]
+        .iter()
+        .any(|k| lower.contains(k));
+    if forgive_theme {
+        return format!(
+            "I heard: “{q}”.
+The mirror stays.
+It reads intention, not reaction.
+Sometimes the mirror — she's a whisper.",
+            q = cleaned
+        );
+    }
     format!(
         "I heard: “{q}”.
 Not a problem — a weather pattern.
-Breathe once. Then again.
-Now move a grain of sand, not the mountain.",
+Name the wind, keep the root.",
         q = cleaned
     )
 }

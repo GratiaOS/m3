@@ -1,6 +1,6 @@
-// ui/src/components/PanicButton.tsx
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { runPanic, type PanicMode } from '../api';
+import { runPanic, type PanicMode, setMemberLight, createTell } from '../api';
+import { useProfile } from '../state/profile';
 import { toast } from './Toaster';
 
 type PanicResult = {
@@ -11,6 +11,7 @@ type PanicResult = {
 };
 
 export function PanicButton() {
+  const { me } = useProfile();
   const [pressing, setPressing] = useState(false);
   const [mode, setMode] = useState<PanicMode>('default');
   const timer = useRef<number | null>(null);
@@ -28,6 +29,19 @@ export function PanicButton() {
         icon: '🧭',
         ttl: 5000,
       });
+      // --- quick bridge (best-effort, non-blocking) ---
+      const door = res?.doorway ?? '—';
+      void setMemberLight({
+        name: me,
+        status: 'yellow',
+        note: `redirect: ${door}`,
+        ttl_minutes: 30,
+      }).catch(() => {});
+      void createTell({
+        node: 'panic',
+        pre_activation: `whisper=${res?.whisper ?? ''}|breath=${res?.breath ?? ''}|doorway=${res?.doorway ?? ''}|anchor=${res?.anchor ?? ''}`,
+        action: 'redirect',
+      }).catch(() => {});
     } catch (err) {
       // Fallback: local defaults
       const local: PanicResult = {

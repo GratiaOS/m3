@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { getState, setState, TeamState, PillarStatus } from '../api';
+import { getState, setState, TeamState, PillarStatus, getPanicLast, type PanicLast } from '../api';
 
 const PILLAR_KEYS: (keyof PillarStatus)[] = ['crown', 'void', 'play', 'dragon', 'life_force'];
 const COLORS: Record<PillarStatus[keyof PillarStatus], string> = { good: '#22c55e', watch: '#f59e0b', rest: '#ef4444' };
@@ -7,10 +7,33 @@ const COLORS: Record<PillarStatus[keyof PillarStatus], string> = { good: '#22c55
 export default function Dashboard() {
   const [state, set] = useState<TeamState | null>(null);
   const [saving, setSaving] = useState(false);
+  const [lastRedirect, setLastRedirect] = useState<PanicLast | null>(null);
 
   useEffect(() => {
-    (async () => set(await getState()))();
+    (async () => {
+      const s = await getState();
+      set(s);
+      const last = await getPanicLast();
+      setLastRedirect(last);
+    })();
   }, []);
+
+  // PanicLast type now comes from ../api:
+  // export interface PanicLast {
+  //   ts: string; whisper: string; breath: string; doorway: string; anchor: string; path: string;
+  // }
+
+  function timeAgo(iso: string): string {
+    const then = new Date(iso).getTime();
+    const sec = Math.max(1, Math.floor((Date.now() - then) / 1000));
+    if (sec < 60) return `${sec}s ago`;
+    const min = Math.floor(sec / 60);
+    if (min < 60) return `${min}m ago`;
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return `${hr}h ago`;
+    const d = Math.floor(hr / 24);
+    return `${d}d ago`;
+  }
 
   const avg = useMemo(() => {
     if (!state) return 0;
@@ -55,12 +78,32 @@ export default function Dashboard() {
 
   if (!state) return <div style={{ padding: 12, border: '1px solid #eee', borderRadius: 12 }}>Loading dashboard…</div>;
 
+  const SmallPill: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+    <span
+      style={{
+        fontSize: 12,
+        padding: '2px 8px',
+        borderRadius: 999,
+        background: '#eef2ff',
+        color: '#3730a3',
+      }}>
+      {children}
+    </span>
+  );
+
   return (
     <div style={{ border: '1px solid #e5e7eb', borderRadius: 16, padding: 16, display: 'grid', gap: 12 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
         <h2 style={{ margin: 0 }}>Team Energy & Pillars</h2>
         <small style={{ opacity: 0.6 }}>last update · {new Date(state.ts).toLocaleString()}</small>
       </div>
+      {lastRedirect && (
+        <div>
+          <SmallPill>
+            Last redirect: {lastRedirect.whisper || '—'} → {lastRedirect.doorway || '—'} ({timeAgo(lastRedirect.ts)})
+          </SmallPill>
+        </div>
+      )}
 
       {/* Decision badge */}
       <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>

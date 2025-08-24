@@ -30,5 +30,5 @@ server/exports/*
 !.vscode/settings.json
 !.vscode/extensions.json
 
-# dotenv (if you add later)
+# dotenv
 .env

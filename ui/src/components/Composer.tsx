@@ -1,5 +1,5 @@
-// ui/src/components/Composer.tsx
 import React, { useState } from 'react';
+import { ingest, fetchReply, createTell } from '../api';
 
 type Privacy = 'public' | 'private' | 'sealed';
 
@@ -15,6 +15,32 @@ export default function Composer({ onIngest, incognito = false }: Props) {
   const [text, setText] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [privacy, setPrivacy] = useState<Privacy>('public');
+  const [doors, setDoors] = useState<[string, string] | null>(null);
+  const [nudge, setNudge] = useState<string | null>(null);
+
+  async function doIngest() {
+    const clean = text.trim();
+    if (!clean) return;
+    const addTags = incognito ? Array.from(new Set([...tags, 'incognito'])) : tags;
+    await onIngest(clean, addTags, effectivePrivacy);
+    setText('');
+    setTags([]);
+
+    // now try to get a reply/nudge
+    try {
+      const r = await fetchReply(clean);
+      if (r) {
+        setNudge(r.text);
+        setDoors(r.doors);
+      } else {
+        setNudge(null);
+        setDoors(null);
+      }
+    } catch {
+      setNudge(null);
+      setDoors(null);
+    }
+  }
 
   function toggle(t: string) {
     setTags((p) => (p.includes(t) ? p.filter((x) => x !== t) : [...p, t]));
@@ -50,18 +76,20 @@ export default function Composer({ onIngest, incognito = false }: Props) {
 
         {incognito && <span className="badge">forced: sealed</span>}
 
-        <button
-          onClick={() => {
-            const clean = text.trim();
-            if (!clean) return;
-            const addTags = incognito ? Array.from(new Set([...tags, 'incognito'])) : tags;
-            void onIngest(clean, addTags, effectivePrivacy);
-            setText('');
-            setTags([]);
-          }}>
-          save
-        </button>
+        <button onClick={doIngest}>save</button>
       </div>
+
+      {nudge && (
+        <div style={{ marginTop: 8, padding: 8, border: '1px solid #ccc', borderRadius: 6 }}>
+          <div style={{ fontSize: 13, marginBottom: 4, whiteSpace: 'pre-wrap' }}>{nudge}</div>
+          {doors && (
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button onClick={() => createTell({ node: 'nudge', action: doors[0] })}>{doors[0]}</button>
+              <button onClick={() => createTell({ node: 'nudge', action: doors[1] })}>{doors[1]}</button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

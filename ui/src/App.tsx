@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ingest, retrieve, snapshot, exportThread, exportCSV, unlock, setPassphrase } from './api';
+import { useProfile } from './state/profile';
 import Composer from './components/Composer';
 import MemoryDrawer from './components/MemoryDrawer';
 import EnergyPanel from './components/EnergyPanel';
@@ -27,6 +28,7 @@ type RetrievedChunk = {
 type ExportResponse = { path: string; count: number };
 
 export default function App() {
+  const { me, setMe } = useProfile();
   const [chunks, setChunks] = useState<RetrievedChunk[]>([]);
   const [q, setQ] = useState('');
   const [unlocked, setUnlocked] = useState(false);
@@ -38,22 +40,27 @@ export default function App() {
 
   const searchRef = useRef<HTMLInputElement | null>(null);
 
-  const doSearch = useCallback(async () => {
-    const rows = (await retrieve(q || '*', 12, unlocked)) as RetrievedChunk[];
-    setChunks(rows);
-  }, [q, unlocked]);
+  const doSearch = useCallback(
+    async (overrideQ?: string) => {
+      const effectiveQ = overrideQ ?? (q || '*');
+      const rows = (await retrieve(effectiveQ, 12, unlocked)) as RetrievedChunk[];
+      setChunks(rows);
+    },
+    [q, unlocked]
+  );
 
   async function onIngest(text: string, tags: string[], privacy?: 'sealed' | 'public' | 'private') {
     const finalPrivacy: 'sealed' | 'public' | 'private' = incognito ? 'sealed' : privacy ?? 'public';
     const finalTags = incognito ? Array.from(new Set([...(tags || []), 'incognito'])) : tags || [];
     const headers: HeadersInit | undefined = hardIncog ? { 'x-incognito': '1' } : undefined;
 
-    await ingest({ text, tags: finalTags, profile: 'Raz', privacy: finalPrivacy, importance: 1 }, headers);
+    await ingest({ text, tags: finalTags, profile: me, privacy: finalPrivacy, importance: 1 }, headers);
 
     // If hard-incognito, nothing was saved; avoid confusing refresh
     if (!hardIncog) {
-      setQ(text.split(' ').slice(0, 2).join(' '));
-      await doSearch();
+      // After ingest, reset query to show all notes
+      setQ('');
+      await doSearch('');
     }
   }
 
@@ -99,8 +106,12 @@ export default function App() {
         <h1 style={{ margin: 0 }}>
           M3 Memory Core <small style={{ fontSize: 12, opacity: 0.6 }}>({unlocked ? 'unlocked' : 'locked'})</small>
         </h1>
-
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          {/* quick profile switcher (optional, tiny) */}
+          <label style={{ fontSize: 12, display: 'flex', gap: 6, alignItems: 'center' }} title="current profile">
+            me:
+            <input value={me} onChange={(e) => setMe(e.target.value)} style={{ width: 96 }} />
+          </label>
           {incognito && (
             <div className="incognito-banner" title="Composer → sealed + tag: incognito">
               🕶️ Incognito
@@ -124,7 +135,7 @@ export default function App() {
 
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <input ref={searchRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder="search... (press / to focus)" />
-        <button onClick={doSearch} title="r">
+        <button onClick={() => void doSearch()} title="r">
           retrieve
         </button>
         <button onClick={() => snapshot()}>snapshot</button>
