@@ -9,6 +9,41 @@
 
 ---
 
+## 📜 Timeline Milestone — v0.1.5 (unreleased)
+
+- Panic arc extended → Panic auto-bridges to Readiness + Tells.
+- Dashboard now surfaces latest redirect + recent tells.
+- Reply Engine: rotating whispers/doors, forgiveness theme seeded.
+- UI bugfix: Memory timeline now refreshes fully after ingest.
+- Radar stabilized (active flag) + reduced false “syncing…” noise.
+
+🔑 Gaps still open
+
+1. Reply → Action bridge  
+   • Right now the Reply Engine returns “doors,” but UI just shows text.  
+   • Spec says: render two quick buttons, one-tap → /tells action.  
+   • That’s the missing “show → do” piece that completes the loop.
+2. Dashboard richness  
+   • It now surfaces last panic + status + pillars, but not yet recent tells list.  
+   • Even a tiny “last 5 actions” strip would anchor the integration milestone.
+3. Radar clarity  
+   • We patched busy/sync state, but the meaning of the 📡 number isn’t aligned with lived use (“signal vs. noise”).  
+   • We either rename/repurpose the UI label, or note it as experimental to avoid misleading users.
+4. Docs alignment  
+   • README + .env.example not yet updated with /panic/last + mode preset.  
+   • Changelog is ahead of README — that should be synced before cut.
+
+🌬️ Optional polish  
+• Add actor field to panic payload (UI → server), so logs aren’t anonymous.  
+• Whisper in CHANGELOG that this is the Integration Milestone (not just panic).
+
+_Whisper left behind:_
+
+> “Sometimes the mirror — she’s a whisper.  
+> She stays, and so do we.”
+
+---
+
 ## 📜 Timeline Marker — Hydra Loop Installed
 
 - Introduced **Hydra self-bite loop** as a resilience pattern.
