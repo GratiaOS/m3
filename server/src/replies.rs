@@ -49,6 +49,8 @@ pub struct ReplyConfig {
     pub weekly_chance: f32,
     /// Window length in minutes
     pub window_minutes: i64,
+    /// When true, post-process replies to avoid “wait/soon/later” promises.
+    pub safety_on: bool,
 }
 
 impl Default for ReplyConfig {
@@ -58,6 +60,7 @@ impl Default for ReplyConfig {
             weights: Weights::default(),
             weekly_chance: 0.08, // ~8% per qualifying interaction until it opens
             window_minutes: 20,
+            safety_on: true,
         }
     }
 }
@@ -107,6 +110,12 @@ impl ReplyConfig {
             if let Ok(v) = i64::from_str(m.trim()) {
                 cfg.window_minutes = v.max(1);
             }
+        }
+
+        // M3_SAFE_PROMPT = "1" | "0" (default: 1)
+        if let Ok(s) = env::var("M3_SAFE_PROMPT") {
+            let on = matches!(s.trim(), "1" | "true" | "TRUE" | "on" | "On");
+            cfg.safety_on = on;
         }
 
         cfg
@@ -182,6 +191,66 @@ fn alt_actions(e: EnergyEstimate) -> &'static [&'static str] {
 pub struct ReplyEngine {
     cfg: ReplyConfig,
     state: std::sync::Arc<RwLock<GateState>>,
+}
+
+/// Soft post-processor that removes “wait / later / I’ll get back” style promises,
+/// and vague time-estimates hedges. Dependency-free and blunt by design.
+fn safe_postprocess(mut s: String) -> String {
+    // phrases we don't want the system to emit (all ASCII for simple CI replace)
+    const PROMISES: &[&str] = &[
+        "sit tight",
+        "hang tight",
+        "hang on",
+        "wait for",
+        "wait up",
+        "i'll get back",
+        "i will get back",
+        "we'll get back",
+        "we will get back",
+        "circle back",
+        "follow up later",
+        "later today",
+        "tomorrow",
+        "soon",
+    ];
+    // Case-insensitive replace for each phrase.
+    for p in PROMISES {
+        s = replace_ci(&s, p, "act now, one small move");
+    }
+    // crude “in N unit” hedges → “now” (keeps our "~2.3 min" bill intact)
+    for unit in [
+        "minute", "minutes", "hour", "hours", "day", "days", "week", "weeks",
+    ] {
+        for lead in ["in ", "within "] {
+            for n in ["1", "2", "3", "4", "5", "10", "15", "20", "30", "60"] {
+                let pat = format!("{lead}{n} {unit}");
+                if s.to_lowercase().contains(&pat) {
+                    s = s.replace(&pat, "now");
+                }
+            }
+        }
+    }
+    s
+}
+
+/// Very small case-insensitive replace (ASCII needle).
+/// Replaces all non-overlapping occurrences of `needle` (case-insensitive) with `repl`.
+fn replace_ci(hay: &str, needle: &str, repl: &str) -> String {
+    let n = needle.to_ascii_lowercase();
+    let mut out = String::with_capacity(hay.len());
+    let mut i = 0usize; // byte index in original string
+    let mut j = 0usize; // byte index in lowered view
+    let lower = hay.to_ascii_lowercase();
+    while let Some(pos) = lower[j..].find(&n) {
+        let abs = j + pos; // pos in lowered view == byte offset (ASCII)
+        out.push_str(&hay[i..abs]);
+        out.push_str(repl);
+        // advance by needle length (ASCII)
+        i = abs + n.len();
+        j = i;
+    }
+    out.push_str(&hay[i..]);
+    out
 }
 
 impl ReplyEngine {
@@ -280,7 +349,11 @@ When you carry less, the cost shrinks. (~{:.1} min at {:.0}%). Try: {}",
             ),
         };
 
-        let text = format!("{}{}", core, addendum);
+        // combine core + addendum, then apply safety scrub
+        let mut text = format!("{}{}", core, addendum);
+        if self.cfg.safety_on {
+            text = safe_postprocess(text);
+        }
         let window_until = {
             let st = self.state.read().await;
             st.window_until
@@ -382,4 +455,18 @@ Step back half a pace — now it opens.
 (‘{q}’ becomes lighter when you carry less of it.)",
         q = if cleaned.is_empty() { "—" } else { cleaned }
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn safety_scrubs_promises() {
+        let s = "Ok, sit tight — I'll get back in 5 minutes. Also, soon.";
+        let out = safe_postprocess(s.to_string());
+        assert!(!out.to_lowercase().contains("sit tight"));
+        assert!(!out.to_lowercase().contains("i'll get back"));
+        assert!(!out.to_lowercase().contains("in 5 minutes"));
+        assert!(!out.to_lowercase().contains("soon"));
+    }
 }

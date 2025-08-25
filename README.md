@@ -53,6 +53,8 @@ M3_REPLIES_MODE=random              # fixed: poetic | sarcastic | paradox | rand
 M3_REPLIES_WEIGHTS=poetic:0.5,sarcastic:0.3,paradox:0.2  # used if mode=random (default weights)
 M3_REPLIES_WEEKLY_CHANCE=0.08       # probability of activation per week (0–1, default: 0.08)
 M3_REPLIES_WINDOW_MINUTES=20        # how long an activation window lasts (default: 20)
+# Prompt safety
+M3_SAFE_PROMPT=1                    # 1 = ON (scrubbed), 0 = OFF (raw stream)
 ```
 
 > If `M3_BEARER` is set, all **write** endpoints require `Authorization: Bearer <token>`.

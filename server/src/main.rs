@@ -440,6 +440,13 @@ async fn main() -> anyhow::Result<()> {
     } else {
         tracing::info!("Bearer auth: disabled");
     }
+    // Safe-prompt mode (controls reply postprocess; see replies::safe_postprocess)
+    let safe = std::env::var("M3_SAFE_PROMPT").unwrap_or_else(|_| "1".into());
+    if safe == "0" {
+        tracing::info!("Safe prompt: OFF (raw stream)");
+    } else {
+        tracing::info!("Safe prompt: ON (scrubbed)");
+    }
 
     let bus = Bus::default();
     let state = AppState {
