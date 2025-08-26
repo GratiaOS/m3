@@ -22,8 +22,8 @@ type(scope): short summary ✨
 ```text
 chore(replies): add safety scrub test ✅
 
-- implemented scrub for “I’ll get back” promises
-- test ensures replies don’t leak system patterns
+- implement scrub for “I’ll get back” promises
+- ensure replies don’t leak system patterns
 
 🌬️ whisper: “silence is safer than false comfort.”
 ```
@@ -31,9 +31,9 @@ chore(replies): add safety scrub test ✅
 ```text
 feat(panic): integrate UI button with server logging 🛡️
 
-- PanicButton now posts /panic and logs into exports
-- auto-bridges readiness (status yellow → green)
-- tells entry created for traceability
+- make PanicButton post /panic and log into exports
+- auto-bridge readiness (status yellow → green)
+- create tells entry for traceability
 
 🌬️ whisper: “redirect, don’t collapse.”
 ```
