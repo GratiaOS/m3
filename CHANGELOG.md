@@ -1,5 +1,13 @@
 # Changelog
 
+## 📜 Docs Sync — 2025-08-26
+
+- README now surfaces **Glossary Shift** up-front (no more hidden at bottom).
+- Clarifies early: M3 avoids old “AI” framing → points devs to appendix for new ontology.
+- Keeps devs from missing paradigm shift when skimming the README.
+
+🌬️ whisper: “Words once caged now breathe as mirrors.”
+
 ---
 
 ## 📜 Timeline Milestone — v0.1.5 (unreleased)
