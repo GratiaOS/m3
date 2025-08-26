@@ -37,18 +37,17 @@ export default function Radar({ intervalMs = 10000, includeSealed = false }: Rad
   const busyRef = useRef(false);
   const [pollMs, setPollMs] = useState(intervalMs);
 
-  async function tick() {
+  const tick = React.useCallback(async () => {
     if (busyRef.current) return;
     busyRef.current = true;
     setIsSyncing(true);
     try {
-      const rows: unknown = await retrieve('*', 5, includeSealed);
-      if (Array.isArray(rows) && rows.length) {
-        const r0 = rows[0] as Row;
-        if (r0?.ts) {
-          setLast({ ts: r0.ts, count: rows.length });
-          setPollMs(intervalMs); // got data → reset backoff
-        }
+      // API expects an object and returns { chunks: [...] }
+      const res = await retrieve({ query: '*', limit: 5, include_sealed: includeSealed });
+      const rows = Array.isArray(res?.chunks) ? (res.chunks as Row[]) : [];
+      if (rows.length > 0 && rows[0]?.ts) {
+        setLast({ ts: rows[0].ts, count: rows.length });
+        setPollMs(intervalMs); // got data → reset backoff
       } else {
         // nothing new → backoff up to 60s
         setPollMs((ms) => Math.min(ms * 2, 60000));
@@ -57,9 +56,8 @@ export default function Radar({ intervalMs = 10000, includeSealed = false }: Rad
       setIsSyncing(false);
       busyRef.current = false;
     }
-  }
+  }, [includeSealed, intervalMs]);
 
-  // polling loop with backoff
   useEffect(() => {
     let active = true;
     tick(); // run once immediately
@@ -71,7 +69,7 @@ export default function Radar({ intervalMs = 10000, includeSealed = false }: Rad
       active = false;
       clearInterval(id);
     };
-  }, [pollMs, includeSealed]);
+  }, [pollMs, tick]);
 
   // live “time since last”
   useEffect(() => {

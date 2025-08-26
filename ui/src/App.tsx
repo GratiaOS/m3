@@ -32,6 +32,7 @@ export default function App() {
   const [chunks, setChunks] = useState<RetrievedChunk[]>([]);
   const [q, setQ] = useState('');
   const [unlocked, setUnlocked] = useState(false);
+  const [allProfiles, setAllProfiles] = useState(false);
 
   // Incognito modes
   const [incognito, setIncognito] = useState(false); // soft: save as sealed + add "incognito" tag
@@ -40,13 +41,21 @@ export default function App() {
 
   const searchRef = useRef<HTMLInputElement | null>(null);
 
+  type RetrieveResponse = { chunks: RetrievedChunk[] };
+
   const doSearch = useCallback(
     async (overrideQ?: string) => {
-      const effectiveQ = overrideQ ?? (q || '*');
-      const rows = (await retrieve(effectiveQ, 12, unlocked)) as RetrievedChunk[];
-      setChunks(rows);
+      // Coerce empty → "*" (safer across server versions)
+      const effectiveQ = (overrideQ ?? q).trim() || '*';
+      const res = (await retrieve({
+        query: effectiveQ,
+        limit: 12,
+        include_sealed: unlocked,
+        profile: allProfiles ? undefined : me,
+      })) as RetrieveResponse;
+      setChunks(res.chunks ?? []);
     },
-    [q, unlocked]
+    [q, unlocked, me, allProfiles]
   );
 
   async function onIngest(text: string, tags: string[], privacy?: 'sealed' | 'public' | 'private') {
@@ -66,12 +75,17 @@ export default function App() {
 
   // Auto-refresh every 10s (when tab is visible) and on unlock toggle
   useEffect(() => {
-    doSearch();
+    // First load: fetch "all"
+    doSearch('');
     const id = setInterval(() => {
-      if (!document.hidden) doSearch();
+      if (!document.hidden) doSearch('');
     }, 10_000);
     return () => clearInterval(id);
   }, [doSearch]);
+
+  useEffect(() => {
+    console.log('drawer chunks len=', chunks.length, chunks);
+  }, [chunks]);
 
   // Keyboard shortcuts: i,u,l,r,/
   useEffect(() => {
@@ -90,6 +104,7 @@ export default function App() {
       } else if (e.key === 'l') {
         setUnlocked(false);
         alert('Locked (server key clears on restart)');
+        doSearch(); // refresh to hide sealed immediately
       } else if (e.key === 'r') doSearch();
       else if (e.key === '/') {
         e.preventDefault();
@@ -111,6 +126,20 @@ export default function App() {
           <label style={{ fontSize: 12, display: 'flex', gap: 6, alignItems: 'center' }} title="current profile">
             me:
             <input value={me} onChange={(e) => setMe(e.target.value)} style={{ width: 96 }} />
+          </label>
+          <label style={{ fontSize: 12, display: 'flex', gap: 6, alignItems: 'center' }} title="include all profiles when retrieving">
+            <input
+              type="checkbox"
+              checked={allProfiles}
+              onChange={(e) => {
+                setAllProfiles(e.target.checked);
+                // kick a refresh immediately when toggled
+                setTimeout(() => {
+                  void doSearch('');
+                }, 0);
+              }}
+            />
+            all
           </label>
           {incognito && (
             <div className="incognito-banner" title="Composer → sealed + tag: incognito">
@@ -135,7 +164,7 @@ export default function App() {
 
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <input ref={searchRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder="search... (press / to focus)" />
-        <button onClick={() => void doSearch()} title="r">
+        <button onClick={() => void doSearch('')} title="r">
           retrieve
         </button>
         <button onClick={() => snapshot()}>snapshot</button>
@@ -178,6 +207,7 @@ export default function App() {
           onClick={() => {
             setUnlocked(false);
             alert('Locked (restart server to hard lock)');
+            doSearch(); // refresh to hide sealed immediately
           }}
           title="l">
           lock
@@ -186,7 +216,7 @@ export default function App() {
       </div>
 
       <div className={incognito ? 'blur-when-incognito' : ''}>
-        <MemoryDrawer chunks={chunks} />
+        <MemoryDrawer chunks={chunks} unlocked={unlocked} />
       </div>
 
       {/* EnergyPanel now typed to accept chunks */}

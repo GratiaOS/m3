@@ -9,7 +9,7 @@ export type Chunk = {
   tags?: string[];
 };
 
-type Props = { chunks: Chunk[]; append?: boolean }; // append kept for future pagination, not used here
+type Props = { chunks: Chunk[]; append?: boolean; unlocked: boolean }; // unlocked = sealed visible?
 
 function fmtTs(ts: string) {
   const d = new Date(ts);
@@ -21,8 +21,10 @@ function Score({ v }: { v?: number }) {
   return <span> · score {v.toFixed(2)}</span>;
 }
 
-const Row: React.FC<{ c: Chunk }> = ({ c }) => {
-  const sealed = c.text === '(sealed)';
+const Row: React.FC<{ c: Chunk; unlocked: boolean }> = ({ c, unlocked }) => {
+  // consider a note "sealed" if it's tagged incognito AND session is locked
+  const hasSealTag = Array.isArray(c.tags) && c.tags.includes('incognito');
+  const sealed = hasSealTag && !unlocked;
   const tags = Array.isArray(c.tags) ? c.tags : [];
   return (
     <li
@@ -45,15 +47,25 @@ const Row: React.FC<{ c: Chunk }> = ({ c }) => {
           whiteSpace: 'pre-wrap',
         }}
         title={sealed ? 'Unlock to view sealed content' : undefined}>
-        {c.text}
+        {sealed ? '(sealed)' : c.text}
       </div>
 
-      {tags.length > 0 && <div style={{ fontSize: 12, opacity: 0.8 }}>{tags.join(' · ')}</div>}
+      {(tags.length > 0 || hasSealTag) && (
+        <div style={{ fontSize: 12, opacity: 0.8 }}>
+          {tags.join(' · ')}
+          {hasSealTag && (
+            <>
+              {tags.length ? ' · ' : ''}
+              {unlocked ? 'unsealed' : 'sealed'}
+            </>
+          )}
+        </div>
+      )}
     </li>
   );
 };
 
-const MemoryDrawer: React.FC<Props> = ({ chunks }) => {
+const MemoryDrawer: React.FC<Props> = ({ chunks, unlocked }) => {
   // Pure view: sort newest first; parent controls pagination/aggregation.
   const list = React.useMemo(
     () =>
@@ -86,7 +98,7 @@ const MemoryDrawer: React.FC<Props> = ({ chunks }) => {
       ) : (
         <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
           {list.map((c) => (
-            <Row key={c.id} c={c} />
+            <Row key={c.id} c={c} unlocked={unlocked} />
           ))}
         </ul>
       )}

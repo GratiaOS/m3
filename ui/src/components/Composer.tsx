@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ingest, fetchReply, createTell } from '../api';
+import { fetchReply, createTell } from '../api';
 
 type Privacy = 'public' | 'private' | 'sealed';
 
@@ -15,7 +15,7 @@ export default function Composer({ onIngest, incognito = false }: Props) {
   const [text, setText] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [privacy, setPrivacy] = useState<Privacy>('public');
-  const [doors, setDoors] = useState<[string, string] | null>(null);
+  const [doors, setDoors] = useState<string[] | null>(null);
   const [nudge, setNudge] = useState<string | null>(null);
 
   async function doIngest() {
@@ -23,15 +23,14 @@ export default function Composer({ onIngest, incognito = false }: Props) {
     if (!clean) return;
     const addTags = incognito ? Array.from(new Set([...tags, 'incognito'])) : tags;
     await onIngest(clean, addTags, effectivePrivacy);
-    setText('');
-    setTags([]);
 
     // now try to get a reply/nudge
     try {
       const r = await fetchReply(clean);
       if (r) {
         setNudge(r.text);
-        setDoors(r.doors);
+        // server now returns `actions?: string[]`
+        setDoors(r.actions?.slice(0, 2) ?? null);
       } else {
         setNudge(null);
         setDoors(null);
@@ -40,6 +39,10 @@ export default function Composer({ onIngest, incognito = false }: Props) {
       setNudge(null);
       setDoors(null);
     }
+
+    // clear composer after we’ve asked for a nudge
+    setText('');
+    setTags([]);
   }
 
   function toggle(t: string) {
@@ -82,10 +85,21 @@ export default function Composer({ onIngest, incognito = false }: Props) {
       {nudge && (
         <div style={{ marginTop: 8, padding: 8, border: '1px solid #ccc', borderRadius: 6 }}>
           <div style={{ fontSize: 13, marginBottom: 4, whiteSpace: 'pre-wrap' }}>{nudge}</div>
-          {doors && (
+          {doors && doors.length > 0 && (
             <div style={{ display: 'flex', gap: 6 }}>
-              <button onClick={() => createTell({ node: 'nudge', action: doors[0] })}>{doors[0]}</button>
-              <button onClick={() => createTell({ node: 'nudge', action: doors[1] })}>{doors[1]}</button>
+              {doors.map((d, i) => (
+                <button
+                  key={`${d}-${i}`}
+                  onClick={() =>
+                    createTell({
+                      node: 'nudge',
+                      pre_activation: '', // optional: include a snippet/hash of `clean`
+                      action: d,
+                    }).catch(() => {})
+                  }>
+                  {d}
+                </button>
+              ))}
             </div>
           )}
         </div>

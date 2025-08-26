@@ -14,6 +14,25 @@ function cleanHeaders(h: HeadersMap): Record<string, string> {
 export type LightStatus = 'green' | 'yellow' | 'red';
 export type LightColor = LightStatus;
 
+// Server row shape for /retrieve results
+export type RetrievedChunk = {
+  id: number;
+  text: string;
+  tags: string[];
+  profile: string;
+  ts: string; // RFC3339 string
+  score: number;
+};
+
+// --- Replies ---
+export type ReplyOut = {
+  mode: 'Poetic' | 'Sarcastic' | 'Paradox';
+  text: string;
+  bill?: { minutes: number; arousal: number };
+  window_until?: string | null;
+  actions?: string[]; // <= two quick doors
+};
+
 export type MemberEnergy = { name: string; energy: number };
 
 export type PillarStatus = {
@@ -32,20 +51,7 @@ export type TeamState = {
 };
 
 // ----- Reply API -----
-export type ReplyMode = 'Poetic' | 'Sarcastic' | 'Paradox';
-export interface ReplyBill {
-  minutes: number;
-  arousal: number;
-}
-export interface ReplyResponse {
-  mode: ReplyMode;
-  text: string;
-  doors: [string, string];
-  bill?: ReplyBill;
-  window_until?: string | null;
-}
-
-export async function fetchReply(text: string): Promise<ReplyResponse | null> {
+export async function fetchReply(text: string): Promise<ReplyOut | null> {
   const r = await fetch(`${BASE}/reply`, {
     method: 'POST',
     headers: cleanHeaders({
@@ -56,7 +62,7 @@ export async function fetchReply(text: string): Promise<ReplyResponse | null> {
   });
   if (r.status === 204) return null; // gate closed
   if (!r.ok) throw new Error(await r.text());
-  return (await r.json()) as ReplyResponse;
+  return (await r.json()) as ReplyOut;
 }
 
 export type PanicOut = {
@@ -119,14 +125,27 @@ export function ingest(payload: IngestPayload, extraHeaders: HeadersMap = {}) {
   return postJSON('/ingest', payload, extraHeaders);
 }
 
-export function retrieve(query: string, limit = 12, includeSealed = false) {
-  return postJSON('/retrieve', { query, limit, includeSealed });
+export async function retrieve(body: {
+  query: string;
+  limit?: number;
+  include_sealed?: boolean;
+  profile?: string;
+}): Promise<{ chunks: RetrievedChunk[] }> {
+  const res = await fetch(`${BASE}/retrieve`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(BEARER ? { Authorization: `Bearer ${BEARER}` } : {}) },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`retrieve failed: ${res.status}`);
+  const data = await res.json();
+  return Array.isArray(data) ? { chunks: data } : data;
 }
 
 //TODO
 export function snapshot() {
   return postJSON('/snapshot', {});
 }
+
 export function exportThread(threadId?: number) {
   return postJSON('/export', { thread_id: threadId });
 }

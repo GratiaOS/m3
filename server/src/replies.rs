@@ -318,10 +318,8 @@ impl ReplyEngine {
             Mode::Paradox => paradox_reply(input),
         };
 
-        // Compose "show, not tell": mirror cost + offer a door
+        // Compose "show, not tell": mirror cost + offer doors
         let alts = alt_actions(bill);
-        // Take the first two as actionable buttons for the UI.
-        let doors = [alts[0].to_string(), alts[1].to_string()];
         let addendum = match mode {
             Mode::Poetic => format!(
                 "
@@ -364,7 +362,8 @@ When you carry less, the cost shrinks. (~{:.1} min at {:.0}%). Try: {}",
             text,
             window_until,
             bill: Some(bill),
-            doors,
+            // two quick doors for one-tap actions in the UI
+            actions: Some(vec![alts[0].to_string(), alts[1].to_string()]),
         })
     }
 }
@@ -394,14 +393,15 @@ fn weighted_pick(w: Weights) -> Mode {
     Mode::Paradox
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone, Debug)]
 pub struct Reply {
     pub mode: Mode,
     pub text: String,
     pub window_until: Option<DateTime<Utc>>, // for client UX
     pub bill: Option<EnergyEstimate>,        // mirrors cost
-    /// two concrete micro‑actions to show as buttons (UI “doors”)
-    pub doors: [String; 2],
+    /// Two quick doors to turn nudge → action.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub actions: Option<Vec<String>>,
 }
 
 // --- style renderers -------------------------------------------------------

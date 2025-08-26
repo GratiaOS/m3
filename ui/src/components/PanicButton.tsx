@@ -42,7 +42,7 @@ export function PanicButton() {
         pre_activation: `whisper=${res?.whisper ?? ''}|breath=${res?.breath ?? ''}|doorway=${res?.doorway ?? ''}|anchor=${res?.anchor ?? ''}`,
         action: 'redirect',
       }).catch(() => {});
-    } catch (err) {
+    } catch (_err) {
       // Fallback: local defaults
       const local: PanicResult = {
         whisper: 'This is Empire’s choke, not my truth.',
@@ -59,7 +59,7 @@ export function PanicButton() {
         ttl: 5000,
       });
     }
-  }, [mode]);
+  }, [mode, me]);
 
   const onDown = () => {
     setPressing(true);
