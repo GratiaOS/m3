@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { getState, setState, TeamState, PillarStatus, getPanicLast, type PanicLast } from '../api';
+import { getState, setState, TeamState, PillarStatus, getPanicLast, type PanicLast, getTells, type Tell } from '../api';
 
 const PILLAR_KEYS: (keyof PillarStatus)[] = ['crown', 'void', 'play', 'dragon', 'life_force'];
 const COLORS: Record<PillarStatus[keyof PillarStatus], string> = { good: '#22c55e', watch: '#f59e0b', rest: '#ef4444' };
@@ -8,6 +8,7 @@ export default function Dashboard() {
   const [state, set] = useState<TeamState | null>(null);
   const [saving, setSaving] = useState(false);
   const [lastRedirect, setLastRedirect] = useState<PanicLast | null>(null);
+  const [tells, setTells] = React.useState<Tell[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -15,6 +16,10 @@ export default function Dashboard() {
       set(s);
       const last = await getPanicLast();
       setLastRedirect(last);
+      try {
+        const xs = await getTells(5);
+        setTells(xs);
+      } catch {}
     })();
   }, []);
 
@@ -102,6 +107,27 @@ export default function Dashboard() {
           <SmallPill>
             Last redirect: {lastRedirect.whisper || '—'} → {lastRedirect.doorway || '—'} ({timeAgo(lastRedirect.ts)})
           </SmallPill>
+        </div>
+      )}
+
+      {tells.length > 0 && (
+        <div style={{ fontSize: 12, color: '#374151' }}>
+          <div style={{ marginBottom: 4, fontWeight: 600 }}>Recent actions</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {tells.map((t) => (
+              <span
+                key={t.id}
+                style={{
+                  padding: '2px 8px',
+                  borderRadius: 999,
+                  border: '1px solid #e5e7eb',
+                  background: '#fafafa',
+                }}>
+                <code style={{ color: '#4b5563' }}>{t.node}</code> · {t.action}
+                <span style={{ color: '#9ca3af', marginLeft: 8 }}>({timeAgo(t.created_at)})</span>
+              </span>
+            ))}
+          </div>
         </div>
       )}
 

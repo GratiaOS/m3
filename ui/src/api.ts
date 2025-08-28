@@ -14,6 +14,16 @@ function cleanHeaders(h: HeadersMap): Record<string, string> {
 export type LightStatus = 'green' | 'yellow' | 'red';
 export type LightColor = LightStatus;
 
+// --- Tells ---
+export type Tell = {
+  id: number;
+  node: string;
+  pre_activation?: string;
+  action: string;
+  created_at: string; // RFC3339
+  handled?: boolean;
+};
+
 // Server row shape for /retrieve results
 export type RetrievedChunk = {
   id: number;
@@ -84,6 +94,17 @@ export type PanicRequest = {
 };
 
 // ---- API surface ----
+
+export async function getTells(limit = 10): Promise<Tell[]> {
+  const res = await fetch(`${BASE}/tells?limit=${limit}`, {
+    method: 'GET',
+    headers: {
+      ...(BEARER ? { Authorization: `Bearer ${BEARER}` } : {}),
+    },
+  });
+  if (!res.ok) throw new Error(`getTells failed: ${res.status}`);
+  return (await res.json()) as Tell[];
+}
 
 async function postJSON<T>(path: string, body: Record<string, unknown>, extraHeaders: HeadersMap = {}): Promise<T> {
   const baseHeaders: HeadersMap = {

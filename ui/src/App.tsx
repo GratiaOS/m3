@@ -222,7 +222,7 @@ export default function App() {
       {/* EnergyPanel now typed to accept chunks */}
       <EnergyPanel chunks={chunks} />
 
-      <Radar intervalMs={10_000} includeSealed={unlocked} />
+      <Radar query={q} includeSealed={unlocked} />
       <BoundaryComposer to="sister.exe" />
       <ReadinessBoard />
       <StatusBar />

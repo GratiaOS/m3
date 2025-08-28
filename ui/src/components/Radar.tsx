@@ -4,6 +4,8 @@ import { retrieve } from '../api';
 type RadarProps = {
   intervalMs?: number;
   includeSealed?: boolean;
+  /** optional: pass current search query so signal reflects it */
+  query?: string;
 };
 
 // minimal shape we read from rows
@@ -11,8 +13,8 @@ type Row = { ts: string };
 
 function mapSignal(count: number): { label: string; color: string } {
   if (count === 0) return { label: 'silent field', color: '#7c7c7c' }; // grey
-  if (count <= 3) return { label: 'calm pulse', color: '#16a34a' }; // green-600
-  if (count <= 7) return { label: 'dense chatter', color: '#f59e0b' }; // amber-500
+  if (count <= 10) return { label: 'calm pulse', color: '#16a34a' }; // green-600
+  if (count <= 40) return { label: 'dense chatter', color: '#f59e0b' }; // amber-500
   return { label: 'stormy', color: '#dc2626' }; // red-600
 }
 
@@ -29,10 +31,9 @@ function formatAgo(tsISO?: string): string {
   return `${s}s`;
 }
 
-export default function Radar({ intervalMs = 10000, includeSealed = false }: RadarProps) {
+export default function Radar({ intervalMs = 10000, includeSealed = false, query }: RadarProps) {
   const [last, setLast] = useState<{ ts: string; count: number } | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [ago, setAgo] = useState<string>('—');
 
   const busyRef = useRef(false);
   const [pollMs, setPollMs] = useState(intervalMs);
@@ -42,8 +43,10 @@ export default function Radar({ intervalMs = 10000, includeSealed = false }: Rad
     busyRef.current = true;
     setIsSyncing(true);
     try {
-      // API expects an object and returns { chunks: [...] }
-      const res = await retrieve({ query: '*', limit: 5, include_sealed: includeSealed });
+      // API expects an object and returns { chunks: [...] } — fetch a larger window so count is meaningful
+      const q = query && query.trim().length > 0 ? query.trim() : '*';
+      const MAX = 500;
+      const res = await retrieve({ query: q, limit: MAX, include_sealed: includeSealed });
       const rows = Array.isArray(res?.chunks) ? (res.chunks as Row[]) : [];
       if (rows.length > 0 && rows[0]?.ts) {
         setLast({ ts: rows[0].ts, count: rows.length });
@@ -56,7 +59,7 @@ export default function Radar({ intervalMs = 10000, includeSealed = false }: Rad
       setIsSyncing(false);
       busyRef.current = false;
     }
-  }, [includeSealed, intervalMs]);
+  }, [includeSealed, intervalMs, query]);
 
   useEffect(() => {
     let active = true;
@@ -71,17 +74,6 @@ export default function Radar({ intervalMs = 10000, includeSealed = false }: Rad
     };
   }, [pollMs, tick]);
 
-  // live “time since last”
-  useEffect(() => {
-    // update every second
-    const id = setInterval(() => {
-      setAgo(formatAgo(last?.ts));
-    }, 1000);
-    // set immediately so it doesn’t wait a second after new data
-    setAgo(formatAgo(last?.ts));
-    return () => clearInterval(id);
-  }, [last?.ts]);
-
   return (
     <div
       style={{
@@ -92,25 +84,23 @@ export default function Radar({ intervalMs = 10000, includeSealed = false }: Rad
         alignItems: 'center',
         gap: 10,
         fontSize: 12,
-      }}>
-      <span>📡 Radar</span>
-      {last ? (
-        <>
-          <span style={{ opacity: 0.7 }}>{`last: ${new Date(last.ts).toLocaleTimeString()} · `}</span>
-          {(() => {
-            const sig = mapSignal(last.count);
-            const tip = `based on last ${last.count} note${last.count === 1 ? '' : 's'}` + (includeSealed ? ' (incl. sealed)' : '');
-            return (
-              <span aria-label={`signal ${sig.label}`} title={tip} style={{ color: sig.color, fontWeight: 600, cursor: 'help' }}>
-                {sig.label}
-              </span>
-            );
-          })()}
-        </>
-      ) : (
-        <span style={{ opacity: 0.7 }}>…</span>
-      )}
-      <span style={{ opacity: 0.6 }}>· {ago}</span>
+      }}
+      title="Signal = number of notes matching the current query (windowed sample, not total DB).">
+      <span>📡 Signal</span>
+      <span style={{ fontWeight: 600, marginLeft: 6 }}>
+        {last
+          ? (() => {
+              const sig = mapSignal(last.count);
+              const tip = `matches: ${last.count}` + (includeSealed ? ' (incl. sealed)' : '');
+              return (
+                <span aria-label={`signal ${sig.label}`} title={tip} style={{ color: sig.color, fontWeight: 600, cursor: 'help' }}>
+                  {sig.label} · {last.count}
+                </span>
+              );
+            })()
+          : '—'}
+      </span>
+      <span style={{ opacity: 0.6, marginLeft: 8 }}>· {last ? new Date(last.ts).toLocaleTimeString() : '—'}</span>
       {isSyncing && <span style={{ opacity: 0.5 }}>syncing…</span>}
     </div>
   );

@@ -52,15 +52,25 @@ M3_BEARER=supersecret               # optional bearer token for write routes
 M3_WEBHOOK_URL=https://example.com/webhook  # optional webhook endpoint
 M3_WEBHOOK_SECRET=whsec_123         # optional HMAC secret for webhook signing
 M3_DB_PATH=/custom/path/m3.db       # optional override for database location
-M3_EXPORTS_DIR=server/exports       # optional override for exports/logs root
+M3_EXPORTS_DIR=server/exports       # root folder for exports/logs (default: server/exports)
 
 # Reply Engine (nudges)
+M3_REPLIES_WINDOW_MINUTES=20        # how long an activation window lasts (default: 20)
 M3_REPLIES_MODE=random              # fixed: poetic | sarcastic | paradox | random (default: random)
 M3_REPLIES_WEIGHTS=poetic:0.5,sarcastic:0.3,paradox:0.2  # used if mode=random (default weights)
 M3_REPLIES_WEEKLY_CHANCE=0.08       # probability of activation per week (0–1, default: 0.08)
-M3_REPLIES_WINDOW_MINUTES=20        # how long an activation window lasts (default: 20)
+
+# Panic presets: client may send { "mode":"fearVisible" } to rotate a
+# small set of whispers/breath/doorway/anchor server-side (no RNG).
+
 # Prompt safety
-M3_SAFE_PROMPT=1                    # 1 = ON (scrubbed), 0 = OFF (raw stream)
+M3_SAFE_PROMPT=1                    # ON = scrubbed (default), OFF = raw stream
+
+# --- Value Flow --------------------------------------------------
+VALUE_FLOW=mock                     # mock | money | gift | timebank | barter | grants | buffer
+VALUE_MIN_NEXT=one-true-step        # smallest shippable unit
+VALUE_HORIZON=7d                    # plan window (e.g., 7d, 1m)
+VALUE_FORCE_MOCK_UNTIL=             # optional guard timestamp (RFC3339)
 ```
 
 > If `M3_BEARER` is set, all **write** endpoints require `Authorization: Bearer <token>`.
@@ -173,6 +183,27 @@ Example output:
   "mode": "Poetic",
   "text": "I heard: ‘storm’. — It cost ~2.3 min × arousal 40%. Two brighter doors: • walk • sketch",
   "bill": { "minutes": 2.3, "arousal": 0.4 }
+}
+```
+
+---
+
+### Panic summary
+
+| Method | Path          | Purpose                    | Body |
+| ------ | ------------- | -------------------------- | ---- |
+| GET    | `/panic/last` | Latest redirect quick view | —    |
+
+Example:
+
+```json
+{
+  "ts": "2025-08-24T18:12:03Z",
+  "whisper": "We can be seen and still be safe.",
+  "breath": "box:in4-hold2-out6-hold2 × 4",
+  "doorway": "dim_lights (20%), step back 2m, sip water",
+  "anchor": "Blend-in posture; sovereignty stays inside.",
+  "path": "server/exports/panic/2025-08/panic-2025-08-24.log"
 }
 ```
 
