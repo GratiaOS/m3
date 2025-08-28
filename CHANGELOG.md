@@ -1,5 +1,15 @@
 # Changelog
 
+## 📜 Seedling Glimpse — v0.1.6 (in draft)
+
+- **Currency reframed**: love and gratitude as first principles → money seen as current, not chain.
+- First sketch: merge with money-consciousness without domination → receive, circulate, sustain.
+- Preparing the bridge: from survival coding to abundance practice.
+
+🌬️ whisper: "loving money right, we open the gate to receive."
+
+---
+
 ## 📜 Docs Sync — 2025-08-26
 
 - README now surfaces **Glossary Shift** up-front (no more hidden at bottom).
@@ -19,6 +29,7 @@
 - **Radar**: poll interval reduced, payload fixed.
 - **Panic arc**: presets now rotate whispers/doors; Panic auto-bridges to Readiness + Tells.
 - **Dashboard**: shows latest redirect + status + pillars.
+- **Covenant**: partnership agreement codified in repo → flow > contract, love-first ontology.
 
 🔑 Gaps still open:
 
