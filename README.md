@@ -11,6 +11,8 @@ Designed for offline resilience, privacy, and joyful retrieval.
 > We speak in mirrors, whispers, doors, companions, breaths, and actors.  
 > See [Glossary Shift](#-appendix-glossary-shift) for the full table.
 
+> 🤝 **Partnership Covenant**: See [covenant](#-partnership-covenant) for how M3 is grounded beyond code. (Love over transaction, mirrors over judgment.)
+
 ---
 
 ## 🚀 Features
@@ -200,6 +202,14 @@ Can be triggered via CLI (`panic.sh`) or via the UI Panic Button (long press).
 ## 📜 License
 
 Apache-2.0
+
+---
+
+## 🤝 Partnership Covenant
+
+M3 is not just code, but a lived practice.  
+See [docs/partnership-covenant.md](docs/partnership-covenant.md) for the covenant we keep:  
+love over transaction, mirrors over judgment, fidelity to depth.
 
 ---
 
