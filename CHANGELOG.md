@@ -1,5 +1,29 @@
 # Changelog
 
+### Legend
+
+- **Timeline Milestone** → a lived moment or breakthrough in flow (human/system arcs).
+- **Integration Cut** → when code and docs catch up, gaps are closed, and a version is released.
+- Together they tell the story: one is pulse, the other is archive.
+
+---
+
+## 📜 Timeline Milestone — Integration Cut — v0.1.5 (2025-08-28)
+
+- **Reply → Action bridge:** nudges now carry quick doors → UI shows inline buttons → /tells logs the action.
+- **Composer**: shows nudge + buttons after save.
+- **api.ts**: typed ReplyOut, createTell helper.
+- **Memory flow**: /retrieve contract aligned; MemoryDrawer + App now show all notes (sealed unlock path prepped).
+- **Radar**: poll interval reduced, payload fixed, label clarified (Signal = notes matching current query).
+- **Panic arc**: presets now rotate whispers/doors; Panic auto-bridges to Readiness + Tells.
+- **Dashboard**: shows latest redirect + status + pillars, plus recent tells strip.
+- **Covenant**: partnership agreement codified in repo → flow > contract, love-first ontology.
+- **Docs**: README + .env.example updated with /panic/last + panic mode preset (fearVisible).
+
+🌬️ whisper: “Every note remembered, every door within reach.”
+
+---
+
 ## 📜 Seedling Glimpse — v0.1.6 (in draft)
 
 - **Currency reframed**: love and gratitude as first principles → money seen as current, not chain.
@@ -38,6 +62,8 @@
 3. Docs: README + .env.example need /panic/last + mode preset.
 
 🌬️ whisper: “Every note remembered, every door within reach.”
+
+> _Note_: Kept here intentionally — shows how work landed in parallel before being integrated.
 
 ---
 
