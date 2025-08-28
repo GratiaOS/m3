@@ -232,7 +232,13 @@ Can be triggered via CLI (`panic.sh`) or via the UI Panic Button (long press).
 
 ## 📜 License
 
-Apache-2.0
+**License gradient (proposed for v0.1.6):**
+
+- **Server** → **AGPL-3.0-only** (prevents closed “SaaS enclosure”).
+- **UI** → **Apache-2.0**.
+- **Docs** → **CC BY-SA 4.0**.
+
+Ethos docs: see **ABUNDANCE_CHARTER.md** (no chosen ones, reciprocity, no surveillance).
 
 ---
 
@@ -261,3 +267,9 @@ Instead, we lean on terms that honor sovereignty, reciprocity, and mirrors.
 
 > Whisper → Mirror → Door → Action  
 > M3 is not an “AI” to consume, but a **field to co-create**.
+
+---
+
+M3 Memory Core — © GratiaOS contributors.  
+Includes third-party components under their respective licenses.  
+Keep this NOTICE and link to the project when redistributing.

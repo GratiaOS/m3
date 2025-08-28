@@ -29,6 +29,8 @@
 - **Currency reframed**: love and gratitude as first principles → money seen as current, not chain.
 - First sketch: merge with money-consciousness without domination → receive, circulate, sustain.
 - Preparing the bridge: from survival coding to abundance practice.
+- **No chosen ones**: hard rule — no priesthood, no elite maintainers; stewardship > ownership.
+- **Loophole locks**: add license gradient (Server=AGPL, UI=Apache-2.0, Docs=CC BY-SA) and a Loophole Ledger to block enclosure / surveillance / rename-and-claim.
 
 🌬️ whisper: "loving money right, we open the gate to receive."
 

@@ -1,0 +1,12 @@
+M3 Memory Core — License Overview
+
+This project uses a scoped licensing model:
+
+• Server: see LICENSE-SERVER.txt (AGPL-3.0-only)  
+• UI: see LICENSE-UI.txt (Apache-2.0)  
+• Documentation: see LICENSE-DOCS.txt (CC BY-SA 4.0)  
+
+Each part of the codebase is governed by its respective license. Please review
+the corresponding file before using, modifying, or distributing that part.
+
+— The M3 Project

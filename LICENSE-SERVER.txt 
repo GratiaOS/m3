@@ -1,0 +1,9 @@
+M3 Memory Core — Server
+License: GNU Affero General Public License v3.0 (AGPL-3.0-only)
+
+This server-side component is licensed under the AGPL-3.0-only.
+You are free to use, modify, and distribute under the same license,
+with the requirement that any network-facing use must make source
+code available to its users.
+
+Full license text: https://www.gnu.org/licenses/agpl-3.0.txt

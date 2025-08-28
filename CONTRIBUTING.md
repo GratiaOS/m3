@@ -4,6 +4,21 @@ Welcome aboard. This project is built with heart, grit, and clarity. To keep the
 
 ---
 
+## Ground rules
+
+- Be kind, keep code local-first, privacy-first.
+- Prefer small PRs with rationale.
+- **Two-keys**: at least two stewards review/approve material changes.
+- **Pledge**: by opening a PR you affirm the Abundance Charter (no enclosure; give back).
+
+---
+
+## Developer Certificate of Origin (DCO)
+
+Add `Signed-off-by: Your Name <email>` to each commit.
+
+---
+
 ## 🌬️ Commit Messages
 
 Each commit message should be **clear for developers** and **carry a small whisper for the soul**. We call this the _integration-era style_.

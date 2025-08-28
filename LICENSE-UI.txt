@@ -1,0 +1,7 @@
+M3 Memory Core — UI
+License: Apache License, Version 2.0
+
+This UI component is licensed under the Apache License, Version 2.0.
+You may use, copy, modify, and distribute under the terms of the Apache 2.0 license.
+
+Full license text: https://www.apache.org/licenses/LICENSE-2.0
