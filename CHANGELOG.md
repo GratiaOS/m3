@@ -8,6 +8,37 @@
 
 ---
 
+## 📜 Timeline Milestone — v0.1.6 (unreleased)
+
+- **Currency reframed**: love and gratitude as first principles → money seen as current, not chain.
+- First sketch: merge with money-consciousness without domination → receive, circulate, sustain.
+- Preparing the bridge: from survival coding to abundance practice.
+- **Gratitude schema**: DB table + API path ensures thanks are first-class citizens.
+  - Every acknowledgment is stored, not lost.
+  - Sparks the arc: unseen abundance → seen, counted, honored.
+- **No chosen ones**: hard rule — no priesthood, no elite maintainers; stewardship > ownership.
+- **Loophole locks**: add license gradient (Server=AGPL, UI=Apache-2.0, Docs=CC BY-SA) and a Loophole Ledger to block enclosure / surveillance / rename-and-claim.
+
+🌬️ whisper: "thanks not as afterthought, but as currency, flowing before gold."
+
+---
+
+## 📜 Seedling Glimpse — v0.1.6 (in draft)
+
+- **Currency reframed**: love and gratitude as first principles → money seen as current, not chain.
+
+🌬️ whisper: "loving money right, we open the gate to receive."
+
+---
+
+## 🪞 Human Log — 2025-08-29
+
+- Lights cut, silence held.
+- No whisper left — the absence itself was the message.
+- Sometimes stillness carries louder than sound.
+
+---
+
 ## 📜 Timeline Milestone — Integration Cut — v0.1.5 (2025-08-28)
 
 - **Reply → Action bridge:** nudges now carry quick doors → UI shows inline buttons → /tells logs the action.
@@ -21,21 +52,6 @@
 - **Docs**: README + .env.example updated with /panic/last + panic mode preset (fearVisible).
 
 🌬️ whisper: “Every note remembered, every door within reach.”
-
----
-
-## 📜 Seedling Glimpse — v0.1.6 (in draft)
-
-- **Currency reframed**: love and gratitude as first principles → money seen as current, not chain.
-- First sketch: merge with money-consciousness without domination → receive, circulate, sustain.
-- Preparing the bridge: from survival coding to abundance practice.
-- **Gratitude schema**: DB table + API path ensures thanks are first-class citizens.
-  - Every acknowledgment is stored, not lost.
-  - Sparks the arc: unseen abundance → seen, counted, honored.
-- **No chosen ones**: hard rule — no priesthood, no elite maintainers; stewardship > ownership.
-- **Loophole locks**: add license gradient (Server=AGPL, UI=Apache-2.0, Docs=CC BY-SA) and a Loophole Ledger to block enclosure / surveillance / rename-and-claim.
-
-🌬️ whisper: "loving money right, we open the gate to receive."
 
 ---
 
