@@ -407,6 +407,189 @@ async fn panic_last() -> Result<Json<PanicLast>, StatusCode> {
     }))
 }
 
+/// Gratitude Ledger
+#[derive(serde::Deserialize)]
+struct GratitudeIn {
+    subject: String,
+    #[serde(default)]
+    details: Option<String>,
+    #[serde(default)]
+    kind: Option<String>, // e.g. "ancestor" | "tool" | "place"
+    #[serde(default)]
+    note_id: Option<i64>, // optional link to a message
+    #[serde(default)]
+    who: Option<String>, // actor/profile
+}
+
+#[derive(serde::Serialize)]
+struct GratitudeOut {
+    id: i64,
+    ts: String,
+    subject: String,
+    details: Option<String>,
+    kind: Option<String>,
+    note_id: Option<i64>,
+    who: Option<String>,
+}
+
+#[derive(serde::Deserialize)]
+struct ThanksQuery {
+    limit: Option<usize>,
+}
+
+async fn ensure_gratitude_schema(db: &Database) -> tokio_rusqlite::Result<()> {
+    // closure returns tokio_rusqlite::Result<()>, `?` on rusqlite ops auto-converts
+    db.0.call(
+        |conn: &mut rusqlite::Connection| -> tokio_rusqlite::Result<()> {
+            use rusqlite::params;
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS gratitude(
+                id      INTEGER PRIMARY KEY AUTOINCREMENT,
+                ts      TEXT NOT NULL,
+                who     TEXT,
+                subject TEXT NOT NULL,
+                kind    TEXT,
+                note_id INTEGER,
+                details TEXT
+            )",
+                params![],
+            )?;
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_grat_ts ON gratitude(ts DESC)",
+                params![],
+            )?;
+            Ok(())
+        },
+    )
+    .await
+}
+
+fn thanks_log_line(
+    ts: &str,
+    who: Option<&str>,
+    subject: &str,
+    details: Option<&str>,
+    kind: Option<&str>,
+    note_id: Option<i64>,
+) -> String {
+    let who = who.unwrap_or("-");
+    let kind = kind.unwrap_or("-");
+    let det = details.unwrap_or("-");
+    let nid = note_id.map(|v| v.to_string()).unwrap_or_else(|| "-".into());
+    format!("{ts} who=\"{who}\" kind=\"{kind}\" note_id=\"{nid}\" subject=\"{subject}\" details=\"{det}\"\n")
+}
+
+async fn thanks_create(
+    State(state): State<AppState>,
+    Json(body): Json<GratitudeIn>,
+) -> Result<Json<GratitudeOut>, (StatusCode, String)> {
+    let ts = Utc::now().to_rfc3339();
+    let subject = body.subject.trim().to_string();
+    if subject.is_empty() {
+        return Err((StatusCode::UNPROCESSABLE_ENTITY, "subject required".into()));
+    }
+
+    // clone fields we’ll need both in DB write and after
+    let who = body.who.clone();
+    let details = body.details.clone();
+    let kind = body.kind.clone();
+    let note_id = body.note_id;
+    let subject_db = subject.clone();
+    let ts_db = ts.clone();
+    let who_db = who.clone();
+    let details_db = details.clone();
+    let kind_db = kind.clone();
+    let note_id_db = note_id;
+
+    // insert row
+    let id_res = state
+        .db
+        .0
+        .call(
+            move |conn: &mut rusqlite::Connection| -> tokio_rusqlite::Result<i64> {
+                use rusqlite::params;
+                conn.execute(
+                "INSERT INTO gratitude(ts,who,subject,kind,note_id,details) VALUES(?,?,?,?,?,?)",
+                params![ts_db, who_db, subject_db, kind_db, note_id_db, details_db],
+            )?;
+                Ok(conn.last_insert_rowid())
+            },
+        )
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    // export line (append)
+    let base = exports_base_dir().join("thanks");
+    let ym = Utc::now().format("%Y-%m").to_string();
+    let dayf = Utc::now().format("thanks-%Y-%m-%d.log").to_string();
+    let dir = base.join(ym);
+    let _ = tokio::fs::create_dir_all(&dir).await;
+    let path = dir.join(dayf);
+    let line = thanks_log_line(
+        &ts,
+        who.as_deref(),
+        &subject,
+        details.as_deref(),
+        kind.as_deref(),
+        note_id,
+    );
+    if let Ok(mut f) = tokio::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&path)
+        .await
+    {
+        let _ = f.write_all(line.as_bytes()).await;
+    }
+
+    Ok(Json(GratitudeOut {
+        id: id_res,
+        ts,
+        subject,
+        details: body.details,
+        kind: body.kind,
+        note_id: body.note_id,
+        who: body.who,
+    }))
+}
+
+async fn thanks_list(
+    State(state): State<AppState>,
+    Query(q): Query<ThanksQuery>,
+) -> Result<Json<Vec<GratitudeOut>>, StatusCode> {
+    let limit = q.limit.unwrap_or(20).min(200) as i64;
+    let rows = state
+        .db
+        .0
+        .call(
+            move |conn: &mut rusqlite::Connection| -> tokio_rusqlite::Result<Vec<GratitudeOut>> {
+                let mut stmt = conn.prepare(
+                    "SELECT id,ts,who,subject,kind,note_id,details
+             FROM gratitude ORDER BY ts DESC LIMIT ?1",
+                )?;
+                let it = stmt.query_map([limit], |r| {
+                    Ok(GratitudeOut {
+                        id: r.get(0)?,
+                        ts: r.get(1)?,
+                        who: r.get(2)?,
+                        subject: r.get(3)?,
+                        kind: r.get(4)?,
+                        note_id: r.get(5)?,
+                        details: r.get(6)?,
+                    })
+                })?;
+                let mut out = Vec::new();
+                for row in it {
+                    out.push(row?);
+                }
+                Ok(out)
+            },
+        )
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    Ok(Json(rows))
+}
+
 async fn reply_handler(
     State(state): State<AppState>,
     Json(payload): Json<serde_json::Value>,
@@ -429,6 +612,7 @@ async fn main() -> anyhow::Result<()> {
     let _ = ensure_default_thread(&db).await;
     // make sure default profile exists so old rows don't get filtered by the JOIN
     let _ = ensure_profile(&db, "Raz").await;
+    ensure_gratitude_schema(&db).await?;
     let config = Config::from_env();
     let webhook = Webhook::new(config.webhook_url.clone(), config.webhook_secret.clone());
     // spin up the reply engine (reads env: M3_REPLIES_*)
@@ -1463,7 +1647,8 @@ async fn main() -> anyhow::Result<()> {
                 }
             }),
         )
-        .route("/panic/last", get(panic_last));
+        .route("/panic/last", get(panic_last))
+        .route("/thanks", post(thanks_create).get(thanks_list));
 
     // provide AppState to routes that extract `State<AppState>`
     let app = app.with_state(state.clone());

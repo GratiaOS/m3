@@ -29,6 +29,9 @@
 - **Currency reframed**: love and gratitude as first principles → money seen as current, not chain.
 - First sketch: merge with money-consciousness without domination → receive, circulate, sustain.
 - Preparing the bridge: from survival coding to abundance practice.
+- **Gratitude schema**: DB table + API path ensures thanks are first-class citizens.
+  - Every acknowledgment is stored, not lost.
+  - Sparks the arc: unseen abundance → seen, counted, honored.
 - **No chosen ones**: hard rule — no priesthood, no elite maintainers; stewardship > ownership.
 - **Loophole locks**: add license gradient (Server=AGPL, UI=Apache-2.0, Docs=CC BY-SA) and a Loophole Ledger to block enclosure / surveillance / rename-and-claim.
 

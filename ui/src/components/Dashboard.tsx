@@ -97,7 +97,7 @@ export default function Dashboard() {
   );
 
   return (
-    <div style={{ border: '1px solid #e5e7eb', borderRadius: 16, padding: 16, display: 'grid', gap: 12 }}>
+    <div style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 12, display: 'grid', gap: 12 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
         <h2 style={{ margin: 0 }}>Team Energy & Pillars</h2>
         <small style={{ opacity: 0.6 }}>last update · {new Date(state.ts).toLocaleString()}</small>

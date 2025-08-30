@@ -24,6 +24,25 @@ export type Tell = {
   handled?: boolean;
 };
 
+// --- Gratitude (Thanks) ---
+export interface ThanksIn {
+  subject: string;
+  details?: string;
+  kind?: string; // "ancestor" | "tool" | "place" | …
+  note_id?: number;
+  who?: string; // current profile if you keep one
+}
+
+export interface ThanksOut {
+  id: number;
+  ts: string;
+  subject: string;
+  details?: string | null;
+  kind?: string | null;
+  note_id?: number | null;
+  who?: string | null;
+}
+
 // Server row shape for /retrieve results
 export type RetrievedChunk = {
   id: number;
@@ -104,6 +123,18 @@ export async function getTells(limit = 10): Promise<Tell[]> {
   });
   if (!res.ok) throw new Error(`getTells failed: ${res.status}`);
   return (await res.json()) as Tell[];
+}
+
+export async function createThanks(body: ThanksIn): Promise<ThanksOut> {
+  return request('/thanks', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+}
+
+export async function getThanks(limit = 10): Promise<ThanksOut[]> {
+  return request(`/thanks?limit=${limit}`, { method: 'GET' });
 }
 
 async function postJSON<T>(path: string, body: Record<string, unknown>, extraHeaders: HeadersMap = {}): Promise<T> {

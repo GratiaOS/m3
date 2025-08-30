@@ -9,6 +9,7 @@ import BoundaryComposer from './components/BoundaryComposer';
 import ReadinessBoard from './components/ReadinessBoard';
 import StatusBar from './components/StatusBar';
 import Dashboard from './components/Dashboard';
+import ThanksPanel from './components/ThanksPanel';
 import Modal from './components/Modal';
 import SignalHandover from './components/QuickActions/SignalHandover';
 import { PanicButton } from './components/PanicButton';
@@ -159,6 +160,8 @@ export default function App() {
       </div>
 
       <Dashboard />
+
+      <ThanksPanel me={me} />
 
       <Composer onIngest={onIngest} incognito={incognito} />
 
