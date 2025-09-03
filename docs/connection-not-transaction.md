@@ -1,5 +1,8 @@
 # 🌱 Connection, Not Transaction
 
+**Version:** v0.1.6  
+**Status:** Seed (Relational Agreement Module)
+
 ---
 
 ## Why
