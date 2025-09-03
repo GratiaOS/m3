@@ -21,7 +21,7 @@ base64 = "0.22"
 rand = "0.8"
 tokio-rusqlite = "0.5"
 anyhow = "1"
-tower-http = { version = "0.5", features = ["cors"] }
+tower-http = { version = "0.6", features = ["cors"] }
 futures-util = "0.3"
 tokio-stream = "0.1"
 dotenvy = "0.15"
@@ -29,4 +29,4 @@ hex = "0.4"
 hmac = "0.12"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 sha2 = "0.10"
-tower = "0.5.2"
+tower = "0.5"

@@ -8,6 +8,7 @@ use webhook::Webhook;
 
 mod bus;
 mod db;
+mod emotions;
 mod models;
 mod replies;
 
@@ -40,7 +41,6 @@ use tokio::fs::OpenOptions;
 use tokio::io::AsyncWriteExt;
 use tokio::net::TcpListener;
 use tokio_stream::wrappers::IntervalStream;
-use tower::make::Shared;
 use tower_http::cors::{Any, CorsLayer};
 use tracing_subscriber::EnvFilter;
 
@@ -642,6 +642,8 @@ async fn main() -> anyhow::Result<()> {
         reply_engine,
     };
 
+    emotions::ensure_emotions_schema(&state.db).await?;
+
     #[derive(Deserialize)]
     struct TellsQuery {
         limit: Option<i64>,
@@ -660,7 +662,7 @@ async fn main() -> anyhow::Result<()> {
         input: String,
     }
 
-    // ---- build router ----
+    // ---- build router (stateless root; attach state at the end) ----
     let app = Router::new()
         // --- passphrase / unlock ---
         .route(
@@ -1346,17 +1348,16 @@ async fn main() -> anyhow::Result<()> {
             post({
                 let state = state.clone();
                 move |_: Json<serde_json::Value>| async move {
-                    // Read current row (two-layer unwrap)
-                    let row_res: rusqlite::Result<(String, String, String, Option<String>)> =
-                        state.db.0.call(|c| {
-                            Ok(c.query_row(
+                    // Read current row (direct return)
+                    let (mut color, mut note, mut updated_at, expires_at_opt): (String, String, String, Option<String>) =
+                        state.db.0.call(|c: &mut rusqlite::Connection| -> tokio_rusqlite::Result<(String, String, String, Option<String>)> {
+                            let row = c.query_row(
                                 "SELECT color, note, updated_at, expires_at FROM status WHERE id=1",
                                 [],
                                 |r| Ok::<_, rusqlite::Error>((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)),
-                            ))
+                            )?;
+                            Ok(row)
                         }).await.unwrap();
-
-                    let (mut color, mut note, mut updated_at, expires_at_opt) = row_res.unwrap();
 
                     // Auto-reset if expired
                     let now = chrono::Utc::now();
@@ -1650,21 +1651,24 @@ async fn main() -> anyhow::Result<()> {
         .route("/panic/last", get(panic_last))
         .route("/thanks", post(thanks_create).get(thanks_list));
 
-    // provide AppState to routes that extract `State<AppState>`
-    let app = app.with_state(state.clone());
-
     // ---- CORS ----
     let cors = CorsLayer::new()
         .allow_origin(Any)
         .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
         .allow_headers(Any);
 
-    let app = app.layer(cors);
+    // attach state after nesting emotions
+    let app = app
+        .layer(cors)
+        .nest("/emotions", emotions::router())
+        .with_state(state.clone());
 
     // ---- serve ----
     let listener = TcpListener::bind(&state.config.bind).await?;
     tracing::info!("listening on {}", state.config.bind);
-    axum::serve(listener, Shared::new(app)).await?;
+
+    let make_svc = app.into_make_service();
+    axum::serve(listener, make_svc).await?;
 
     Ok(())
 }
@@ -1672,7 +1676,7 @@ async fn main() -> anyhow::Result<()> {
 // ensure a profile name exists, return id
 async fn ensure_profile(db: &Database, name: &str) -> i64 {
     let name = name.to_string();
-    db.0.call(move |c| {
+    db.0.call(move |c| -> tokio_rusqlite::Result<i64> {
         let r: Result<i64, rusqlite::Error> = c.query_row(
             "SELECT id FROM profiles WHERE name=?1",
             [name.as_str()],
@@ -1695,7 +1699,7 @@ async fn ensure_thread_by_title(db: &Database, title: &str) -> i64 {
     let title = title.to_string();
     let now = chrono::Utc::now().to_rfc3339();
 
-    db.0.call(move |c| {
+    db.0.call(move |c| -> tokio_rusqlite::Result<i64> {
         // already there?
         if let Ok(id) = c.query_row(
             "SELECT id FROM threads WHERE title=?1",

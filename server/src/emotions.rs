@@ -1,0 +1,290 @@
+use crate::db::Database;
+use crate::AppState;
+use anyhow::Result;
+use axum::http::StatusCode;
+use axum::{extract::State, routing::get, routing::post, Json, Router};
+use chrono::Utc;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Deserialize)]
+pub struct EmotionIn {
+    pub who: String,
+    pub kind: String,   // e.g. "impulsiveness", "panic", "joy"
+    pub intensity: f32, // 0.0 - 1.0 scale
+    pub note_id: Option<i64>,
+    pub details: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct EmotionOut {
+    pub id: i64,
+    pub ts: String,
+    pub who: String,
+    pub kind: String,
+    pub intensity: f32,
+    pub note_id: Option<i64>,
+    pub details: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct BridgeIn {
+    pub kind: String,   // e.g. "anxiety", "anger", "shame"
+    pub intensity: f32, // 0.0..=1.0
+}
+
+#[derive(Debug, Serialize)]
+pub struct BridgeOut {
+    pub breath: &'static str,
+    pub doorway: &'static str,
+    pub anchor: &'static str,
+}
+
+fn bridge_table(label: &str, intensity_01: f32) -> BridgeOut {
+    let l = label.to_ascii_lowercase();
+    // Map 0.0..=1.0 → 0..=10 as coarse buckets
+    let lvl: u8 = (intensity_01.clamp(0.0, 1.0) * 10.0).round() as u8;
+
+    match l.as_str() {
+        "anxiety" | "fear" => BridgeOut {
+            breath: if lvl >= 6 {
+                "box: in4-hold4-out6 × 4"
+            } else {
+                "double_exhale × 6"
+            },
+            doorway: "sip water, feet on floor",
+            anchor: "Name 3 objects you see.",
+        },
+        "anger" => BridgeOut {
+            breath: "in4-out8 × 6",
+            doorway: "shake arms 30s, step outside",
+            anchor: "Lower shoulders, soften jaw.",
+        },
+        "shame" => BridgeOut {
+            breath: "4-6 breath × 6",
+            doorway: "write 3 objective facts (no story)",
+            anchor: "Hand over heart: 'still worthy'.",
+        },
+        "gratitude" => BridgeOut {
+            breath: "soft inhale, long exhale × 3",
+            doorway: "write 3 one-line gratitudes",
+            anchor: "🌬️ whisper: I am already held.",
+        },
+        _ => BridgeOut {
+            breath: "double_exhale × 6",
+            doorway: "stand_up + shoulder_roll",
+            anchor: "Return to center.",
+        },
+    }
+}
+
+pub async fn ensure_emotions_schema(db: &Database) -> Result<()> {
+    db.0.call(
+        |conn: &mut rusqlite::Connection| -> tokio_rusqlite::Result<()> {
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS emotions (
+                id        INTEGER PRIMARY KEY AUTOINCREMENT,
+                ts        TEXT NOT NULL,
+                who       TEXT NOT NULL,
+                kind      TEXT NOT NULL,
+                intensity REAL NOT NULL CHECK (intensity >= 0.0 AND intensity <= 1.0),
+                note_id   INTEGER,
+                details   TEXT
+            )",
+                [],
+            )?;
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_emotions_ts ON emotions(ts)",
+                [],
+            )?;
+            Ok(())
+        },
+    )
+    .await?;
+    Ok(())
+}
+
+async fn add_emotion(
+    State(state): State<AppState>,
+    Json(input): Json<EmotionIn>,
+) -> Result<Json<EmotionOut>, StatusCode> {
+    // Validate input before touching the DB
+    if !(0.0_f32..=1.0_f32).contains(&input.intensity) {
+        return Err(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+
+    // Normalize and validate string fields
+    let who = input.who.trim().to_owned();
+    if who.is_empty() {
+        return Err(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+    let kind = input.kind.trim().to_owned();
+    if kind.is_empty() {
+        return Err(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+
+    let note_id = input.note_id;
+    let details = input.details;
+    let intensity = input.intensity;
+
+    let ts = Utc::now().to_rfc3339();
+    let inserted: EmotionOut = state
+        .db
+        .0
+        .call(
+            move |conn: &mut rusqlite::Connection| -> tokio_rusqlite::Result<EmotionOut> {
+                use rusqlite::params;
+                conn.execute(
+                    "INSERT INTO emotions(ts, who, kind, intensity, note_id, details)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+                    params![ts, who, kind, intensity, note_id, details],
+                )?;
+                let id = conn.last_insert_rowid();
+                Ok(EmotionOut {
+                    id,
+                    ts,
+                    who,
+                    kind,
+                    intensity,
+                    note_id,
+                    details,
+                })
+            },
+        )
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    Ok(Json(inserted))
+}
+
+async fn recent_emotions(
+    State(state): State<AppState>,
+) -> Result<Json<Vec<EmotionOut>>, StatusCode> {
+    let out: Vec<EmotionOut> = state
+        .db
+        .0
+        .call(
+            move |conn: &mut rusqlite::Connection| -> tokio_rusqlite::Result<Vec<EmotionOut>> {
+                let mut stmt = conn.prepare(
+                    "SELECT id, ts, who, kind, intensity, note_id, details
+             FROM emotions
+             ORDER BY ts DESC
+             LIMIT 20",
+                )?;
+
+                let rows = stmt.query_map([], |row| {
+                    Ok(EmotionOut {
+                        id: row.get(0)?,
+                        ts: row.get(1)?,
+                        who: row.get(2)?,
+                        kind: row.get(3)?,
+                        intensity: row.get(4)?,
+                        note_id: row.get(5)?,
+                        details: row.get(6)?,
+                    })
+                })?;
+
+                let mut out = Vec::new();
+                for row in rows {
+                    out.push(row?);
+                }
+                Ok(out)
+            },
+        )
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    Ok(Json(out))
+}
+
+async fn feel_bridge(Json(body): Json<BridgeIn>) -> Result<Json<BridgeOut>, StatusCode> {
+    // validate inputs (mirror EmotionIn rules)
+    if !(0.0_f32..=1.0_f32).contains(&body.intensity) {
+        return Err(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+    let kind = body.kind.trim();
+    if kind.is_empty() {
+        return Err(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+
+    Ok(Json(bridge_table(kind, body.intensity)))
+}
+
+pub fn router() -> Router<AppState> {
+    Router::new()
+        .route("/add", post(add_emotion))
+        .route("/recent", get(recent_emotions))
+        .route("/bridge", post(feel_bridge))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn bridge_anxiety_low_uses_double_exhale() {
+        let out = bridge_table("anxiety", 0.3);
+        assert_eq!(out.breath, "double_exhale × 6");
+        assert_eq!(out.doorway, "sip water, feet on floor");
+        assert_eq!(out.anchor, "Name 3 objects you see.");
+    }
+
+    #[test]
+    fn bridge_anxiety_high_uses_box_breath() {
+        let out = bridge_table("fear", 0.8);
+        assert_eq!(out.breath, "box: in4-hold4-out6 × 4");
+        assert_eq!(out.doorway, "sip water, feet on floor");
+        assert_eq!(out.anchor, "Name 3 objects you see.");
+    }
+
+    #[test]
+    fn bridge_anger_pattern() {
+        let out = bridge_table("anger", 0.5);
+        assert_eq!(out.breath, "in4-out8 × 6");
+        assert_eq!(out.doorway, "shake arms 30s, step outside");
+        assert_eq!(out.anchor, "Lower shoulders, soften jaw.");
+    }
+
+    #[test]
+    fn bridge_shame_pattern() {
+        let out = bridge_table("shame", 0.2);
+        assert_eq!(out.breath, "4-6 breath × 6");
+        assert_eq!(out.doorway, "write 3 objective facts (no story)");
+        assert_eq!(out.anchor, "Hand over heart: 'still worthy'.");
+    }
+
+    #[test]
+    fn bridge_gratitude_has_whisper() {
+        let out = bridge_table("gratitude", 0.4);
+        assert_eq!(out.breath, "soft inhale, long exhale × 3");
+        assert_eq!(out.doorway, "write 3 one-line gratitudes");
+        assert_eq!(out.anchor, "🌬️ whisper: I am already held.");
+    }
+
+    #[test]
+    fn bridge_default_fallback() {
+        let out = bridge_table("unknown", 0.9);
+        assert_eq!(out.breath, "double_exhale × 6");
+        assert_eq!(out.doorway, "stand_up + shoulder_roll");
+        assert_eq!(out.anchor, "Return to center.");
+    }
+
+    #[test]
+    fn intensity_is_clamped() {
+        // below 0.0 should clamp to 0.0 -> low
+        let low = bridge_table("anxiety", -5.0);
+        assert_eq!(low.breath, "double_exhale × 6");
+
+        // above 1.0 should clamp to 1.0 -> high
+        let high = bridge_table("anxiety", 5.0);
+        assert_eq!(high.breath, "box: in4-hold4-out6 × 4");
+    }
+
+    #[test]
+    fn kind_case_insensitive() {
+        let out1 = bridge_table("AnXiEtY", 0.7);
+        let out2 = bridge_table("ANXIETY", 0.7);
+        assert_eq!(out1.breath, out2.breath);
+        assert_eq!(out1.doorway, out2.doorway);
+        assert_eq!(out1.anchor, out2.anchor);
+    }
+}

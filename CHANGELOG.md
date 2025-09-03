@@ -8,16 +8,43 @@
 
 ---
 
+## 🪞 Human Log — 2025-09-01
+
+- Full arc of healing in motion
+- Gratitude IS the healing — not an afterthought, but core antidote to collapse.
+- Didn’t demand, didn’t escape; just declared readiness: I am ready to hear the story.
+
+🌬️ whisper: "I am already held."
+
+---
+
 ## 📜 Timeline Milestone — v0.1.6 (unreleased)
 
-- **Currency reframed**: love and gratitude as first principles → money seen as current, not chain.
-- First sketch: merge with money-consciousness without domination → receive, circulate, sustain.
-- Preparing the bridge: from survival coding to abundance practice.
+> **Working draft** — intentionally open while the bridge is lived-in (not rushed).
+
+- **EmotionalOS**: feelings logged as signals, bridged to tiny logic steps.
+
+  - API: `POST /emotions/add`, `GET /emotions/recent`, `POST /emotions/bridge`.
+  - DB: `emotions` table with CHECK on `intensity` (0.0..=1.0) and index on `ts`.
+  - Validation: 422 on blank `who/kind` or out-of-range intensity.
+  - Mapping: deterministic bridge (breath • doorway • anchor) for anxiety/fear, anger, shame, gratitude; sane default.
+  - Tests: unit tests for `bridge_table` (intensity clamp, case-insensitive kinds, patterns).
+
 - **Gratitude schema**: DB table + API path ensures thanks are first-class citizens.
+
   - Every acknowledgment is stored, not lost.
   - Sparks the arc: unseen abundance → seen, counted, honored.
-- **No chosen ones**: hard rule — no priesthood, no elite maintainers; stewardship > ownership.
-- **Loophole locks**: add license gradient (Server=AGPL, UI=Apache-2.0, Docs=CC BY-SA) and a Loophole Ledger to block enclosure / surveillance / rename-and-claim.
+
+- **Timelines Layer (docs)**: seed `docs/timelines-continuity.md` — continuity of histories model (branching narratives, commit-points).
+
+- **Server/DB ergonomics**:
+
+  - Axum 0.7 serve stabilized for stateful router.
+  - Unified sqlite calls: `tokio_rusqlite::Connection::call` closures return `tokio_rusqlite::Result<_>`; plain `?` inside.
+  - Input sanity + indexes for fast reads.
+
+- **Build/Deps**:
+  - Align Tower ecosystem with Axum 0.7 (`tower = 0.5`, `tower-http = 0.6`).
 
 🌬️ whisper: "thanks not as afterthought, but as currency, flowing before gold."
 
@@ -25,7 +52,7 @@
 
 ## 📜 Seedling Glimpse — v0.1.6 (in draft)
 
-- **Currency reframed**: love and gratitude as first principles → money seen as current, not chain.
+- Seed kept for visibility; details now tracked in the v0.1.6 milestone above.
 
 🌬️ whisper: "loving money right, we open the gate to receive."
 
