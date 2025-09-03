@@ -1528,10 +1528,10 @@ async fn main() -> anyhow::Result<()> {
             "/replies/preview",
             post({
                 let _state = state.clone();
-                move |State(state): State<AppState>, Json(req): Json<ReplyPreviewReq>| {
+                move |_state: State<AppState>, Json(req): Json<ReplyPreviewReq>| {
                     async move {
                         // generate reply (engine decides if the weekly window is active)
-                        let preview = state.reply_engine.generate(&req.input).await;
+                        let preview = _state.reply_engine.generate(&req.input).await;
                         Json(preview)
                     }
                 }
@@ -1541,7 +1541,8 @@ async fn main() -> anyhow::Result<()> {
         .route(
             "/panic",
             post({
-                move |Json(mut body): Json<PanicIn>| async move {
+                let _state = state.clone();
+                move |State(state): State<AppState>, Json(mut body): Json<PanicIn>| async move {
                     // presets only if mode provided *and* all steps empty
                     let all_empty = body.whisper.as_deref().unwrap_or("").is_empty()
                         && body.breath.as_deref().unwrap_or("").is_empty()
@@ -1579,6 +1580,59 @@ async fn main() -> anyhow::Result<()> {
                     if log_panic_compact(&whisper, &breath, &doorway, &anchor, mode).await.is_ok() {
                         logged = true;
                     }
+
+                    // 1) Tell for traceability (best-effort)
+                    {
+                        let node = "panic".to_string();
+                        let pre = format!("whisper:{} | breath:{}", whisper, breath);
+                        let act = format!("doorway:{} | anchor:{}", doorway, anchor);
+                        let ts = chrono::Utc::now().to_rfc3339();
+                        let _ = state.db.0.call(move |c| {
+                            c.execute(
+                                "INSERT INTO tells(node,pre_activation,action,created_at) VALUES(?,?,?,?)",
+                                rusqlite::params![node, pre, act, ts],
+                            )?;
+                            Ok(())
+                        }).await;
+                    }
+
+                    // 2) Log an emotion row (fear/anxiety) so EmotionalOS sees the event (best-effort)
+                    {
+                        let ts = chrono::Utc::now().to_rfc3339();
+                        let who = "Raz".to_string();
+                        let (kind, intensity): (String, f32) = match mode {
+                            Some("fearVisible") | Some("fear-visible") => ("fear".into(), 0.65),
+                            _ => ("anxiety".into(), 0.55),
+                        };
+                        let note = format!("panic ui: {} | {} | {}", whisper, breath, doorway);
+                        let _ = state.db.0.call(move |c| {
+                            c.execute(
+                                "INSERT INTO emotions(ts, who, kind, intensity, note) VALUES(?,?,?,?,?)",
+                                rusqlite::params![ts, who, kind, intensity, note],
+                            )?;
+                            Ok(())
+                        }).await;
+                    }
+
+                    // 3) Auto-bridge readiness: yellow → green (kv + bus)
+                    {
+                        let _ = state.db.0.call(|c| {
+                            c.execute(
+                                "INSERT OR REPLACE INTO kv(key,value) VALUES('status:main','green')",
+                                [],
+                            )?;
+                            Ok(())
+                        }).await;
+                        state.bus.publish("status:main:green");
+                    }
+
+                    // 4) webhook (best-effort)
+                    let _ = state.webhook.send("panic.ui", &serde_json::json!({
+                        "event": "panic.ui",
+                        "payload": { "whisper": whisper, "breath": breath, "doorway": doorway, "anchor": anchor },
+                        "ts": chrono::Utc::now().to_rfc3339(),
+                    })).await;
+
                     Json(PanicOut { whisper, breath, doorway, anchor, logged })
                 }
             }),
@@ -1635,6 +1689,34 @@ async fn main() -> anyhow::Result<()> {
                             )?;
                             Ok(())
                         }).await;
+
+                        // emotions: log fear event so EmotionalOS can reflect the redirect
+                        {
+                            let ts = chrono::Utc::now().to_rfc3339();
+                            let who = "Raz".to_string();
+                            let kind = "fear".to_string();
+                            let intensity = 0.6f32;
+                            let note = format!("panic run: {} | {} | {}", out.whisper, out.breath, out.doorway);
+                            let _ = state.db.0.call(move |c| {
+                                c.execute(
+                                    "INSERT INTO emotions(ts, who, kind, intensity, note) VALUES(?,?,?,?,?)",
+                                    rusqlite::params![ts, who, kind, intensity, note],
+                                )?;
+                                Ok(())
+                            }).await;
+                        }
+
+                        // readiness: auto-bridge to green
+                        {
+                            let _ = state.db.0.call(|c| {
+                                c.execute(
+                                    "INSERT OR REPLACE INTO kv(key,value) VALUES('status:main','green')",
+                                    [],
+                                )?;
+                                Ok(())
+                            }).await;
+                            state.bus.publish("status:main:green");
+                        }
 
                         // 3) (optional) webhook
                         let _ = state.webhook.send("panic.run", &serde_json::json!({
