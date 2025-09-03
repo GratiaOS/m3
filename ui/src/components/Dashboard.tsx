@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { getState, setState, TeamState, PillarStatus, getPanicLast, type PanicLast, getTells, type Tell } from '../api';
+import { toast } from './Toaster';
+import { getState, setState, TeamState, PillarStatus, getPanicLast, type PanicLast, getTells, type Tell, resolveEmotion } from '../api';
 
 const PILLAR_KEYS: (keyof PillarStatus)[] = ['crown', 'void', 'play', 'dragon', 'life_force'];
 const COLORS: Record<PillarStatus[keyof PillarStatus], string> = { good: '#22c55e', watch: '#f59e0b', rest: '#ef4444' };
@@ -9,6 +10,7 @@ export default function Dashboard() {
   const [saving, setSaving] = useState(false);
   const [lastRedirect, setLastRedirect] = useState<PanicLast | null>(null);
   const [tells, setTells] = React.useState<Tell[]>([]);
+  const [landing, setLanding] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -38,6 +40,21 @@ export default function Dashboard() {
     if (hr < 24) return `${hr}h ago`;
     const d = Math.floor(hr / 24);
     return `${d}d ago`;
+  }
+
+  async function landFromRedirect() {
+    if (!lastRedirect || landing) return;
+    setLanding(true);
+    try {
+      const details =
+        `doorway: ${lastRedirect.doorway || '—'} | ` + `anchor: ${lastRedirect.anchor || '—'} | ` + `whisper: ${lastRedirect.whisper || '—'}`;
+      await resolveEmotion('Raz', details);
+      toast({ level: 'success', title: 'Gratitude landed', body: 'Arc sealed in EmotionalOS.', icon: '💚' });
+    } catch (e) {
+      toast({ level: 'error', title: 'Failed to land gratitude', body: String(e), icon: '⚠️' });
+    } finally {
+      setLanding(false);
+    }
   }
 
   const avg = useMemo(() => {
@@ -103,10 +120,17 @@ export default function Dashboard() {
         <small style={{ opacity: 0.6 }}>last update · {new Date(state.ts).toLocaleString()}</small>
       </div>
       {lastRedirect && (
-        <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <SmallPill>
             Last redirect: {lastRedirect.whisper || '—'} → {lastRedirect.doorway || '—'} ({timeAgo(lastRedirect.ts)})
           </SmallPill>
+          <button
+            onClick={landFromRedirect}
+            disabled={landing}
+            style={{ fontSize: 12, padding: '2px 8px', borderRadius: 999, border: '1px solid #e5e7eb', background: landing ? '#eee' : '#fff' }}
+            title="Insert a gratitude entry from the last redirect">
+            {landing ? 'Landing…' : 'Land gratitude'}
+          </button>
         </div>
       )}
 

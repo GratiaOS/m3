@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/GratiaOS/m3/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
-![Version](https://img.shields.io/badge/version-0.1.4-green.svg)
+![Version](https://img.shields.io/badge/version-0.1.6-green.svg)
 
 Your personal, local-first memory and knowledge system.\
 Designed for offline resilience, privacy, and joyful retrieval.
@@ -185,6 +185,30 @@ Example output:
   "bill": { "minutes": 2.3, "arousal": 0.4 }
 }
 ```
+
+### EmotionalOS (healing arcs)
+
+Tracks emotional events and offers gentle bridges (breath, doorway, anchor).  
+Supports gratitude as a stable landing point.
+
+| Method | Path                | Purpose                | Body (JSON)                                                      |
+| ------ | ------------------- | ---------------------- | ---------------------------------------------------------------- |
+| POST   | `/emotions/add`     | Log an emotion event   | `{ "who":"Raz","label":"fear","intensity":7,"note":"optional" }` |
+| GET    | `/emotions/recent`  | List recent emotions   | `?limit=20`                                                      |
+| POST   | `/emotions/bridge`  | Suggest a micro-bridge | `{ "label":"fear","intensity":7 }`                               |
+| POST   | `/emotions/resolve` | Land in gratitude      | `{ "who":"Raz","details":"manual test" }`                        |
+
+Example `/emotions/bridge` output:
+
+```json
+{
+  "breath": "box: in4-hold4-out6 × 4",
+  "doorway": "sip water, feet on floor",
+  "anchor": "Name 3 objects you see."
+}
+```
+
+🌬️ whisper: _errors are teachers; bridges are choices; gratitude is ground._
 
 ---
 

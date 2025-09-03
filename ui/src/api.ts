@@ -345,3 +345,17 @@ export async function getPanicLast(): Promise<PanicLast | null> {
     return null; // endpoint absent or no logs yet
   }
 }
+
+export async function resolveEmotion(who: string, details?: string) {
+  const headers = cleanHeaders({
+    'Content-Type': 'application/json',
+    Authorization: BEARER ? `Bearer ${BEARER}` : undefined,
+  });
+  const res = await fetch(`${BASE}/emotions/resolve`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ who, details }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}

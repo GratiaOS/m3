@@ -5,6 +5,12 @@ use tokio_rusqlite::Connection as AsyncConnection;
 #[derive(Clone)]
 pub struct Database(pub AsyncConnection);
 
+/// --- CENTRAL PLACE FOR SCHEMA INITIALIZATION ---
+///
+/// This file is the central place for schema initialization,
+/// including the creation of the `emotions` table.
+/// The `emotions.rs` file no longer manages schema creation.
+///
 /// Resolve DB path:
 /// - M3_DB_PATH, if set
 /// - Else: <repo-root>/memory.db (heuristic: if cwd ends with /server -> ../memory.db; else ./memory.db)
@@ -35,6 +41,88 @@ fn resolve_db_path() -> PathBuf {
     }
 }
 
+/// Run the full schema initialization batch on the given connection.
+/// This can be used to ensure the schema is created or updated.
+pub fn ensure_schema(c: &mut rusqlite::Connection) -> tokio_rusqlite::Result<()> {
+    c.execute_batch(
+        r#"
+        PRAGMA journal_mode=WAL;
+
+        CREATE TABLE IF NOT EXISTS kv(
+          key   TEXT PRIMARY KEY,
+          value BLOB
+        );
+
+        CREATE TABLE IF NOT EXISTS profiles(
+          id   INTEGER PRIMARY KEY,
+          name TEXT NOT NULL UNIQUE
+        );
+
+        CREATE TABLE IF NOT EXISTS threads(
+          id          INTEGER PRIMARY KEY,
+          title       TEXT NOT NULL UNIQUE,
+          profile_id  INTEGER,
+          created_at  TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS messages(
+          id          INTEGER PRIMARY KEY,
+          thread_id   INTEGER NOT NULL,
+          role        TEXT NOT NULL,          -- "user" | "assistant" | etc.
+          text        TEXT NOT NULL,
+          tags        TEXT,                   -- JSON array (stringified)
+          profile_id  INTEGER NOT NULL,
+          privacy     TEXT NOT NULL,          -- "public" | "sealed" | "private"
+          importance  INTEGER NOT NULL DEFAULT 0,
+          ts          TEXT NOT NULL           -- RFC3339
+        );
+
+        CREATE TABLE IF NOT EXISTS tells(
+          id             INTEGER PRIMARY KEY,
+          node           TEXT NOT NULL,
+          pre_activation TEXT NOT NULL,
+          action         TEXT NOT NULL,
+          created_at     TEXT NOT NULL,
+          handled_at     TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS snapshots(
+          id          INTEGER PRIMARY KEY,
+          thread_id   INTEGER NOT NULL,
+          period      TEXT NOT NULL,         -- e.g. "daily"
+          summary_md  TEXT NOT NULL,
+          ts          TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS status(
+          id          INTEGER PRIMARY KEY,
+          color       TEXT NOT NULL,         -- "green" | "yellow" | "red"
+          note        TEXT NOT NULL,
+          updated_at  TEXT NOT NULL,
+          expires_at  TEXT                    -- RFC3339 or NULL
+        );
+
+        INSERT OR IGNORE INTO status(id,color,note,updated_at,expires_at)
+          VALUES(1,'green','',datetime('now'),NULL);
+
+        -- Unified emotions table
+        CREATE TABLE IF NOT EXISTS emotions(
+          id         INTEGER PRIMARY KEY,
+          ts         TEXT NOT NULL,
+          who        TEXT NOT NULL,
+          kind       TEXT NOT NULL,
+          intensity  REAL NOT NULL CHECK(intensity >= 0.0 AND intensity <= 1.0),
+          note       TEXT,
+          note_id    INTEGER,
+          details    TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_emotions_ts ON emotions(ts);
+        "#,
+    )?;
+
+    Ok(())
+}
+
 /// Initialize database (WAL + schema).
 pub async fn init_db() -> anyhow::Result<Database> {
     let db_path = resolve_db_path();
@@ -46,74 +134,8 @@ pub async fn init_db() -> anyhow::Result<Database> {
     let conn = AsyncConnection::open(db_path).await?;
 
     // Run schema init; return tokio_rusqlite::Result so `?` auto-converts rusqlite errors.
-    conn.call(
-        |c: &mut rusqlite::Connection| -> tokio_rusqlite::Result<()> {
-            c.execute_batch(
-                r#"
-                PRAGMA journal_mode=WAL;
-
-                CREATE TABLE IF NOT EXISTS kv(
-                  key   TEXT PRIMARY KEY,
-                  value BLOB
-                );
-
-                CREATE TABLE IF NOT EXISTS profiles(
-                  id   INTEGER PRIMARY KEY,
-                  name TEXT NOT NULL UNIQUE
-                );
-
-                CREATE TABLE IF NOT EXISTS threads(
-                  id          INTEGER PRIMARY KEY,
-                  title       TEXT NOT NULL UNIQUE,
-                  profile_id  INTEGER,
-                  created_at  TEXT
-                );
-
-                CREATE TABLE IF NOT EXISTS messages(
-                  id          INTEGER PRIMARY KEY,
-                  thread_id   INTEGER NOT NULL,
-                  role        TEXT NOT NULL,          -- "user" | "assistant" | etc.
-                  text        TEXT NOT NULL,
-                  tags        TEXT,                   -- JSON array (stringified)
-                  profile_id  INTEGER NOT NULL,
-                  privacy     TEXT NOT NULL,          -- "public" | "sealed" | "private"
-                  importance  INTEGER NOT NULL DEFAULT 0,
-                  ts          TEXT NOT NULL           -- RFC3339
-                );
-
-                CREATE TABLE IF NOT EXISTS tells(
-                  id            INTEGER PRIMARY KEY,
-                  node          TEXT NOT NULL,
-                  pre_activation TEXT NOT NULL,
-                  action        TEXT NOT NULL,
-                  created_at    TEXT NOT NULL,
-                  handled_at    TEXT
-                );
-
-                CREATE TABLE IF NOT EXISTS snapshots(
-                  id          INTEGER PRIMARY KEY,
-                  thread_id   INTEGER NOT NULL,
-                  period      TEXT NOT NULL,         -- e.g. "daily"
-                  summary_md  TEXT NOT NULL,
-                  ts          TEXT NOT NULL
-                );
-
-                CREATE TABLE IF NOT EXISTS status(
-                  id          INTEGER PRIMARY KEY,
-                  color       TEXT NOT NULL,         -- "green" | "yellow" | "red"
-                  note        TEXT NOT NULL,
-                  updated_at  TEXT NOT NULL,
-                  expires_at  TEXT                    -- RFC3339 or NULL
-                );
-
-                INSERT OR IGNORE INTO status(id,color,note,updated_at,expires_at)
-                  VALUES(1,'green','',datetime('now'),NULL);
-                "#,
-            )?;
-            Ok(())
-        },
-    )
-    .await?; // unwrap tokio_rusqlite::Result
+    conn.call(|c: &mut rusqlite::Connection| -> tokio_rusqlite::Result<()> { ensure_schema(c) })
+        .await?; // unwrap tokio_rusqlite::Result
 
     Ok(Database(conn))
 }

@@ -479,6 +479,50 @@ fn thanks_log_line(
     format!("{ts} who=\"{who}\" kind=\"{kind}\" note_id=\"{nid}\" subject=\"{subject}\" details=\"{det}\"\n")
 }
 
+// --- gratitude_fast: async helper for fast gratitude insertion and log (best-effort) ---
+async fn gratitude_fast(state: &AppState, who: Option<&str>, subject: &str, details: Option<&str>) {
+    let ts = chrono::Utc::now().to_rfc3339();
+    let ts_db = ts.clone();
+    let who_s = who.map(|s| s.to_string());
+    let details_s = details.map(|s| s.to_string());
+    let subject_s = subject.to_string();
+    let kind_s = Some("redirect".to_string());
+    let note_id: Option<i64> = None;
+
+    // DB insert (best-effort)
+    if let Err(e) = state
+        .db
+        .0
+        .call(move |c| {
+            c.execute(
+                "INSERT INTO gratitude(ts,who,subject,kind,note_id,details) VALUES(?,?,?,?,?,?)",
+                rusqlite::params![ts_db, who_s, subject_s, kind_s, note_id, details_s],
+            )?;
+            Ok(())
+        })
+        .await
+    {
+        tracing::warn!(error=?e, "gratitude.fast: insert failed");
+    }
+
+    // Append to thanks log (best-effort)
+    let base = exports_base_dir().join("thanks");
+    let ym = chrono::Utc::now().format("%Y-%m").to_string();
+    let dayf = chrono::Utc::now().format("thanks-%Y-%m-%d.log").to_string();
+    let dir = base.join(ym);
+    let _ = tokio::fs::create_dir_all(&dir).await;
+    let path = dir.join(dayf);
+    let line = thanks_log_line(&ts, who, subject, details, Some("redirect"), None);
+    if let Ok(mut f) = tokio::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&path)
+        .await
+    {
+        let _ = f.write_all(line.as_bytes()).await;
+    }
+}
+
 async fn thanks_create(
     State(state): State<AppState>,
     Json(body): Json<GratitudeIn>,
@@ -641,8 +685,6 @@ async fn main() -> anyhow::Result<()> {
         webhook,
         reply_engine,
     };
-
-    emotions::ensure_emotions_schema(&state.db).await?;
 
     #[derive(Deserialize)]
     struct TellsQuery {
@@ -1581,22 +1623,24 @@ async fn main() -> anyhow::Result<()> {
                         logged = true;
                     }
 
-                    // 1) Tell for traceability (best-effort)
+                    // 1) Tell for traceability (log error on failure)
                     {
                         let node = "panic".to_string();
                         let pre = format!("whisper:{} | breath:{}", whisper, breath);
                         let act = format!("doorway:{} | anchor:{}", doorway, anchor);
                         let ts = chrono::Utc::now().to_rfc3339();
-                        let _ = state.db.0.call(move |c| {
+                        if let Err(e) = state.db.0.call(move |c| {
                             c.execute(
                                 "INSERT INTO tells(node,pre_activation,action,created_at) VALUES(?,?,?,?)",
                                 rusqlite::params![node, pre, act, ts],
                             )?;
                             Ok(())
-                        }).await;
+                        }).await {
+                            tracing::warn!(error = ?e, "panic.ui: failed to insert tell");
+                        }
                     }
 
-                    // 2) Log an emotion row (fear/anxiety) so EmotionalOS sees the event (best-effort)
+                    // 2) Log an emotion row (fear/anxiety) so EmotionalOS sees the event (log error on failure)
                     {
                         let ts = chrono::Utc::now().to_rfc3339();
                         let who = "Raz".to_string();
@@ -1605,33 +1649,46 @@ async fn main() -> anyhow::Result<()> {
                             _ => ("anxiety".into(), 0.55),
                         };
                         let note = format!("panic ui: {} | {} | {}", whisper, breath, doorway);
-                        let _ = state.db.0.call(move |c| {
+                        if let Err(e) = state.db.0.call(move |c| {
                             c.execute(
                                 "INSERT INTO emotions(ts, who, kind, intensity, note) VALUES(?,?,?,?,?)",
                                 rusqlite::params![ts, who, kind, intensity, note],
                             )?;
                             Ok(())
-                        }).await;
+                        }).await {
+                            tracing::warn!(error = ?e, "panic.ui: failed to insert emotion");
+                        }
                     }
 
-                    // 3) Auto-bridge readiness: yellow → green (kv + bus)
+                    // 3) Auto-bridge readiness: yellow → green (kv + bus, log error on failure)
                     {
-                        let _ = state.db.0.call(|c| {
+                        if let Err(e) = state.db.0.call(|c| {
                             c.execute(
                                 "INSERT OR REPLACE INTO kv(key,value) VALUES('status:main','green')",
                                 [],
                             )?;
                             Ok(())
-                        }).await;
+                        }).await {
+                            tracing::warn!(error = ?e, "panic.ui: failed to set readiness kv");
+                        }
                         state.bus.publish("status:main:green");
+                        // Land gratitude for redirect
+                        gratitude_fast(
+                            &state,
+                            Some("Raz"),
+                            &format!("I chose {}", doorway),
+                            Some(&format!("anchor: {}; whisper: {}", anchor, whisper)),
+                        ).await;
                     }
 
-                    // 4) webhook (best-effort)
-                    let _ = state.webhook.send("panic.ui", &serde_json::json!({
+                    // 4) webhook (log error on failure)
+                    if let Err(e) = state.webhook.send("panic.ui", &serde_json::json!({
                         "event": "panic.ui",
                         "payload": { "whisper": whisper, "breath": breath, "doorway": doorway, "anchor": anchor },
                         "ts": chrono::Utc::now().to_rfc3339(),
-                    })).await;
+                    })).await {
+                        tracing::warn!(error = ?e, "panic.ui: webhook failed");
+                    }
 
                     Json(PanicOut { whisper, breath, doorway, anchor, logged })
                 }
@@ -1677,53 +1734,68 @@ async fn main() -> anyhow::Result<()> {
                         write_panic_log(&out);
                         out.logged = true;
 
-                        // 2) log to DB as a Tell (best-effort)
+                        // 2) log to DB as a Tell (log error on failure)
                         let node = "panic".to_string();
                         let pre = format!("whisper:{} | breath:{}", out.whisper, out.breath);
                         let act = format!("doorway:{} | anchor:{}", out.doorway, out.anchor);
                         let ts = chrono::Utc::now().to_rfc3339();
-                        let _ = state.db.0.call(move |c| {
+                        if let Err(e) = state.db.0.call(move |c| {
                             c.execute(
                                 "INSERT INTO tells(node,pre_activation,action,created_at) VALUES(?,?,?,?)",
                                 rusqlite::params![node, pre, act, ts],
                             )?;
                             Ok(())
-                        }).await;
+                        }).await {
+                            tracing::warn!(error = ?e, "panic.run: failed to insert tell");
+                        }
 
-                        // emotions: log fear event so EmotionalOS can reflect the redirect
+                        // emotions: log fear event so EmotionalOS can reflect the redirect (log error on failure)
                         {
                             let ts = chrono::Utc::now().to_rfc3339();
                             let who = "Raz".to_string();
                             let kind = "fear".to_string();
                             let intensity = 0.6f32;
                             let note = format!("panic run: {} | {} | {}", out.whisper, out.breath, out.doorway);
-                            let _ = state.db.0.call(move |c| {
+                            if let Err(e) = state.db.0.call(move |c| {
                                 c.execute(
                                     "INSERT INTO emotions(ts, who, kind, intensity, note) VALUES(?,?,?,?,?)",
                                     rusqlite::params![ts, who, kind, intensity, note],
                                 )?;
                                 Ok(())
-                            }).await;
+                            }).await {
+                                tracing::warn!(error = ?e, "panic.run: failed to insert emotion");
+                            }
                         }
 
-                        // readiness: auto-bridge to green
+                        // readiness: auto-bridge to green (log error on failure)
                         {
-                            let _ = state.db.0.call(|c| {
+                            if let Err(e) = state.db.0.call(|c| {
                                 c.execute(
                                     "INSERT OR REPLACE INTO kv(key,value) VALUES('status:main','green')",
                                     [],
                                 )?;
                                 Ok(())
-                            }).await;
+                            }).await {
+                                tracing::warn!(error = ?e, "panic.run: failed to set readiness kv");
+                            }
                             state.bus.publish("status:main:green");
+                            // Land gratitude for redirect
+                            gratitude_fast(
+                                &state,
+                                Some("Raz"),
+                                &format!("I chose {}", out.doorway),
+                                Some(&format!("anchor: {}; whisper: {}", out.anchor, out.whisper)),
+                            ).await;
                         }
 
-                        // 3) (optional) webhook
-                        let _ = state.webhook.send("panic.run", &serde_json::json!({
+                        // 3) (optional) webhook (log error on failure)
+                        if let Err(e) = state.webhook.send("panic.run", &serde_json::json!({
                             "event": "panic.run",
                             "payload": out,
                             "ts": chrono::Utc::now().to_rfc3339(),
-                        })).await;
+                        })).await {
+                            tracing::warn!(error = ?e, "panic.run: webhook failed");
+                        }
 
                         Json(out)
                     }
@@ -1739,10 +1811,10 @@ async fn main() -> anyhow::Result<()> {
         .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
         .allow_headers(Any);
 
-    // attach state after nesting emotions
+    // attach state after nesting emotions (apply CORS last so it covers nested routes)
     let app = app
-        .layer(cors)
         .nest("/emotions", emotions::router())
+        .layer(cors)
         .with_state(state.clone());
 
     // ---- serve ----

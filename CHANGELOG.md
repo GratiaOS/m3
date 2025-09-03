@@ -30,6 +30,13 @@
   - Mapping: deterministic bridge (breath • doorway • anchor) for anxiety/fear, anger, shame, gratitude; sane default.
   - Tests: unit tests for `bridge_table` (intensity clamp, case-insensitive kinds, patterns).
 
+- **EmotionalOS (extended)**:
+
+  - API: `POST /emotions/resolve` added → gratitude landing is now core, not optional.
+  - PanicButton integration: Panic events now logged into the `emotions` table (`kind="panic"`) for DB + log continuity.
+  - CORS: permissive `CorsLayer` applied so UI can call EmotionalOS endpoints without blocking.
+  - README: EmotionalOS section synced — add, recent, bridge, resolve all documented.
+
 - **Gratitude schema**: DB table + API path ensures thanks are first-class citizens.
 
   - Every acknowledgment is stored, not lost.
@@ -45,6 +52,14 @@
 
 - **Build/Deps**:
   - Align Tower ecosystem with Axum 0.7 (`tower = 0.5`, `tower-http = 0.6`).
+
+🔑 Gaps still open:
+
+1. EmotionalOS: Panic UI → DB flow needs full confirmation across sessions.
+2. EmotionalOS: Gratitude continuity → test repeat landings + nightly roll-up.
+3. EmotionalOS: `/emotions/resolve` → extend to cover non-gratitude closures.
+4. Docs: expand EmotionalOS section with diagrams + flowcharts.
+5. CI: auto-pr.yml not yet validated against EmotionalOS endpoints.
 
 🌬️ whisper: "thanks not as afterthought, but as currency, flowing before gold."
 

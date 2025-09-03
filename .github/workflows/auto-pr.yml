@@ -1,8 +1,10 @@
-name: Auto PR to main
+name: Auto PR from dev → main
 
 on:
   push:
-    branches-ignore: [main]
+    branches:
+      - dev
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -12,22 +14,22 @@ jobs:
   open-pr:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Open or update PR
-        uses: peter-evans/create-pull-request@v6
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          base: main
-          branch: ${{ github.ref_name }}
-          title: 'chore: merge `${{ github.ref_name }}` → main'
-          body: |
-            Auto-opened PR for `${{ github.ref_name }}`.
+          fetch-depth: 0
 
-            - CI runs on PRs
-            - Image builds but **does not deploy** unless manually triggered
-          labels: |
-            ci
-            auto-pr
-          draft: false
-          commit-message: 'chore: sync `${{ github.ref_name }}` to PR'
+      - name: Open/Update PR dev → main
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: 'dev'
+          destination_branch: 'main'
+          pr_title: 'Auto: merge dev → main'
+          pr_body: |
+            This PR was opened automatically when commits landed on **dev**.
+            - CI must be green before merge (enforced by branch protections)
+            - No deploy is triggered by this workflow
+          pr_label: 'auto-pr'
+          github_token: '${{ secrets.GITHUB_TOKEN }}'
+          pr_allow_empty: false
+          pr_draft: false

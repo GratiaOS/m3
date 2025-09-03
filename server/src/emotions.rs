@@ -1,6 +1,4 @@
-use crate::db::Database;
 use crate::AppState;
-use anyhow::Result;
 use axum::http::StatusCode;
 use axum::{extract::State, routing::get, routing::post, Json, Router};
 use chrono::Utc;
@@ -77,30 +75,58 @@ fn bridge_table(label: &str, intensity_01: f32) -> BridgeOut {
     }
 }
 
-pub async fn ensure_emotions_schema(db: &Database) -> Result<()> {
-    db.0.call(
-        |conn: &mut rusqlite::Connection| -> tokio_rusqlite::Result<()> {
-            conn.execute(
-                "CREATE TABLE IF NOT EXISTS emotions (
-                id        INTEGER PRIMARY KEY AUTOINCREMENT,
-                ts        TEXT NOT NULL,
-                who       TEXT NOT NULL,
-                kind      TEXT NOT NULL,
-                intensity REAL NOT NULL CHECK (intensity >= 0.0 AND intensity <= 1.0),
-                note_id   INTEGER,
-                details   TEXT
-            )",
-                [],
-            )?;
-            conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_emotions_ts ON emotions(ts)",
-                [],
-            )?;
-            Ok(())
-        },
-    )
-    .await?;
-    Ok(())
+#[derive(Debug, Deserialize)]
+pub struct ResolveIn {
+    pub who: String,
+    pub note_id: Option<i64>,
+    pub details: Option<String>,
+}
+
+async fn resolve_emotion(
+    State(state): State<AppState>,
+    Json(input): Json<ResolveIn>,
+) -> Result<Json<EmotionOut>, StatusCode> {
+    // Validate/normalize
+    let who = input.who.trim().to_owned();
+    if who.is_empty() {
+        return Err(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+
+    let note_id = input.note_id;
+    let details = input.details;
+
+    // Land as gratitude @ intensity 1.0
+    let ts = Utc::now().to_rfc3339();
+    let kind = "gratitude".to_string();
+    let intensity: f32 = 1.0;
+
+    let inserted: EmotionOut = state
+        .db
+        .0
+        .call(
+            move |conn: &mut rusqlite::Connection| -> tokio_rusqlite::Result<EmotionOut> {
+                use rusqlite::params;
+                conn.execute(
+                    "INSERT INTO emotions(ts, who, kind, intensity, note_id, details)
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+                    params![ts, who, kind, intensity, note_id, details],
+                )?;
+                let id = conn.last_insert_rowid();
+                Ok(EmotionOut {
+                    id,
+                    ts,
+                    who,
+                    kind,
+                    intensity,
+                    note_id,
+                    details,
+                })
+            },
+        )
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    Ok(Json(inserted))
 }
 
 async fn add_emotion(
@@ -214,6 +240,7 @@ pub fn router() -> Router<AppState> {
         .route("/add", post(add_emotion))
         .route("/recent", get(recent_emotions))
         .route("/bridge", post(feel_bridge))
+        .route("/resolve", post(resolve_emotion))
 }
 
 #[cfg(test)]
