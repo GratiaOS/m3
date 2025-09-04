@@ -62,6 +62,11 @@ fn bridge_table(label: &str, intensity_01: f32) -> BridgeOut {
             doorway: "write 3 objective facts (no story)",
             anchor: "Hand over heart: 'still worthy'.",
         },
+        "paradox" => BridgeOut {
+            breath: "in4-out4 × 8",
+            doorway: "touch ground + name 1 effort, 1 gift (no comparison)",
+            anchor: "Whisper: 'neither above nor below — simply alive.'",
+        },
         "gratitude" => BridgeOut {
             breath: "soft inhale, long exhale × 3",
             doorway: "write 3 one-line gratitudes",
@@ -277,6 +282,20 @@ mod tests {
         assert_eq!(out.breath, "4-6 breath × 6");
         assert_eq!(out.doorway, "write 3 objective facts (no story)");
         assert_eq!(out.anchor, "Hand over heart: 'still worthy'.");
+    }
+
+    #[test]
+    fn bridge_paradox_pattern() {
+        let out = bridge_table("paradox", 0.5);
+        assert_eq!(out.breath, "in4-out4 × 8");
+        assert_eq!(
+            out.doorway,
+            "touch ground + name 1 effort, 1 gift (no comparison)"
+        );
+        assert_eq!(
+            out.anchor,
+            "Whisper: 'neither above nor below — simply alive.'"
+        );
     }
 
     #[test]
