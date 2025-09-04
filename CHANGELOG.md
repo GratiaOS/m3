@@ -20,6 +20,14 @@
 
 ## 📜 Timeline Milestone — v0.1.6 (unreleased)
 
+### 🌊 Flow Note
+
+- Loops are not always errors — they are river currents teaching us rhythm.
+- Components (shame, guilt, money/value, boundaries) do not live in isolation; they weave as one organism.
+- Reference points matter: each actor’s timeline may anchor on a different event, but continuity is kept in the river.
+
+🌬️ whisper: "loops are teachers, not traps."
+
 > **Working draft** — intentionally open while the bridge is lived-in (not rushed).
 
 - **EmotionalOS**: feelings logged as signals, bridged to tiny logic steps.
