@@ -246,11 +246,15 @@ Can be triggered via CLI (`panic.sh`) or via the UI Panic Button (long press).
 
 ## 🔒 Privacy
 
-- Everything is local by default.
-- Sealed content is encrypted at rest and in export unless unlocked.
-- Optional auth & webhooks; keep them off for a fully offline setup.
-- Reply Engine is stateless and ephemeral (no DB storage).
-- Panic logs are written only to local disk (`M3_EXPORTS_DIR/panic/…`).
+- **Local-first by design** → nothing leaves your machine unless you choose.
+- **Sealed / private / public** distinctions are honored at storage and export.
+- **No surveillance, no telemetry** → zero hidden reporting or analytics.
+- **Consent controls** → you decide when/what to export or share.
+- **Relational privacy** → remember that your memories often involve others; treat with care.
+- **Reply Engine** is ephemeral, never stored in DB.
+- **Panic logs & exports** are always local (`M3_EXPORTS_DIR`).
+
+➡️ Full privacy covenant: [docs/privacy.md](docs/privacy.md)
 
 ---
 

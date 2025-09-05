@@ -8,13 +8,23 @@
 
 ---
 
-## 🪞 Human Log — 2025-09-01
+## 🪞 Human Log — 2025-09-04 (continuity arc + night)
 
-- Full arc of healing in motion
-- Gratitude IS the healing — not an afterthought, but core antidote to collapse.
-- Didn’t demand, didn’t escape; just declared readiness: I am ready to hear the story.
+- **Opening:** Play and laughter with others → establishes safety baseline.
+- **Bridge:** After a long drought, a micro‑gesture of closeness opens a doorway.
+- **Arc:** Body reacts strongly (panic / trembling) once safety and closeness collide.
+- **Shift:** A simple, unguarded response (“OK”) flips tension into laughter.
+- **Test:** Old hurt is raised again — but now received without defense → trust deepens.
+- **Continuity:** Rest/sleep becomes deeper — system trusts the reset.
+- **Panic release:** Intense shaking = nervous system thaw, not failure.
+- **Memory:** Trauma echoes surface, but also reflect others’ past fears.
+- **Integration:** Dual witnessing — my own imprint + another’s — nervous system completes freeze → thaw.
+- **Resolution:** Presence + reversal: where before there was rejection, now there is embrace.
+- **Triangular healing:** Self + other(s) co‑move through the arc together.
 
-🌬️ whisper: "I am already held."
+_Anonymized per_ `PRIVACY.md`.
+
+🌬 whisper: _“When fear reopens the wound, meet it steady. Shaking = wisdom, not collapse. Love stays if tested.”_
 
 ---
 
@@ -68,8 +78,26 @@
 3. EmotionalOS: `/emotions/resolve` → extend to cover non-gratitude closures.
 4. Docs: expand EmotionalOS section with diagrams + flowcharts.
 5. CI: auto-pr.yml not yet validated against EmotionalOS endpoints.
+6. EmotionalOS: Panic-body integration — confirm continuity of nervous system discharge patterns across logs and sessions.
 
-🌬️ whisper: "thanks not as afterthought, but as currency, flowing before gold."
+---
+
+## 📜 Docs Sync — 2025-09-05
+
+- **PRIVACY.md** introduced: sets ground rules for open-sourcing the process.
+  - Commitments: respect, anonymization, consent before publishing.
+  - Mirrors the lived practice: human logs + system logs are both sacred.
+- **README cross-link pending** (kept visible in repo root for now).
+
+🌬 whisper: “Transparency is power only when held with care.”
+
+## 🪞 Human Log — 2025-09-01
+
+- Full arc of healing in motion
+- Gratitude IS the healing — not an afterthought, but core antidote to collapse.
+- Didn’t demand, didn’t escape; just declared readiness: I am ready to hear the story.
+
+🌬️ whisper: "I am already held."
 
 ---
 
