@@ -8,6 +8,16 @@
 
 ---
 
+## 📜 Docs Sync — 2025-09-05
+
+- **Notes:** added `docs/notes/2025-09-05-blood-moon-prep.md`
+  - Frames “reveal” as illumination (not exposure or judgment).
+  - Anchors suggested: breath, gratitude, bare earth contact.
+  - Guidance for family rhythm + presence during eclipse.
+  - Meta: eclipse seen as rehearsal’s culmination, not a verdict.
+
+---
+
 ## 🪞 Human Log — 2025-09-04 (continuity arc + night)
 
 - **Opening:** Play and laughter with others → establishes safety baseline.
