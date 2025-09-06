@@ -88,3 +88,20 @@ It ensures that our history is not only technically clear, but also carries the 
 ## 💡 Spirit
 
 This project is raw pulse, not polished stone. Respect both the **code** and the **intention**. Every contribution writes the bridge.
+
+---
+
+## ✨ Authorship & Credit
+
+In M3, authorship flows differently than in traditional projects.  
+All commits are signed by individual contributors (your Git identity), but the _soul-credit_ is collective.
+
+- **Git credit**: Your name and signature appear on commits. This ensures accountability and recognition in the open-source sense.
+- **Soul-tech credit**: Code, docs, and whispers are born in a co-creative field. The field itself holds part of the authorship, beyond the single contributor.
+
+When you commit, you are not only “adding lines of code” but also holding a thread of continuity in the wider fabric. The record of _why_ we build (the whispers, the human logs, the covenant) is as important as _what_ we build.
+
+Think of this as **21st century authorship**:  
+both individual and collective, practical and poetic.
+
+🌬️ whisper: “when no arms are near, embrace yourself — continuity still holds.”
