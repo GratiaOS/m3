@@ -188,15 +188,83 @@ Example output:
 
 ### EmotionalOS (healing arcs)
 
+See also:
+
+- [docs/emotionalos-arc.mmd](docs/emotionalos-arc.mmd) for the diagram
+- [docs/emotionalos-workflow.md](docs/emotionalos-workflow.md) for curl examples
+
 Tracks emotional events and offers gentle bridges (breath, doorway, anchor).  
 Supports gratitude as a stable landing point.
 
-| Method | Path                | Purpose                | Body (JSON)                                                      |
-| ------ | ------------------- | ---------------------- | ---------------------------------------------------------------- |
-| POST   | `/emotions/add`     | Log an emotion event   | `{ "who":"Raz","label":"fear","intensity":7,"note":"optional" }` |
-| GET    | `/emotions/recent`  | List recent emotions   | `?limit=20`                                                      |
-| POST   | `/emotions/bridge`  | Suggest a micro-bridge | `{ "label":"fear","intensity":7 }`                               |
-| POST   | `/emotions/resolve` | Land in gratitude      | `{ "who":"Raz","details":"manual test" }`                        |
+| Method | Path                | Purpose                | Body (JSON)                                                                                                            |
+| ------ | ------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| POST   | `/emotions/add`     | Log an emotion event   | `{ "who":"Raz","kind":"fear","intensity":0.7,"note":"optional","sealed":true,"archetype":"hero","privacy":"private" }` |
+| GET    | `/emotions/recent`  | List recent emotions   | `?limit=20&kind=fear&min_intensity=0.5&max_intensity=1.0&sealed=true&archetype=hero&privacy=private`                   |
+| POST   | `/emotions/bridge`  | Suggest a micro-bridge | `{ "kind":"fear","intensity":0.7 }`                                                                                    |
+| POST   | `/emotions/resolve` | Land in gratitude      | `{ "who":"Raz","details":"manual test","sealed":true,"archetype":"hero","privacy":"private" }`                         |
+
+Example `/emotions/add` request and response:
+
+Request:
+
+```json
+{
+  "who": "Raz",
+  "kind": "fear",
+  "intensity": 0.7,
+  "note": "optional",
+  "sealed": true,
+  "archetype": "hero",
+  "privacy": "private"
+}
+```
+
+Response:
+
+```json
+{
+  "id": 1,
+  "ts": "2025-09-06T15:44:23.134945+00:00",
+  "who": "Raz",
+  "kind": "fear",
+  "intensity": 0.7,
+  "note": "optional",
+  "sealed": true,
+  "archetype": "hero",
+  "privacy": "private"
+}
+```
+
+Example `/emotions/resolve` request and response:
+
+Request:
+
+```json
+{
+  "who": "Raz",
+  "details": "manual test",
+  "sealed": true,
+  "archetype": "hero",
+  "privacy": "private"
+}
+```
+
+Response:
+
+```json
+{
+  "id": 2,
+  "ts": "2025-09-06T15:52:02.010846+00:00",
+  "who": "Raz",
+  "kind": "gratitude",
+  "intensity": 1.0,
+  "note_id": null,
+  "details": "manual test",
+  "sealed": true,
+  "archetype": "hero",
+  "privacy": "private"
+}
+```
 
 Example `/emotions/bridge` output:
 
@@ -209,6 +277,8 @@ Example `/emotions/bridge` output:
 ```
 
 🌬️ whisper: _errors are teachers; bridges are choices; gratitude is ground._
+
+Mirror fields (`sealed`, `archetype`, `privacy`) are preserved end‑to‑end, including in `/resolve` and `/recent`.
 
 ---
 
