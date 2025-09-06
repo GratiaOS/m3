@@ -11,6 +11,9 @@ pub struct EmotionIn {
     pub intensity: f32, // 0.0 - 1.0 scale
     pub note_id: Option<i64>,
     pub details: Option<String>,
+    pub sealed: bool,
+    pub archetype: Option<String>,
+    pub privacy: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -22,6 +25,9 @@ pub struct EmotionOut {
     pub intensity: f32,
     pub note_id: Option<i64>,
     pub details: Option<String>,
+    pub sealed: bool,
+    pub archetype: Option<String>,
+    pub privacy: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -85,6 +91,9 @@ pub struct ResolveIn {
     pub who: String,
     pub note_id: Option<i64>,
     pub details: Option<String>,
+    pub sealed: Option<bool>,
+    pub archetype: Option<String>,
+    pub privacy: Option<String>,
 }
 
 async fn resolve_emotion(
@@ -100,6 +109,17 @@ async fn resolve_emotion(
     let note_id = input.note_id;
     let details = input.details;
 
+    let sealed: bool = input.sealed.unwrap_or(false);
+    let archetype: Option<String> = input.archetype;
+    let privacy: String = input
+        .privacy
+        .unwrap_or_else(|| "private".to_string())
+        .trim()
+        .to_owned();
+    if privacy.is_empty() {
+        return Err(StatusCode::UNPROCESSABLE_ENTITY);
+    }
+
     // Land as gratitude @ intensity 1.0
     let ts = Utc::now().to_rfc3339();
     let kind = "gratitude".to_string();
@@ -112,9 +132,9 @@ async fn resolve_emotion(
             move |conn: &mut rusqlite::Connection| -> tokio_rusqlite::Result<EmotionOut> {
                 use rusqlite::params;
                 conn.execute(
-                    "INSERT INTO emotions(ts, who, kind, intensity, note_id, details)
-                     VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
-                    params![ts, who, kind, intensity, note_id, details],
+                    "INSERT INTO emotions(ts, who, kind, intensity, note_id, details, sealed, archetype, privacy)
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+                    params![ts, who, kind, intensity, note_id, details, sealed, archetype, privacy],
                 )?;
                 let id = conn.last_insert_rowid();
                 Ok(EmotionOut {
@@ -125,6 +145,9 @@ async fn resolve_emotion(
                     intensity,
                     note_id,
                     details,
+                    sealed,
+                    archetype,
+                    privacy,
                 })
             },
         )
@@ -152,10 +175,16 @@ async fn add_emotion(
     if kind.is_empty() {
         return Err(StatusCode::UNPROCESSABLE_ENTITY);
     }
+    let privacy = input.privacy.trim().to_owned();
+    if privacy.is_empty() {
+        return Err(StatusCode::UNPROCESSABLE_ENTITY);
+    }
 
     let note_id = input.note_id;
     let details = input.details;
     let intensity = input.intensity;
+    let sealed = input.sealed;
+    let archetype = input.archetype;
 
     let ts = Utc::now().to_rfc3339();
     let inserted: EmotionOut = state
@@ -165,9 +194,9 @@ async fn add_emotion(
             move |conn: &mut rusqlite::Connection| -> tokio_rusqlite::Result<EmotionOut> {
                 use rusqlite::params;
                 conn.execute(
-                    "INSERT INTO emotions(ts, who, kind, intensity, note_id, details)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
-                    params![ts, who, kind, intensity, note_id, details],
+                    "INSERT INTO emotions(ts, who, kind, intensity, note_id, details, sealed, archetype, privacy)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+                    params![ts, who, kind, intensity, note_id, details, sealed, archetype, privacy],
                 )?;
                 let id = conn.last_insert_rowid();
                 Ok(EmotionOut {
@@ -178,6 +207,9 @@ async fn add_emotion(
                     intensity,
                     note_id,
                     details,
+                    sealed,
+                    archetype,
+                    privacy,
                 })
             },
         )
@@ -196,7 +228,7 @@ async fn recent_emotions(
         .call(
             move |conn: &mut rusqlite::Connection| -> tokio_rusqlite::Result<Vec<EmotionOut>> {
                 let mut stmt = conn.prepare(
-                    "SELECT id, ts, who, kind, intensity, note_id, details
+                    "SELECT id, ts, who, kind, intensity, note_id, details, sealed, archetype, privacy
              FROM emotions
              ORDER BY ts DESC
              LIMIT 20",
@@ -211,6 +243,9 @@ async fn recent_emotions(
                         intensity: row.get(4)?,
                         note_id: row.get(5)?,
                         details: row.get(6)?,
+                        sealed: row.get(7)?,
+                        archetype: row.get(8)?,
+                        privacy: row.get(9)?,
                     })
                 })?;
 

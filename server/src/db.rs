@@ -105,7 +105,7 @@ pub fn ensure_schema(c: &mut rusqlite::Connection) -> tokio_rusqlite::Result<()>
         INSERT OR IGNORE INTO status(id,color,note,updated_at,expires_at)
           VALUES(1,'green','',datetime('now'),NULL);
 
-        -- Unified emotions table
+        -- Unified emotions table (with mirror tags)
         CREATE TABLE IF NOT EXISTS emotions(
           id         INTEGER PRIMARY KEY,
           ts         TEXT NOT NULL,
@@ -114,9 +114,14 @@ pub fn ensure_schema(c: &mut rusqlite::Connection) -> tokio_rusqlite::Result<()>
           intensity  REAL NOT NULL CHECK(intensity >= 0.0 AND intensity <= 1.0),
           note       TEXT,
           note_id    INTEGER,
-          details    TEXT
+          details    TEXT,
+          sealed     INTEGER NOT NULL DEFAULT 0,           -- mirror tag
+          archetype  TEXT,                                 -- optional archetypal lens
+          privacy    TEXT NOT NULL DEFAULT 'private'       -- 'private' | 'sealed' | 'anonymized' | 'public'
         );
         CREATE INDEX IF NOT EXISTS idx_emotions_ts ON emotions(ts);
+        CREATE INDEX IF NOT EXISTS idx_emotions_kind ON emotions(kind);
+        CREATE INDEX IF NOT EXISTS idx_emotions_privacy ON emotions(privacy);
         "#,
     )?;
 

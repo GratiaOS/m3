@@ -64,6 +64,10 @@ _Anonymized per_ `PRIVACY.md`.
   - PanicButton integration: Panic events now logged into the `emotions` table (`kind="panic"`) for DB + log continuity.
   - CORS: permissive `CorsLayer` applied so UI can call EmotionalOS endpoints without blocking.
   - README: EmotionalOS section synced — add, recent, bridge, resolve all documented.
+  - Tests: full coverage pyramid in place
+    - Unit tests for bridges, validation, patterns.
+    - Router-level test for `/emotions/resolve`.
+    - Black-box integration test in `server/tests/` (real server + DB) → ensures mirror fields (`sealed`, `archetype`, `privacy`) persist.
 
 - **Gratitude schema**: DB table + API path ensures thanks are first-class citizens.
 

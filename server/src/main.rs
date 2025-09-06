@@ -2135,3 +2135,77 @@ async fn import_openai_folder(
 
     Ok((imported_total, titles_imported))
 }
+
+#[cfg(test)]
+mod integration {
+    use super::*;
+    use axum::{
+        http::{Request, StatusCode},
+        Router,
+    };
+    use tokio_rusqlite::Connection as AsyncConnection;
+    use tower::ServiceExt; // for `oneshot`
+
+    async fn make_state_for_test() -> AppState {
+        let conn = AsyncConnection::open_in_memory().await.unwrap();
+        // initialize full schema on the raw connection
+        conn.call(|c| crate::db::ensure_schema(c)).await.unwrap();
+
+        let db = Database(conn);
+        AppState {
+            db,
+            bus: Bus::default(),
+            key: std::sync::Arc::new(std::sync::Mutex::new(None)),
+            config: Config::from_env(),
+            webhook: Webhook::new(None, None),
+            reply_engine: ReplyEngine::from_env(),
+        }
+    }
+
+    #[tokio::test]
+    async fn resolve_creates_sealed_gratitude_when_requested() {
+        let state = make_state_for_test().await;
+
+        // only emotions routes for this black-box test
+        let app = Router::new()
+            .nest("/emotions", crate::emotions::router())
+            .with_state(state.clone());
+
+        let res = app.clone().oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/emotions/resolve")
+                .header("content-type", "application/json")
+                .body(axum::body::Body::from(
+                    r#"{ "who":"Raz", "details":"ledger 3 lines", "sealed":true, "archetype":"Mother", "privacy":"sealed" }"#,
+                ))
+                .unwrap(),
+        ).await.unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+
+        // verify last gratitude row has mirror tags preserved
+        let (cnt, sealed, privacy, archetype): (i64, i64, String, Option<String>) = state
+            .db
+            .0
+            .call(|c| {
+                let row = c.query_row(
+                    "SELECT COUNT(*), sealed, privacy, archetype
+                     FROM emotions
+                     WHERE kind='gratitude'
+                     ORDER BY id DESC
+                     LIMIT 1",
+                    [],
+                    |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)),
+                )?;
+                Ok(row)
+            })
+            .await
+            .unwrap();
+
+        assert_eq!(cnt, 1, "expected at least one gratitude row");
+        assert_eq!(sealed, 1, "gratitude should be sealed");
+        assert_eq!(privacy, "sealed");
+        assert_eq!(archetype.as_deref(), Some("Mother"));
+    }
+}
