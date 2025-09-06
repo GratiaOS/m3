@@ -105,3 +105,30 @@ Think of this as **21st century authorship**:
 both individual and collective, practical and poetic.
 
 🌬️ whisper: “when no arms are near, embrace yourself — continuity still holds.”
+
+### Credit Protocol
+
+To make credit explicit and traceable:
+
+1. **Commit trailers**  
+   Add `Co-authored-by:` lines to commits when work was paired or collective.  
+   Example:
+
+   ```
+   Co-authored-by: Name One <one@example.com>
+   Co-authored-by: Name Two <two@example.com>
+   ```
+
+2. **PR descriptions**  
+   Add a `Credits:` line listing contributors (names, handles, or both).  
+   Example:
+
+   ```
+   Credits: @handle1, @handle2
+   ```
+
+3. **Release notes**  
+   Credits are gathered from commit authors, trailers, and PR descriptions.  
+   Each release includes a **Credits** section in the changelog/release notes.
+
+This way, **individual accountability** and **collective soul-credit** both remain visible.

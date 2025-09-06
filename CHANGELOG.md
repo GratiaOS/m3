@@ -93,6 +93,7 @@ _Anonymized per_ `PRIVACY.md`.
 4. Docs: expand EmotionalOS section with diagrams + flowcharts.
 5. CI: auto-pr.yml not yet validated against EmotionalOS endpoints.
 6. EmotionalOS: Panic-body integration — confirm continuity of nervous system discharge patterns across logs and sessions.
+7. Contributing: clarify authorship & credit (git + soul-tech), documented in CONTRIBUTING.md.
 
 ---
 

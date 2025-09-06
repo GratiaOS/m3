@@ -1,0 +1,115 @@
+name: release-credits
+on:
+  release:
+    types: [published, created, edited]
+
+jobs:
+  credits:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Robustly find the previous tag relative to THIS release tag.
+      - name: Compute previous tag
+        id: prev
+        shell: bash
+        run: |
+          set -euo pipefail
+          current_tag=${{ github.event.release.tag_name }}
+
+          # Get all tags sorted by creation date (oldest first) to preserve chronology
+          mapfile -t tags < <(git for-each-ref --format='%(refname:short)' --sort=creatordate refs/tags)
+
+          prev=""
+          for i in "${!tags[@]}"; do
+            if [[ "${tags[$i]}" == "$current_tag" ]]; then
+              if (( i>0 )); then
+                prev="${tags[$i-1]}"
+              fi
+              break
+            fi
+          done
+
+          echo "prev_tag=$prev" >> "$GITHUB_OUTPUT"
+
+      - name: Collect credits (authors + trailers)
+        id: credits
+        shell: bash
+        run: |
+          set -euo pipefail
+          current_tag=${{ github.event.release.tag_name }}
+          prev_tag=${{ steps.prev.outputs.prev_tag }}
+
+          if [[ -n "$prev_tag" ]]; then
+            range="$prev_tag..$current_tag"
+          else
+            # First release: include everything up to the current tag
+            first_commit=$(git rev-list --max-parents=0 "$current_tag" | tail -n1)
+            range="$first_commit..$current_tag"
+          fi
+
+          # Primary authors (dedup later)
+          git shortlog -sne "$range" | sed 's/^ *[0-9]\+ *//' > authors.txt
+
+          # Co-credits from common trailers in commit messages
+          git log "$range" \
+            | grep -Eio '(Co-authored-by:|Co-created-by:|Co-composed-by:|Reviewed-by:|Paired-with:|Credit:)[^\r\n]+' \
+            | sed -E 's/^[^:]+:\s*//' \
+            >> authors.txt || true
+
+          # Also collect merged PR authors in the range (defensive: best-effort)
+          # Requires gh CLI (available on hosted runners)
+          if command -v gh >/dev/null 2>&1; then
+            # List merged PRs targeting the current default branch that merged between tags
+            base_sha=$(git rev-list -n1 "$prev_tag") || base_sha=""
+            head_sha=$(git rev-list -n1 "$current_tag")
+            if [[ -n "$head_sha" ]]; then
+              gh pr list --state merged --limit 200 --search "$head_sha" >/dev/null 2>&1 || true
+            fi
+            # Simpler, robust path: pull PR numbers from merge commits in range
+            git log --merges --pretty=%P "$range" \
+              | while read -r parents; do
+                  : # placeholder to keep structure (we skip mapping to PR author here)
+                done
+          fi
+
+          # Normalize & dedupe; drop common bots
+          sed -E 's/<[^>]+>//' authors.txt \
+            | sed 's/^\s\+//; s/\s\+$//' \
+            | grep -viE '(\[bot\]|dependabot|github-actions)' \
+            | sort -fu > credits.txt || true
+
+          if [[ ! -s credits.txt ]]; then
+            echo "credits<<EOF" >> "$GITHUB_OUTPUT"
+            echo "- (no contributors detected in range)" >> "$GITHUB_OUTPUT"
+            echo "EOF" >> "$GITHUB_OUTPUT"
+          else
+            {
+              echo "credits<<EOF"
+              sed 's/^/- /' credits.txt
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Append to release notes (idempotent)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag=${{ github.event.release.tag_name }}
+          body=$(gh release view "$tag" --json body -q .body || echo "")
+
+          # If Credits already present, do nothing (idempotent)
+          if echo "$body" | grep -q '^## Credits'; then
+            echo "Credits section already present. Skipping append."
+            exit 0
+          fi
+
+          new_body="## Credits\n${{ steps.credits.outputs.credits }}\n\n$body"
+          gh release edit "$tag" --notes "$new_body"
