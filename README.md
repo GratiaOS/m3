@@ -276,6 +276,13 @@ Example `/emotions/bridge` output:
 }
 ```
 
+See also:
+
+- [docs/firegate.md](docs/firegate.md) — threshold of transformation
+- [docs/orb-landing.md](docs/orb-landing.md) — protocol for contact & safety
+- [docs/shared-moments.md](docs/shared-moments.md) — mapping lived experiences
+- [docs/home-arc.md](docs/home-arc.md) — patterns of family/home field
+
 🌬️ whisper: _errors are teachers; bridges are choices; gratitude is ground._
 
 Mirror fields (`sealed`, `archetype`, `privacy`) are preserved end‑to‑end, including in `/resolve` and `/recent`.
