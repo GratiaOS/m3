@@ -13,6 +13,7 @@
 - **Added**: `/patterns` namespace (detect, bridge_suggest, lanes).
 - Unit and integration tests added to ensure robustness.
 - Documentation created in `docs/patterns/`.
+- Documentation created in `docs/anchors/finish-line.md`.
 
 - **Changed**: EmotionalOS arc now reuses `/patterns` for bridge suggestions.
 
