@@ -10,6 +10,7 @@ mod bus;
 mod db;
 mod emotions;
 mod models;
+mod patterns;
 mod replies;
 
 use bus::Bus;
@@ -1811,9 +1812,10 @@ async fn main() -> anyhow::Result<()> {
         .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
         .allow_headers(Any);
 
-    // attach state after nesting emotions (apply CORS last so it covers nested routes)
+    // attach state after nesting emotions and patterns (apply CORS last so it covers nested routes)
     let app = app
         .nest("/emotions", emotions::router())
+        .nest("/patterns", patterns::router())
         .layer(cors)
         .with_state(state.clone());
 

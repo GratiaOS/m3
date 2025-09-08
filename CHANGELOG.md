@@ -8,6 +8,20 @@
 
 ---
 
+## 📜 Docs + Code Sync — 2025-09-08
+
+- **Added**: `/patterns` namespace (detect, bridge_suggest, lanes).
+- Unit and integration tests added to ensure robustness.
+- Documentation created in `docs/patterns/`.
+
+- **Changed**: EmotionalOS arc now reuses `/patterns` for bridge suggestions.
+
+- **Human Logs**: reflections on victim/aggressor coin loop, sovereignty path, Gratia seal/mark, orb landing protocol.
+
+🌬 whisper: “patterns reveal paths; bridges build sovereignty.”
+
+---
+
 ## 📜 Docs Sync — 2025-09-08
 
 - **New docs (seeded):**
