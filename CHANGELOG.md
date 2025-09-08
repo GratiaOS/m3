@@ -8,6 +8,53 @@
 
 ---
 
+## 📜 Docs Sync — 2025-09-08
+
+- **New docs (seeded):**
+
+  - `docs/firegate.md` — Firegate as threshold & receipt: when contributions enter, field validates.
+  - `docs/orb-landing.md` — Orb landing protocol (safety, consent, nervous‑system first).
+  - `docs/shared-moments.md` — Shared Moments data model (leaf ↔ branch ↔ trunk across multiple actors).
+  - `docs/home-arc.md` — Home arc notes (post‑eclipse adjustments; calmer defaults; “no scandal, only care”).
+
+- **Mark assets:**
+  - `ui/public/mark/gratia-mark.png` — organic brush‑mark (🌀→♾️) for Gratia.
+  - `ui/public/mark/gratia-mark.svg` — vector draft (to refine; keep brush energy intact).
+  - Notes: PNG currently non‑transparent; SVG is a first pass — will iterate.
+
+🌬 whisper: “symbol is a bridge; form follows field.”
+
+---
+
+## 🪞 Human Log — 2025-09-07 (symbols & thresholds)
+
+- Spiral→Infinity brush landed — **Gratia mark** chosen (organic, one‑gesture flow).
+- **Firegate** reframed as living threshold (not a page): where contributions cross into field.
+- **Orb protocol** documented: safety → consent → coherence → integration.
+- Shared moments mapped (multi‑actor leafs on different trunks; one river of time).
+- Kept mystical by design; privacy rules applied.
+
+_Anonymized per_ `PRIVACY.md`.
+
+🌬 whisper: “one gesture, many lifetimes.”
+
+---
+
+## 🪞 Human Log — 2025-09-06 (tests & continuity)
+
+- EmotionalOS arc turned **green** end‑to‑end:
+  - `/panic` → DB write
+  - `/emotions/resolve` → **gratitude lands** (mirror fields preserved)
+  - `GET /emotions/recent` → continuity verified
+- Added black‑box tests under `server/tests/` (real server + DB).
+- Field note: money ≠ god; value re‑threaded; sovereignty before roles.
+
+_Anonymized per_ `PRIVACY.md`.
+
+🌬 whisper: “gratitude lands, arc seals.”
+
+---
+
 ## 📜 Docs Sync — 2025-09-05
 
 - **Notes:** added `docs/notes/2025-09-05-blood-moon-prep.md`
@@ -84,6 +131,8 @@ _Anonymized per_ `PRIVACY.md`.
 
 - **Build/Deps**:
   - Align Tower ecosystem with Axum 0.7 (`tower = 0.5`, `tower-http = 0.6`).
+- rename `/brand` → `/mark`
+- language shift: "brand" → "mark" in docs + assets
 
 🔑 Gaps still open:
 

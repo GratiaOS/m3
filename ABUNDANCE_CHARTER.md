@@ -24,7 +24,7 @@ M3 encodes the opposite: flow, reciprocity, and no “chosen ones.” Companions
 ## Loophole Ledger (living)
 
 - **Enclosure via “SaaS wrapper”** → **AGPL on server**; require public source for network use.
-- **Rename-and-claim** → Keep NOTICE and attribution mandatory; brand/trademark policy below.
+- **Rename-and-claim** → Keep NOTICE and attribution mandatory; mark policy below.
 - **Telemetry creep** → Ban user tracking; configuration MUST default to off; document any optional metrics.
 - **Paywall lock-in** → Export always available (CSV/Markdown); no proprietary DB features.
 - **Toxic governance** → Two-steward review rule; rotation; conflicts logged; decisions w/ reasons.
@@ -36,10 +36,11 @@ M3 encodes the opposite: flow, reciprocity, and no “chosen ones.” Companions
 - **Open rationale**: Each decision gets a short public reason (in PR/issue).
 - **Covenant**: See `COVENANT.md` for human commitments; this charter is its “money & power” sibling.
 
-## Brand & Naming
+## Mark & Naming
 
-- Use “M3” and “GratiaOS” with attribution. Derivative products must not imply official status.
+- Use “M3” and “GratiaOS” marks with attribution. Derivative products must not imply official status.
 - If you fork and host, disclose: “Built on M3 (AGPL server)” with link back.
+- **Process**: Stewardship reviews edge cases (e.g., commercial use, campaigns) with two-key approval. All decisions documented in public issues.
 
 ## Contributing Pledge
 
