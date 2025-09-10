@@ -108,25 +108,6 @@ small {
 
 /* 4) Controls */
 
-button[title='l'],
-button[title='u'],
-button[title='r'] {
-  /* subtle badges for hotkeys */
-  position: relative;
-}
-button[title]:after {
-  content: attr(title);
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  font-size: 10px;
-  opacity: 0.6;
-  background: color-mix(in oklab, var(--panel) 85%, transparent);
-  padding: 2px 5px;
-  border-radius: 999px;
-  border: 1px solid color-mix(in oklab, var(--muted) 25%, transparent);
-}
-
 .toolbar {
   display: flex;
   gap: 10px;
