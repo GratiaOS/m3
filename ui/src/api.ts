@@ -1,4 +1,4 @@
-const BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:3033';
+export const BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:3033';
 const BEARER = localStorage.getItem('m3_token') || '';
 
 type HeadersMap = Record<string, string | undefined>;
@@ -78,6 +78,84 @@ export type TeamState = {
   note?: string | null;
   ts: string;
 };
+
+// --- Emotions / Timeline ---
+export interface EmotionOut {
+  id: number;
+  ts: string;
+  who: string;
+  kind: string;
+  intensity: number;
+  note_id?: number | null;
+  details?: string | null;
+  sealed: boolean;
+  archetype?: string | null;
+  privacy: string;
+}
+
+// New unified TimelineItem type matching server’s timeline shape
+export type TimelineItem = {
+  id: number;
+  ts: string;
+  source: string;
+  title: string;
+  subtitle: string;
+  meta?: Record<string, unknown>;
+};
+
+function mapEmotionToTimelineItem(e: EmotionOut): TimelineItem {
+  const sealed = e.sealed === true || e.privacy === 'sealed';
+  const subtitle = sealed ? '(sealed)' : (e.details ?? '').trim() || '(no details)';
+  return {
+    id: e.id,
+    ts: e.ts,
+    source: 'emotion',
+    title: e.kind || 'emotion',
+    subtitle,
+    meta: {
+      who: e.who,
+      intensity: e.intensity,
+      archetype: e.archetype ?? undefined,
+      privacy: e.privacy ?? 'public',
+      sealed,
+    },
+  };
+}
+
+export async function getTimeline(limit = 20): Promise<TimelineItem[]> {
+  try {
+    const res = await fetch(`${BASE}/timeline/recent?limit=${limit}`, {
+      method: 'GET',
+      headers: { ...(BEARER ? { Authorization: `Bearer ${BEARER}` } : {}) },
+    });
+    if (res.status === 404) {
+      // fallback path
+    } else {
+      if (!res.ok) throw new Error(`getTimeline failed: ${res.status}`);
+      return res.json() as Promise<TimelineItem[]>;
+    }
+  } catch (e) {
+    // network error -> fallback
+  }
+  // Fallback: build from emotions
+  const emos = await emotionsRecent(limit);
+  const items = emos.map(mapEmotionToTimelineItem);
+  // sort newest first and dedupe by id (keep first)
+  items.sort((a, b) => (a.ts < b.ts ? 1 : a.ts > b.ts ? -1 : 0));
+  const seen = new Set<number | string>();
+  const uniq: TimelineItem[] = [];
+  for (const it of items) {
+    if (seen.has(it.id)) continue;
+    seen.add(it.id);
+    uniq.push(it);
+  }
+  return uniq;
+}
+
+export async function emotionsRecent(limit = 20): Promise<EmotionOut[]> {
+  // server ignores limit for now; we keep the param for forward-compat
+  return request<EmotionOut[]>('/emotions/recent', { method: 'GET' });
+}
 
 // ----- Reply API -----
 export async function fetchReply(text: string): Promise<ReplyOut | null> {

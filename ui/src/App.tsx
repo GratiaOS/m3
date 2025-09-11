@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ingest, retrieve, snapshot, exportThread, exportCSV, unlock, setPassphrase } from './api';
+import { ingest, retrieve, snapshot, exportThread, exportCSV, unlock, setPassphrase, getTimeline } from './api';
 import { useProfile } from './state/profile';
 import Composer from './components/Composer';
+import Timeline, { mapEmotionToTimelineItem, sortNewest, dedupeById, type TimelineItem, type Emotion } from './components/Timeline';
 import MemoryDrawer from './components/MemoryDrawer';
 import EnergyPanel from './components/EnergyPanel';
 import Radar from './components/Radar';
@@ -34,6 +35,26 @@ export default function App() {
   const [q, setQ] = useState('');
   const [unlocked, setUnlocked] = useState(false);
   const [allProfiles, setAllProfiles] = useState(false);
+
+  // Emotions state for Timeline
+  const [emotions, setEmotions] = useState<TimelineItem[]>([]);
+
+  // Load Timeline (server-backed) once on mount
+  useEffect(() => {
+    let cancelled = false;
+    getTimeline(20)
+      .then((items: TimelineItem[]) => {
+        if (cancelled) return;
+        const cleaned = dedupeById(sortNewest(items));
+        setEmotions(cleaned);
+      })
+      .catch(() => {
+        // ignore fetch/mapping errors to avoid UI noise
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Incognito modes
   const [incognito, setIncognito] = useState(false); // soft: save as sealed + add "incognito" tag
@@ -162,6 +183,7 @@ export default function App() {
       <Dashboard />
 
       <ThanksPanel me={me} />
+      <Timeline items={emotions} />
 
       <Composer onIngest={onIngest} incognito={incognito} />
 
