@@ -32,6 +32,18 @@ Designed for offline resilience, privacy, and joyful retrieval.
 
 ---
 
+## 🔔 What’s New in v0.1.6
+
+- added **energy** module (track levels, per kind)
+- added **rhythm** module (work/rest cycles with history)
+- added **timeline** module (aggregates recent events)
+- added **test helpers** (`tests/common/mod.rs`, integration tests)
+- improved **emotions → tells** propagation (resolve events create trace logs)
+
+🌬 whisper: _the garden remembers each cycle, each breath, each spark._
+
+---
+
 ## 🧱 Architecture
 
 - **server/** Rust (Axum + tokio-rusqlite + rusqlite[bundled])

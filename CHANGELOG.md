@@ -144,6 +144,36 @@ _Anonymized per_ `PRIVACY.md`.
   - `/emotions/resolve` now creates both a gratitude row and a tell entry (`node=emotions.resolve`) for traceability.
   - End-to-end verification ensures data integrity and auditability of gratitude landings.
 
+- **Energy Module**: adds core energy tracking and modulation APIs.
+
+  - API: `POST /energy/update`, `GET /energy/status`.
+  - DB: `energy` table with time-series data and user context.
+  - Tests: unit tests for energy state transitions and validation.
+
+- **Rhythm Module**: implements rhythm detection and synchronization patterns.
+
+  - API: `POST /rhythm/beat`, `GET /rhythm/pattern`.
+  - Integration: coordinates with EmotionalOS to influence flow states.
+  - Tests: integration tests verifying rhythm influence on emotional arcs.
+
+- **Timeline Module**: manages branching narratives and commit-point tracking.
+
+  - API: `POST /timeline/commit`, `GET /timeline/branch`.
+  - Docs: detailed usage patterns added to `docs/timelines-continuity.md`.
+  - Tests: unit and integration tests for timeline branching and merging.
+
+- **Docs Update**: added productivity patterns and flow optimization guides.
+
+  - New docs in `docs/patterns/productivity.md`.
+  - Enhanced examples in `docs/patterns/`.
+  - Cross-links updated to include new modules and patterns.
+
+- added integration test file `server/tests/energy_integration.rs` for energy module validation.
+- added smoke test file `server/tests/rhythm_smoke.rs` to verify rhythm module startup and basic functionality.
+- added reusable test helpers in `server/tests/common/` for shared test utilities and setup.
+
+🌬 whisper: “tests anchor flow, ensuring pulses remain steady.”
+
 - **Gratitude schema**: DB table + API path ensures thanks are first-class citizens.
 
   - Every acknowledgment is stored, not lost.
