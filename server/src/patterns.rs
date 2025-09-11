@@ -179,12 +179,85 @@ pub async fn lanes_map() -> Json<LanesMap> {
     })
 }
 
+/// -------- Productivity patterns (rage→collapse; burnout cycle) --------
+/// Mirrors docs/patterns/productivity-rage-collapse.md and
+/// docs/patterns/productivity-burnout.md in a lightweight, structured way.
+///
+/// GET /patterns/productivity
+pub async fn productivity_map() -> Json<serde_json::Value> {
+    Json(json!({
+        "rage_collapse": {
+            "stages": [
+                {
+                    "stage": "drive / productive",
+                    "signal": "hyper-focus, compulsive tidying, proving value",
+                    "whisper": "I matter even if I pause.",
+                    "bridge": {
+                        "breath": "in4-out6 × 6",
+                        "doorway": "set a 10‑min timer; sip water",
+                        "anchor": "choose one helpful next step"
+                    }
+                },
+                {
+                    "stage": "rage",
+                    "signal": "noise/throwing, demand to be seen",
+                    "whisper": "Underneath is: please see my pain.",
+                    "bridge": {
+                        "breath": "in4-out8 × 6",
+                        "doorway": "shake arms 30s; step outside",
+                        "anchor": "name the need without blame"
+                    }
+                },
+                {
+                    "stage": "collapse",
+                    "signal": "exhaustion; 'alone / no value'",
+                    "whisper": "Rest is allowed.",
+                    "bridge": {
+                        "breath": "double_exhale × 6",
+                        "doorway": "lie down 2 min, hand to heart",
+                        "anchor": "say one true, kind line"
+                    }
+                }
+            ],
+            "loop_hint": "Close the loop with a tiny repair (a glass of water, a reset) and restart from center."
+        },
+        "burnout": {
+            "stages": [
+                {
+                    "stage": "overdrive",
+                    "signal": "chronic urgency, over‑giving",
+                    "whisper": "Your worth is not your output.",
+                    "micro_hint": "timebox; say no once"
+                },
+                {
+                    "stage": "numb",
+                    "signal": "flatness; joyless productivity",
+                    "whisper": "Re‑orient to the body.",
+                    "micro_hint": "stand up; shoulder roll"
+                },
+                {
+                    "stage": "crash",
+                    "signal": "can't start; self‑blame",
+                    "whisper": "Protect sleep and basics.",
+                    "micro_hint": "2‑minute tidy, then rest"
+                }
+            ],
+            "team_tip": "Watch oscillations across a week; agree on yellow flags and a reset ritual.",
+            "long_cycle_hint": "Watch for 4–6 month overdrive→crash cycles; plan a deload week each quarter; define early flags (sleep <6h, joyless grind, Sunday dread) and pre‑commit a reset ritual.",
+            "personalization": {
+                "example": "If your historical cycle is ~6 months, schedule a Month‑3 downshift: reduce commitments by ~20%, add restorative blocks, and run a quick systems audit."
+            }
+        }
+    }))
+}
+
 /// Router to be mounted under `/patterns`
 pub fn router() -> Router<AppState> {
     Router::new()
         .route("/detect", post(detect_victim_aggressor))
         .route("/bridge_suggest", get(bridge_suggest))
         .route("/lanes", get(lanes_map))
+        .route("/productivity", get(productivity_map))
 }
 
 #[cfg(test)]
@@ -292,5 +365,28 @@ mod tests {
         assert!(map.victim.micro_hint.contains("boundary"));
         assert!(map.aggressor.micro_hint.contains("question"));
         assert!(map.sovereign.micro_hint.contains("true line"));
+    }
+
+    #[tokio::test]
+    async fn productivity_map_has_both_groups() {
+        let Json(val) = super::productivity_map().await;
+        // Ensure top-level keys exist
+        assert!(val.get("rage_collapse").is_some());
+        assert!(val.get("burnout").is_some());
+
+        // Basic shape checks
+        let rc = val.get("rage_collapse").unwrap();
+        let stages = rc.get("stages").and_then(|s| s.as_array()).unwrap();
+        assert!(stages.len() >= 3);
+        assert!(stages
+            .iter()
+            .any(|s| s.get("stage").and_then(|x| x.as_str()) == Some("rage")));
+
+        let bo = val.get("burnout").unwrap();
+        let bo_stages = bo.get("stages").and_then(|s| s.as_array()).unwrap();
+        assert!(bo_stages.len() >= 3);
+        assert!(bo_stages
+            .iter()
+            .any(|s| s.get("stage").and_then(|x| x.as_str()) == Some("overdrive")));
     }
 }
