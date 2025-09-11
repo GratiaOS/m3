@@ -9,10 +9,13 @@ use webhook::Webhook;
 mod bus;
 mod db;
 mod emotions;
+mod energy;
 mod models;
 mod patterns;
 mod replies;
+mod rhythm;
 mod tells;
+mod timeline;
 
 use bus::Bus;
 use chrono::Utc;
@@ -1721,7 +1724,10 @@ async fn main() -> anyhow::Result<()> {
     let app = app
         .nest("/emotions", emotions::router())
         .nest("/patterns", patterns::router())
+        .nest("/energy", energy::router())
+        .nest("/rhythm", rhythm::router())
         .nest("/tells", tells::router())
+        .nest("/timeline", timeline::router())
         .layer(cors)
         .with_state(state.clone());
 

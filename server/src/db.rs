@@ -122,6 +122,21 @@ pub fn ensure_schema(c: &mut rusqlite::Connection) -> tokio_rusqlite::Result<()>
         CREATE INDEX IF NOT EXISTS idx_emotions_ts ON emotions(ts);
         CREATE INDEX IF NOT EXISTS idx_emotions_kind ON emotions(kind);
         CREATE INDEX IF NOT EXISTS idx_emotions_privacy ON emotions(privacy);
+
+        -- Energy marks (time-series of energy levels per kind)
+        -- kind: 'dragon' | 'heart' | 'play' | 'flow' | 'focus' | 'rest' (extensible)
+        -- level: 0.0 .. 1.0 (real-valued)
+        CREATE TABLE IF NOT EXISTS energy_marks(
+          id        INTEGER PRIMARY KEY,
+          ts        TEXT NOT NULL,                           -- RFC3339
+          who       TEXT NOT NULL,                           -- actor/source
+          kind      TEXT NOT NULL,                           -- energy kind
+          level     REAL NOT NULL CHECK(level >= 0.0 AND level <= 1.0),
+          note      TEXT                                     -- optional free text
+        );
+        CREATE INDEX IF NOT EXISTS idx_energy_marks_ts ON energy_marks(ts);
+        CREATE INDEX IF NOT EXISTS idx_energy_marks_kind ON energy_marks(kind);
+        CREATE INDEX IF NOT EXISTS idx_energy_marks_who ON energy_marks(who);
         "#,
     )?;
 
