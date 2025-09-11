@@ -39,6 +39,7 @@ Designed for offline resilience, privacy, and joyful retrieval.
 - added **timeline** module (aggregates recent events)
 - added **test helpers** (`tests/common/mod.rs`, integration tests)
 - improved **emotions → tells** propagation (resolve events create trace logs)
+- added **energy-calendar pattern** (flips from hours to energy thresholds for flexible scheduling)
 
 🌬 whisper: _the garden remembers each cycle, each breath, each spark._
 

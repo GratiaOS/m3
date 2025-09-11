@@ -150,6 +150,12 @@ _Anonymized per_ `PRIVACY.md`.
   - DB: `energy` table with time-series data and user context.
   - Tests: unit tests for energy state transitions and validation.
 
+- **Energy-Calendar Pattern**: documented rationale for flipping from hours to energy thresholds.
+  - Docs: `docs/patterns/energy-calendar.md`.
+  - Concept: shifts scheduling from clock-time to energy pulses.
+
+🌬 whisper: "energy is counted in pulses, not hours."
+
 - **Rhythm Module**: implements rhythm detection and synchronization patterns.
 
   - API: `POST /rhythm/beat`, `GET /rhythm/pattern`.
