@@ -6,6 +6,14 @@
 - **Integration Cut** → when code and docs catch up, gaps are closed, and a version is released.
 - Together they tell the story: one is pulse, the other is archive.
 
+# 📜 Docs + UI Sync — 2025-09-10
+
+- **Build**: enabled SVGR + aliases; added Gratia mark (spiral→∞).
+- **Feat(UI)**: introduced Catalyst primitives and Tailwind v4 base.
+- **Feat(UI)**: enhanced Dashboard with pillars, heart flow, and Catalyst polish.
+
+🌬 whisper: "marks land, catalysts ignite, dashboards breathe."
+
 ---
 
 ## 📜 Docs + Code Sync — 2025-09-08
@@ -131,6 +139,11 @@ _Anonymized per_ `PRIVACY.md`.
     - Router-level test for `/emotions/resolve`.
     - Black-box integration test in `server/tests/` (real server + DB) → ensures mirror fields (`sealed`, `archetype`, `privacy`) persist.
 
+- **EmotionalOS (resolve trace)**:
+
+  - `/emotions/resolve` now creates both a gratitude row and a tell entry (`node=emotions.resolve`) for traceability.
+  - End-to-end verification ensures data integrity and auditability of gratitude landings.
+
 - **Gratitude schema**: DB table + API path ensures thanks are first-class citizens.
 
   - Every acknowledgment is stored, not lost.
@@ -153,7 +166,7 @@ _Anonymized per_ `PRIVACY.md`.
 
 1. EmotionalOS: Panic UI → DB flow needs full confirmation across sessions.
 2. EmotionalOS: Gratitude continuity → test repeat landings + nightly roll-up.
-3. EmotionalOS: `/emotions/resolve` → extend to cover non-gratitude closures.
+3. EmotionalOS: /emotions/resolve — support non-gratitude closure kinds (future extension).
 4. Docs: expand EmotionalOS section with diagrams + flowcharts.
 5. CI: auto-pr.yml not yet validated against EmotionalOS endpoints.
 6. EmotionalOS: Panic-body integration — confirm continuity of nervous system discharge patterns across logs and sessions.
