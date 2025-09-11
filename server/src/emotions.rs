@@ -1,3 +1,4 @@
+use crate::tells;
 use crate::AppState;
 use axum::http::StatusCode;
 use axum::{extract::State, routing::get, routing::post, Json, Router};
@@ -153,6 +154,21 @@ async fn resolve_emotion(
         )
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    // Best-effort: create a tell for traceability (node=emotions.resolve).
+    // Use the centralized tells helper so schema stays consistent.
+    {
+        let node = "emotions.resolve";
+        let pre = inserted
+            .details
+            .as_deref()
+            .map(|d| format!("details: {}", d))
+            .unwrap_or_else(|| "details: -".to_string());
+        let act = format!("gratitude by {}", inserted.who);
+        let created_at = Some(inserted.ts.as_str());
+        // Ignore errors so /emotions/resolve remains 200 OK even if tells table differs.
+        let _ = tells::insert_tell(&state.db, node, &pre, &act, created_at).await;
+    }
 
     Ok(Json(inserted))
 }

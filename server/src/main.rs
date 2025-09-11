@@ -12,6 +12,7 @@ mod emotions;
 mod models;
 mod patterns;
 mod replies;
+mod tells;
 
 use bus::Bus;
 use chrono::Utc;
@@ -688,11 +689,6 @@ async fn main() -> anyhow::Result<()> {
     };
 
     #[derive(Deserialize)]
-    struct TellsQuery {
-        limit: Option<i64>,
-    }
-
-    #[derive(Deserialize)]
     struct SetStateRequest {
         // pass-through merges; keep them flexible
         members: Option<serde_json::Value>,
@@ -1197,97 +1193,6 @@ async fn main() -> anyhow::Result<()> {
                             "titles": titles
                         }))
                     }
-                }
-            }),
-        )
-        // --- tells ---
-        .route(
-            "/tells",
-            get({
-                let state = state.clone();
-                move |Query(q): Query<TellsQuery>| {
-                    let state = state.clone();
-                    async move {
-                        let limit = q.limit.unwrap_or(50);
-                        let rows: Vec<Tell> = state
-                            .db
-                            .0
-                            .call(move |c| {
-                                let mut stmt = c.prepare(
-                                "SELECT id,node,pre_activation,action,created_at,handled_at
-                                 FROM tells ORDER BY id DESC LIMIT ?1",
-                            )?;
-                                let mut it =
-                                    stmt.query(rusqlite::params![limit])?;
-                                let mut out = Vec::new();
-                                while let Some(row) = it.next()? {
-                                    out.push(Tell {
-                                        id: row.get(0)?,
-                                        node: row.get(1)?,
-                                        pre_activation: row.get(2)?,
-                                        action: row.get(3)?,
-                                        created_at: row.get(4)?,
-                                        handled_at: row.get(5)?,
-                                    });
-                                }
-                                Ok(out)
-                            })
-                            .await
-                            .unwrap();
-                        Json(rows)
-                    }
-                }
-            }),
-        )
-        // --- tells: create (POST /tells) ---
-        .route(
-            "/tells",
-            post({
-                let state = state.clone();
-                move |Json(req): Json<CreateTellRequest>| async move {
-                    let ts = req
-                        .created_at
-                        .unwrap_or_else(|| chrono::Utc::now().to_rfc3339());
-                    let node = req.node;
-                    let pre = req.pre_activation;
-                    let act = req.action;
-                    let id: i64 = state
-                        .db
-                        .0
-                        .call(move |c| {
-                            c.execute(
-                                "INSERT INTO tells(node,pre_activation,action,created_at)
-                                 VALUES(?,?,?,?)",
-                                rusqlite::params![node, pre, act, ts],
-                            )?;
-                            Ok(c.last_insert_rowid())
-                        })
-                        .await
-                        .unwrap();
-                    Json(serde_json::json!({ "id": id }))
-                }
-            }),
-        )
-        // --- tells: mark handled (POST /tells/handle) ---
-        .route(
-            "/tells/handle",
-            post({
-                let state = state.clone();
-                move |Json(req): Json<HandleTellRequest>| async move {
-                    let now = chrono::Utc::now().to_rfc3339();
-                    state
-                        .db
-                        .0
-                        .call(move |c| {
-                            c.execute(
-                                "UPDATE tells SET handled_at=?1 WHERE id=?2",
-                                rusqlite::params![now, req.id],
-                            )?;
-                            Ok(())
-                        })
-                        .await
-                        .unwrap();
-                    Json(SimpleOk { ok: true })
                 }
             }),
         )
@@ -1812,10 +1717,11 @@ async fn main() -> anyhow::Result<()> {
         .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
         .allow_headers(Any);
 
-    // attach state after nesting emotions and patterns (apply CORS last so it covers nested routes)
+    // attach state after nesting emotions, patterns, energy, rhythm (apply CORS last so it covers nested routes)
     let app = app
         .nest("/emotions", emotions::router())
         .nest("/patterns", patterns::router())
+        .nest("/tells", tells::router())
         .layer(cors)
         .with_state(state.clone());
 
