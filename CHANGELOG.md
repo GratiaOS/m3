@@ -6,6 +6,16 @@
 - **Integration Cut** → when code and docs catch up, gaps are closed, and a version is released.
 - Together they tell the story: one is pulse, the other is archive.
 
+## 📜 Docs Sync — 2025-09-12
+
+- **New patterns added:**
+  - `docs/patterns/compression-witness-release.md` — compression loop, witnessed release as pattern of letting go.
+  - `docs/patterns/influx-deflection-collapse.md` — pattern tracing influx, energetic deflection, and collapse.
+  - `docs/patterns/nde-fearlessness-recklessness.md` — near-death experience, mapping fearlessness vs. recklessness.
+  - `docs/patterns/victim-aggressor-coil.md` — victim/aggressor dynamic as a coiled, repeating loop.
+
+🌬 whisper: "each loop remembered, each coil mapped, release comes with witness."
+
 # 📜 Docs + UI Sync — 2025-09-10
 
 - **Build**: enabled SVGR + aliases; added Gratia mark (spiral→∞).
@@ -178,7 +188,13 @@ _Anonymized per_ `PRIVACY.md`.
 - added smoke test file `server/tests/rhythm_smoke.rs` to verify rhythm module startup and basic functionality.
 - added reusable test helpers in `server/tests/common/` for shared test utilities and setup.
 
-🌬 whisper: “tests anchor flow, ensuring pulses remain steady.”
+---
+
+- **Marks**: introduced first footprint for Andrei (docs/marks/andrei.md).
+  - Lightweight, personal marker to acknowledge presence.
+  - Seeds a traceable path in the garden’s memory.
+
+---
 
 - **Gratitude schema**: DB table + API path ensures thanks are first-class citizens.
 
