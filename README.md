@@ -295,6 +295,7 @@ See also:
 - [docs/orb-landing.md](docs/orb-landing.md) — protocol for contact & safety
 - [docs/shared-moments.md](docs/shared-moments.md) — mapping lived experiences
 - [docs/home-arc.md](docs/home-arc.md) — patterns of family/home field
+- [docs/densities-sovereignty-tools.md](docs/densities-sovereignty-tools.md) — densities, dimensions, and sovereignty field
 
 Marks (visual gestures) live under `/mark`. We avoid 'brand' framing; see also docs/mark/ for visual assets.
 
