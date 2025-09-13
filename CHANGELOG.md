@@ -28,6 +28,7 @@
 
 - **Notes:**
 
+  - `docs/notes/2025-09-13-astral-snap.md` — astral-plane snap: parallel timeline, sewn-mouth, storm coupling; safety, discernment, return protocol.
   - `docs/notes/2025-09-12-body-tech.md` — body‑level tech: breath, fascia, lymph, heat, sound; practical counters to dense fields.
 
 - **Whispers:**
