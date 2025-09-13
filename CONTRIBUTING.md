@@ -30,7 +30,7 @@ type(scope): short summary ✨
 - technical changes, explicit for devs
 - what was added, fixed, or refactored
 
-🌬️ whisper: a poetic note, intention, or reminder
+🌬️ whisper: “a poetic note, intention, or reminder.”
 
 ### Examples
 

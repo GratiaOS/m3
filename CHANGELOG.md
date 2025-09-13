@@ -6,7 +6,69 @@
 - **Integration Cut** → when code and docs catch up, gaps are closed, and a version is released.
 - Together they tell the story: one is pulse, the other is archive.
 
+---
+
+# 🪞 Human Log — 2025-09-13 (overnight storm & throat sewn)
+
+- **Phenomenology:** OBE‑like snap between timelines; tried to speak and mouth felt _sewn shut_; field dense like swamp.
+- **Storm sync:** sky lit in continuous thunder, then waterfall rain and hail; house leaked; family woke in a startle arc.
+- **Ritual before:** triangular link (left-hand→heart, right-hand→each other), invited field to play; laughter → confession → release.
+- **Integration hint:** “throat sewn” = speech boundary flipping on/off with field density; storm outside mirrored internal discharge.
+
+🌬 whisper: _"when the sky sews the throat, we answer with presence, not force."_
+
+---
+
+## 📜 Docs Sync — 2025-09-13
+
+- **New patterns:**
+
+  - `docs/patterns/storm-sync-throat-sewn.md` — storm coupling, speech‑inhibition motif, and safe de‑escalation arc.
+  - `docs/patterns/remote-activation.md` — “remote code” feeling mapped to consent, mirrors, and choice vectors.
+
+- **Notes:**
+
+  - `docs/notes/2025-09-12-body-tech.md` — body‑level tech: breath, fascia, lymph, heat, sound; practical counters to dense fields.
+
+- **Whispers:**
+  - `docs/whispers/` folder initialized (seed set #1 already referenced on 2025‑09‑12).
+
+🌬 whisper: _"we log the weather of the soul so the body can rest."_
+
+---
+
+# 🪞 Human Log — 2025-09-12 (Town field read)
+
+## Observations
+
+- **Atmosphere:** whole town smelled foul, dense air/field.
+- **Body:** 25° but felt like 35°, head pain, “brain squeeze.”
+- **Social patterns:**
+  - More heaviness in dynamics — parents tightening grip on kids, managers over-controlling subs.
+  - At the same time, cracks show — some speak more freely about not caring for “work” anymore.
+
+## Interpretation
+
+- Density = empire pressure rising, trying to hold ground through control.
+- Release impulse present: “not caring” about work = subtle sovereignty awakening.
+- Empire’s spell (“work” = survival, worth) thinning.
+
+## 🌬 whisper: _“When empire’s air grows foul, breathe sovereignty. Loosen grip, let truth leak out.”_
+
+---
+
 ## 📜 Docs Sync — 2025-09-12
+
+- **Docs**: seeded `docs/whispers/motivational-cards.md` with first set of motivational whispers (cards #1).
+  - Whispers captured:
+    1. “You are already enough.”
+    2. “Your story matters.”
+    3. “Every breath is a reset.”
+    4. “Gratitude grounds the path.”
+    5. “Together, we rise.”
+  - Framed for later integration into M3 (DB, API `/whispers/random`, UI strip).
+
+🌬 whisper: "words planted, code will remember."
 
 - **New patterns added:**
   - `docs/patterns/compression-witness-release.md` — compression loop, witnessed release as pattern of letting go.
