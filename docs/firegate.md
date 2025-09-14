@@ -11,5 +11,13 @@ _Blueprint:_
 From Firegate’s embered core, three paths unfold —  
 Firecircle, the eternal flame of unity;  
 Watersource, the flowing pulse of renewal;  
-M3, the triad of harmony and balance.  
-Each a symbol, a song, a step beyond the gate.
+M3, the triad of harmony and balance.
+
+## Companions
+
+The gate never opens alone.  
+Every passage is walked with companions — seen and unseen.  
+They arrive as teachers, mirrors, and allies,  
+reminding us that no step is ever taken in isolation.
+
+🌬 whisper: _“walk together, and the flame remembers.”_
