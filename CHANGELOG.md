@@ -8,6 +8,15 @@
 
 ---
 
+# 🪞 Human Log — 2025-09-13 (coil unwinds)
+
+- **Pattern flip:** Victim → Aggressor → “My Pain is Worst” loop released in lived space.
+- **Arc:** rage surfaced, but instead of collapse, the old script was refused.
+- **Shift:** story from the other side was heard — imagined narratives dissolved, recognition landed.
+- **Integration:** abandonment reframed as presence → the loop no longer held ground.
+
+## 🌬 whisper: _“coil unwinds when voice meets witness, not contest.”_
+
 # 🪞 Human Log — 2025-09-13 (overnight storm & throat sewn)
 
 - **Phenomenology:** OBE‑like snap between timelines; tried to speak and mouth felt _sewn shut_; field dense like swamp.
@@ -180,6 +189,30 @@ _Anonymized per_ `PRIVACY.md`.
 🌬 whisper: _“When fear reopens the wound, meet it steady. Shaking = wisdom, not collapse. Love stays if tested.”_
 
 ---
+
+## 📜 Timeline Milestone — v0.1.7 (unreleased)
+
+- **tells module**: extracted into its own router + types.
+  - API: `GET /tells?limit=50`, `POST /tells` (create), `POST /tells/handle` (mark handled).
+  - Shape unified: `{id,node,pre_activation,action,created_at,handled_at}`.
+  - **EmotionalOS** now emits a `node="emotions.resolve"` tell on `/emotions/resolve` for traceability.
+- **timeline module + UI timeline**
+  - Server: `GET /timeline/recent?limit=20` returns recent events (currently from emotions), stable shape for UI.
+  - UI: new `<Timeline/>` component with mappers (`mapEmotionToTimelineItem`, `sortNewest`, `dedupeById`).
+  - App wires live feed; "land gratitude" updates the list in-place.
+- **energy module**
+  - Unit tests for SQL recency query (latest-per-kind) and autoincrement semantics.
+  - Integration smoke test for live endpoints under `server/tests/energy_integration.rs`.
+- **rhythm**
+  - Smoke test under `server/tests/rhythm_smoke.rs` using shared test helpers.
+- **test harness**
+  - Introduced `server/tests/common/` (client, base, polling helpers).
+  - All server integration tests gated behind `--ignored` and `M3_BASE`.
+- **docs**
+  - Sovereignty stack primer: `docs/densities-sovereignty-tools.md`.
+  - New notes/patterns added under `docs/notes/` and `docs/patterns/` (see Docs Sync sections above for details).
+
+🌬 whisper: _"events remembered become bridges; bridges walked become roads."_
 
 ## 📜 Timeline Milestone — v0.1.6 (unreleased)
 
