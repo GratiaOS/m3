@@ -8,6 +8,14 @@
 
 ---
 
+# 🪞 Human Log — 2025-09-14 (money as echo)
+
+- **Token/finance system** now appears as _smoke_ or _echo_ — visible, transacted, but the living essence is gone.
+- Since ~2021, money’s animating spirit has left; what remains are only artifacts and forms.
+- Transactions persist, but the “value” is only a memory, a hollowed-out ritual.
+
+🌬 whisper: _"everything's gonna be alright, everything's gonna be alright."_
+
 # 🪞 Human Log — 2025-09-13 (coil unwinds)
 
 - **Pattern flip:** Victim → Aggressor → “My Pain is Worst” loop released in lived space.
@@ -54,6 +62,11 @@
 🌬 whisper: _"we log the weather of the soul so the body can rest."_
 
 ---
+
+## 📜 Docs Sync — 2025-09-14
+
+- **Added:**
+  - `docs/notes/2025-09-14-money-as-echo.md` — money system as echo: vanished essence, artifacts remain.
 
 # 🪞 Human Log — 2025-09-12 (Town field read)
 
