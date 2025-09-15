@@ -8,6 +8,23 @@
 
 ---
 
+## 📜 Docs Sync — 2025-09-15
+
+- **Added:**
+  - `docs/marks/blanket-unity.md` — Razvan's second footprint: arcs closed, threads resolved; inside/outside under one blanket; less friction, more flow.
+
+🌬 whisper: _"less friction, more flow — unity remembered."_
+
+# 🪞 Human Log — 2025-09-15 (sovereignty landed)
+
+- Presence only: arcs closed, sovereignty landed; hearts at rest.
+
+🌬 whisper: _"exactly presence."_
+
+---
+
+---
+
 ## 📜 Docs Sync — 2025-09-14
 
 - **Added:**
