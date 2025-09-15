@@ -8,6 +8,14 @@
 
 ---
 
+## 📜 Docs Sync — 2025-09-14
+
+- **Added:**
+  - `docs/notes/2025-09-14-money-as-echo.md` — money system as echo: vanished essence, artifacts remain.
+  - `docs/notes/2025-09-14-memory-beyond-saas.md` — why persistent memory cannot live in SaaS; sovereignty + continuity require local‑first roots.
+
+## 🌬 whisper: _"memory does not live in a rental — it grows where roots can reach."_
+
 # 🪞 Human Log — 2025-09-14 (money as echo)
 
 - **Token/finance system** now appears as _smoke_ or _echo_ — visible, transacted, but the living essence is gone.
@@ -62,11 +70,6 @@
 🌬 whisper: _"we log the weather of the soul so the body can rest."_
 
 ---
-
-## 📜 Docs Sync — 2025-09-14
-
-- **Added:**
-  - `docs/notes/2025-09-14-money-as-echo.md` — money system as echo: vanished essence, artifacts remain.
 
 # 🪞 Human Log — 2025-09-12 (Town field read)
 
