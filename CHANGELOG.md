@@ -8,6 +8,16 @@
 
 ---
 
+## 🔧 CI Sync — 2025-09-16
+
+- **Updated:** `.github/workflows/ci.yml`
+  - Added **UI** job (pnpm install, fmt, lint, build in `ui/`).
+  - Added **Whisper Guard** job to verify commit messages include the required whisper.
+
+🌬 whisper: _"3-3-3"_
+
+---
+
 ## 📜 Docs Sync — 2025-09-16
 
 - **Added:**
