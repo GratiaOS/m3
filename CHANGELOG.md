@@ -11,12 +11,15 @@
 ## 🔧 CI Sync — 2025-09-16
 
 - **Updated:** `.github/workflows/ci.yml`
+
   - Added **UI** job (pnpm install, fmt, lint, build in `ui/`).
   - Added **Whisper Guard** job to verify commit messages include the required whisper.
   - **UI job:** now runs on Node 18 **and** 20 (matrix) and installs pnpm via Corepack (`corepack prepare pnpm@9 --activate`).
   - **Server job:** now runs on Rust **stable** and **nightly** (matrix); rust-toolchain action fixed to use
 
     `dtolnay/rust-toolchain@master` with `toolchain` input.
+
+  - **Matrix status:** all jobs green — Server (stable & nightly), UI (Node 18 & 20), and Whisper Guard.
 
 🌬 whisper: _"3-3-3"_
 
@@ -39,6 +42,7 @@
   - `docs/marks/README.md` — Marks Index: list of existing marks (Andrei, Blanket Unity) + how-to add new marks.
   - `.github/PULL_REQUEST_TEMPLATE.md` — PR checklist with whisper.
   - `.github/ISSUE_TEMPLATE/bug.md, feature.md` — issue templates with optional whisper.
+  - `README.md` — CI status badge is now clickable (links to the workflow).
 
 🌬 whisper: _"build softly; ship clearly."_
 
