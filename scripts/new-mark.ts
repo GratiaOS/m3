@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
-import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+/// <reference types="node" />
+import { mkdirSync, writeFileSync, existsSync } from 'fs';
+import { join } from 'path';
 
 function kebab(s: string) {
   return s
