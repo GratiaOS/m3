@@ -104,9 +104,9 @@ pub struct BridgeQuery {
 
 #[derive(Serialize)]
 #[serde(rename_all = "snake_case")]
-struct BridgeSuggestion {
-    pattern: &'static str, // high-level label
-    hint: &'static str,    // compact micro-logic
+pub struct BridgeSuggestion {
+    pub pattern: &'static str, // high-level label
+    pub hint: &'static str,    // compact micro-logic
     breath: &'static str,
     doorway: &'static str,
     anchor: &'static str,
@@ -157,6 +157,12 @@ fn bridge_table(kind: &str, intensity: f32) -> BridgeSuggestion {
             anchor: "Return to center.",
         },
     }
+}
+
+/// Library helper: compute a bridge suggestion without going through HTTP.
+/// Useful for other handlers (e.g., `/panic`) to reuse the same logic.
+pub fn suggest_bridge(kind: &str, intensity: f32) -> BridgeSuggestion {
+    bridge_table(kind, intensity)
 }
 
 /// GET /patterns/bridge_suggest?kind=panic&intensity=0.7

@@ -8,6 +8,15 @@
 
 ---
 
+# 🧠 EmotionalOS Sync — 2025-09-16
+
+- **/panic** response now includes `suggested_bridge` derived from `/patterns/bridge_suggest` (breath • doorway • anchor) when applicable.
+- **UI** may optionally render a suggestion card.
+
+🌬 whisper: _"after the tremor, a door."_
+
+---
+
 ## 💡 Patterns Sync — 2025-09-16
 
 - **Server:** `/patterns` namespace hardened

@@ -176,6 +176,8 @@ struct PanicOut {
     breath: String,
     doorway: String,
     anchor: String,
+    /// Optional oracle suggestion derived from patterns::suggest_bridge
+    suggested_bridge: Option<String>,
     logged: bool,
 }
 
@@ -1526,6 +1528,13 @@ async fn main() -> anyhow::Result<()> {
                     let anchor  = body.anchor .unwrap_or_else(|| "Flow > Empire.".into());
                     let mode    = body.mode.as_deref();
 
+                    // derive a bridge suggestion from patterns (mirror emotion intensity semantics)
+                    let (bridge_kind, bridge_intensity) = match mode {
+                        Some("fearVisible") | Some("fear-visible") => ("panic", 0.65f32),
+                        _ => ("anxiety", 0.55f32),
+                    };
+                    let suggested_bridge: Option<String> = Some(crate::patterns::suggest_bridge(bridge_kind, bridge_intensity).pattern.to_string());
+
                     // write compact line (async, best-effort)
                     let mut logged = false;
                     if log_panic_compact(&whisper, &breath, &doorway, &anchor, mode).await.is_ok() {
@@ -1593,13 +1602,13 @@ async fn main() -> anyhow::Result<()> {
                     // 4) webhook (log error on failure)
                     if let Err(e) = state.webhook.send("panic.ui", &serde_json::json!({
                         "event": "panic.ui",
-                        "payload": { "whisper": whisper, "breath": breath, "doorway": doorway, "anchor": anchor },
+                        "payload": { "whisper": whisper, "breath": breath, "doorway": doorway, "anchor": anchor, "suggested_bridge": suggested_bridge.clone() },
                         "ts": chrono::Utc::now().to_rfc3339(),
                     })).await {
                         tracing::warn!(error = ?e, "panic.ui: webhook failed");
                     }
 
-                    Json(PanicOut { whisper, breath, doorway, anchor, logged })
+                    Json(PanicOut { whisper, breath, doorway, anchor, suggested_bridge, logged })
                 }
             }),
         )
@@ -1638,8 +1647,10 @@ async fn main() -> anyhow::Result<()> {
                         let breath  = breaths .choose(&mut rand::thread_rng()).unwrap().to_string();
                         let doorway = doorways.choose(&mut rand::thread_rng()).unwrap().to_string();
                         let anchor  = anchors .choose(&mut rand::thread_rng()).unwrap().to_string();
+                        // derive suggestion for a generic panic run (intensity ~0.6)
+                        let suggested_bridge: Option<String> = Some(crate::patterns::suggest_bridge("panic", 0.6).pattern.to_string());
                         // write log once (sync), then mark logged=true
-                        let mut out = PanicOut { whisper, breath, doorway, anchor, logged: false };
+                        let mut out = PanicOut { whisper, breath, doorway, anchor, suggested_bridge, logged: false };
                         write_panic_log(&out);
                         out.logged = true;
 
