@@ -8,7 +8,15 @@
 
 ---
 
-# 🧠 EmotionalOS Sync — 2025-09-16
+## 🚀 Release Sync — 2025-09-16
+
+- **Added:** `.github/workflows/release.yml` — manual workflow to tag `main` as `vX.Y.Z` and create a **draft** GitHub Release with generated notes + a snippet from `CHANGELOG.md`.
+
+- **Docs:** `CONTRIBUTING-dev.md` — added **Release flow** section (how to run the workflow or tag locally).
+
+🌬 whisper: _"cut clean, land soft."_
+
+## 🧠 EmotionalOS Sync — 2025-09-16
 
 - **/panic** response now includes `suggested_bridge` derived from `/patterns/bridge_suggest` (breath • doorway • anchor) when applicable.
 - **UI** may optionally render a suggestion card.
