@@ -99,17 +99,26 @@ jobs:
       - name: Append to release notes (idempotent)
         env:
           GH_TOKEN: ${{ github.token }}
+          CREDITS: ${{ steps.credits.outputs.credits }}
         shell: bash
         run: |
           set -euo pipefail
           tag=${{ github.event.release.tag_name }}
           body=$(gh release view "$tag" --json body -q .body || echo "")
 
-          # If Credits already present, do nothing (idempotent)
+          # If Credits header already present, do nothing (idempotent)
           if echo "$body" | grep -q '^## Credits'; then
             echo "Credits section already present. Skipping append."
             exit 0
           fi
 
-          new_body="## Credits\n${{ steps.credits.outputs.credits }}\n\n$body"
-          gh release edit "$tag" --notes "$new_body"
+          # Build new notes with a proper heredoc to preserve newlines
+          : > NEW_NOTES.md
+          cat > NEW_NOTES.md <<EOF
+          ## Credits
+          ${CREDITS}
+
+          EOF
+          printf "%s\n" "$body" >> NEW_NOTES.md
+
+          gh release edit "$tag" --notes-file NEW_NOTES.md
