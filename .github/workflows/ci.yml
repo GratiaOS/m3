@@ -57,3 +57,82 @@ jobs:
           M3_EXPORTS_DIR="$GITHUB_WORKSPACE/server/exports" ./panic.sh
           # Assert at least one panic log was created
           find server/exports/panic -type f -name '*.log' -print -quit | grep -q .
+
+  ui:
+    name: UI (Node) – fmt • lint • build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Install workspace deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Show versions
+        run: |
+          node -v
+          pnpm -v
+
+      - name: Format (workspace)
+        run: pnpm fmt
+
+      - name: Lint (workspace)
+        run: pnpm lint
+
+      - name: Build UI
+        working-directory: ui
+        run: pnpm build
+
+  whisper:
+    name: Whisper Guard – commit messages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Verify whispers in commits
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -f scripts/commit-whisper-check.mjs ]; then
+            echo "Checking commit whispers…"
+          else
+            echo "scripts/commit-whisper-check.mjs not found; skipping." && exit 0
+          fi
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            range="${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+            shas=$(git rev-list --no-merges "$range")
+          else
+            shas=$(git rev-list -n 1 HEAD)
+          fi
+
+          if [ -z "$shas" ]; then
+            echo "No commits found in range; skipping." && exit 0
+          fi
+
+          status=0
+          for sha in $shas; do
+            git log -1 --pretty=%B "$sha" > .git/commitmsg.txt
+            echo "\n— checking $sha —" && head -n 3 .git/commitmsg.txt || true
+            node scripts/commit-whisper-check.mjs .git/commitmsg.txt || status=$?
+          done
+
+          exit $status
