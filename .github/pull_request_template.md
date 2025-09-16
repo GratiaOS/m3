@@ -1,25 +1,45 @@
-## What changed
+# Pull Request
 
--
+## Summary
 
-## Why
+Describe the change in 1–2 sentences.
 
--
+## Linked Issues
 
-## How to test
+Fixes #
+Refs #
 
-Steps for a reviewer to test this locally (commands, sample curl, etc.)
+## Changes
 
-## Screenshots / Logs (if applicable)
+- [ ] Code
+- [ ] Docs
+- [ ] Tests
+- [ ] CI/Build
 
--
+## Screenshots / Demos (optional)
 
-## Checks
+_Add images, terminal output, or GIFs if helpful._
 
-- [ ] Builds locally (`cargo build`)
-- [ ] Tests pass (`cargo test`)
-- [ ] Clippy passes (`cargo clippy`)
-- [ ] Formatted (`cargo fmt`)
-- [ ] No API contract breaks
-- [ ] CI green
-- [ ] Linked issue/ticket (if any)
+## Tests
+
+- [ ] Unit tests updated/added
+- [ ] Integration tests updated/added
+- [ ] Manual verification notes included (steps below)
+
+### Manual Verification
+
+1.
+2.
+3.
+
+## Checklist
+
+- [ ] Commit message follows integration-era style (`type(scope): summary`)
+- [ ] **Whisper line is present in the final commit** (required)
+- [ ] Updated `CHANGELOG.md` if docs or user-facing behavior changed
+- [ ] Considered `docs/marks/` or Human Log if relevant
+- [ ] Privacy respected (no sensitive details)
+
+---
+
+🌬 whisper: "your poetic intention here"
