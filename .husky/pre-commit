@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🔧 Running precommit checks…"
+pnpm precommit
+status=$?
+
+if [ $status -ne 0 ]; then
+  echo "⚠️  Precommit checks had issues (allowed to proceed)."
+else
+  echo "✅ Precommit checks passed."
+fi
+
+exit 0

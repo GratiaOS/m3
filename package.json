@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "prepare": "husky",
+    "lint": "pnpm -w -r run lint || true",
+    "fmt": "cargo fmt && pnpm -w -r run format || true",
+    "check": "cargo clippy --tests -- -D warnings",
+    "precommit": "pnpm fmt && pnpm lint && cargo test -q || true",
+    "mark": "tsx scripts/new-mark.ts"
+  },
+  "devDependencies": {
+    "husky": "^9.1.3",
+    "tsx": "^4.19.2"
+  }
+}

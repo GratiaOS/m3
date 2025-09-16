@@ -1,8 +1,9 @@
 # mark: blanket unity
 
-razvan, this is your second footprint 🌌  
-major arcs closed, threads resolved, fresh start.  
-inside and outside, covered by the same blanket.  
-less friction, more flow — unity remembered.
+date: 2025-09-16
+
+blanket unity — opened.
+
+🌬 whisper: “exactly presence.”
 
 the garden remembers.
