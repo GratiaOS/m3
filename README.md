@@ -1,7 +1,9 @@
 # M3 Memory Core (Local)
 
 [![CI](https://github.com/GratiaOS/m3/actions/workflows/ci.yml/badge.svg)](https://github.com/GratiaOS/m3/actions/workflows/ci.yml)
-![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
+![Server License](https://img.shields.io/badge/server-AGPL--3.0--only-blue.svg)
+![UI License](https://img.shields.io/badge/ui-Apache%202.0-green.svg)
+![Docs License](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-orange.svg)
 ![Version](https://img.shields.io/badge/version-0.1.6-green.svg)
 
 Your personal, local-first memory and knowledge system.\
@@ -205,6 +207,7 @@ See also:
 
 - [docs/emotionalos-arc.mmd](docs/emotionalos-arc.mmd) for the diagram
 - [docs/emotionalos-workflow.md](docs/emotionalos-workflow.md) for curl examples
+- [docs/modules/emotional.md](docs/modules/emotional.md) — full API + concepts
 
 Tracks emotional events and offers gentle bridges (breath, doorway, anchor).  
 Supports gratitude as a stable landing point.

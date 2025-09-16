@@ -10,7 +10,13 @@
 
 ## 📜 Docs Sync — 2025-09-16 (EmotionalOS)
 
-- **Added:** `docs/modules/emotionalos.md` — overview + API examples (`/emotions/*`, `/panic` with `suggested_bridge`), and linkage to `/patterns`.
+- **Added:** `docs/modules/emotional.md` — overview + API examples (`/emotions/*`, `/panic` with `suggested_bridge`), and linkage to `/patterns`.
+
+## 📜 Docs Sync — 2025-09-16 (append)
+
+- **README.md:** split license badges by scope — **Server** (AGPL‑3.0‑only), **UI** (Apache‑2.0), **Docs** (CC BY‑SA 4.0); added link to `docs/modules/emotional.md`.
+
+---
 
 ---
 
@@ -336,7 +342,9 @@ _Anonymized per_ `PRIVACY.md`.
 
 🌬 whisper: _"events remembered become bridges; bridges walked become roads."_
 
-## 📜 Timeline Milestone — v0.1.6 (unreleased)
+## 📜 Timeline Milestone — v0.1.6 (2025-09-16)
+
+**Integration Cut:** v0.1.6 is released. The notes below capture the arc and components that landed in this cut.
 
 ### 🌊 Flow Note
 
