@@ -153,12 +153,14 @@ pub struct StatusOk {
     pub ok: bool,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MemberEnergy {
     pub name: String,
     pub energy: i32, // 0..100
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PillarStatus {
     // values: "good" | "watch" | "rest"
@@ -169,6 +171,7 @@ pub struct PillarStatus {
     pub life_force: String,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TeamState {
     pub members: Vec<MemberEnergy>,
@@ -177,6 +180,7 @@ pub struct TeamState {
     pub ts: String,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SetStateRequest {
     pub members: Option<Vec<MemberEnergy>>,
