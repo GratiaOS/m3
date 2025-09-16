@@ -8,6 +8,12 @@
 
 ---
 
+## 📜 Docs Sync — 2025-09-16 (EmotionalOS)
+
+- **Added:** `docs/modules/emotionalos.md` — overview + API examples (`/emotions/*`, `/panic` with `suggested_bridge`), and linkage to `/patterns`.
+
+---
+
 ## 🚀 Release Sync — 2025-09-16
 
 - **Added:** `.github/workflows/release.yml` — manual workflow to tag `main` as `vX.Y.Z` and create a **draft** GitHub Release with generated notes + a snippet from `CHANGELOG.md`.
