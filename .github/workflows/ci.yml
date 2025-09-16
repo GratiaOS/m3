@@ -84,9 +84,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: 'pnpm'
-          cache-dependency-path: |
-            pnpm-lock.yaml
-            ui/pnpm-lock.yaml
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Verify pnpm availability (and fallback via Corepack)
         run: |

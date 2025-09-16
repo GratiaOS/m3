@@ -1,8 +1,9 @@
 packages:
-  - 'server'
-  - 'ui'
-  - 'packages/*'
-  - 'shared'
+  - server
+  - ui
+  - packages/*
+  - shared
 
 onlyBuiltDependencies:
+  - '@tailwindcss/oxide'
   - esbuild
