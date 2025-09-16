@@ -1,0 +1,62 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 0.1.6)'
+        required: true
+      prerelease:
+        description: 'Mark as pre-release?'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  tag_and_release:
+    name: Tag main and draft release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Validate version format
+        run: |
+          set -euo pipefail
+          [[ "${{ github.event.inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+
+      - name: Create annotated tag v${{ github.event.inputs.version }} on main
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = core.getInput('version');
+            const ref = 'refs/tags/v' + version;
+            const main = await github.rest.repos.getBranch({
+              owner: context.repo.owner, repo: context.repo.repo, branch: 'main'
+            });
+            const sha = main.data.commit.sha;
+            try {
+              await github.rest.git.getRef({ owner: context.repo.owner, repo: context.repo.repo, ref: 'tags/v' + version });
+              await github.rest.git.updateRef({ owner: context.repo.owner, repo: context.repo.repo, ref: 'tags/v' + version, sha, force: true });
+            } catch {
+              await github.rest.git.createRef({ owner: context.repo.owner, repo: context.repo.repo, ref, sha });
+            }
+
+      - name: Extract CHANGELOG snippet (best effort)
+        run: |
+          set -euo pipefail
+          ver="${{ github.event.inputs.version }}"
+          awk "/v$ver/{flag=1;print;next}/^## /{if(flag){exit}}flag" CHANGELOG.md > RELEASE_NOTES.md || true
+          echo "Notes preview:" && head -n 80 RELEASE_NOTES.md || true
+
+      - name: Create draft GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.event.inputs.version }}
+          name: v${{ github.event.inputs.version }}
+          draft: true
+          prerelease: ${{ github.event.inputs.prerelease }}
+          generate_release_notes: true
+          body_path: RELEASE_NOTES.md
