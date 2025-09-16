@@ -13,8 +13,21 @@
 - **Updated:** `.github/workflows/ci.yml`
   - Added **UI** job (pnpm install, fmt, lint, build in `ui/`).
   - Added **Whisper Guard** job to verify commit messages include the required whisper.
+  - **UI job:** now runs on Node 18 **and** 20 (matrix) and installs pnpm via Corepack (`corepack prepare pnpm@9 --activate`).
+  - **Server job:** now runs on Rust **stable** and **nightly** (matrix); rust-toolchain action fixed to use
+
+    `dtolnay/rust-toolchain@master` with `toolchain` input.
 
 🌬 whisper: _"3-3-3"_
+
+---
+
+## 🛠 Dev Tools Sync — 2025-09-16
+
+- **Updated:** `scripts/new-mark.ts` — shebang moved to first line; added Node types reference; switched `node:fs`/`node:path` to `fs`/`path` for editor compatibility.
+- **Chore:** added `@types/node` to `devDependencies` for TypeScript Node ambient types.
+
+🌬 whisper: _"small moves, clean field."_
 
 ---
 
