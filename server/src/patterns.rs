@@ -5,8 +5,38 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use std::borrow::Cow;
 
 use crate::AppState;
+
+/// Normalize user text for lightweight cue matching.
+/// - Lowercases
+/// - Replaces curly apostrophes (’ and ʻ) with ASCII ('), so “can’t” matches "can't" cues
+/// - Collapses multiple whitespace to single spaces
+fn normalize_text(input: &str) -> Cow<'_, str> {
+    if input.is_empty() {
+        return Cow::Borrowed("");
+    }
+    let mut out = String::with_capacity(input.len());
+    let mut last_was_space = false;
+    for ch in input.chars() {
+        let ch = match ch {
+            '\u{2019}' | '\u{02BB}' => '\'', // ’ or ʻ → '
+            _ => ch,
+        };
+        let ch = ch.to_ascii_lowercase();
+        if ch.is_whitespace() {
+            if !last_was_space {
+                out.push(' ');
+                last_was_space = true;
+            }
+        } else {
+            out.push(ch);
+            last_was_space = false;
+        }
+    }
+    Cow::Owned(out)
+}
 
 /// -------- Pattern detection (very lightweight heuristic) --------
 
@@ -16,6 +46,7 @@ pub struct DetectRequest {
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "snake_case")]
 pub struct DetectResponse {
     pub role: String,
     pub confidence: f32,
@@ -23,10 +54,10 @@ pub struct DetectResponse {
 }
 
 pub async fn detect_victim_aggressor(Json(req): Json<DetectRequest>) -> Json<DetectResponse> {
-    let text = req.text.to_lowercase();
+    let text = normalize_text(&req.text);
 
     // NOTE: totally naive cues; placeholders for future signal refinement.
-    let victim_cues = ["always", "never", "can't"];
+    let victim_cues = ["always", "never", "can't", "can’t"];
     let aggressor_cues = ["must", "should", "control"];
 
     let mut victim_matches = Vec::new();
@@ -66,12 +97,13 @@ pub async fn detect_victim_aggressor(Json(req): Json<DetectRequest>) -> Json<Det
 #[derive(Deserialize)]
 pub struct BridgeQuery {
     /// e.g. "panic", "anxiety", "anger", "shame"
-    pub kind: String,
+    pub kind: Option<String>,
     /// 0.0..=1.0; default 0.5 if omitted
     pub intensity: Option<f32>,
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "snake_case")]
 struct BridgeSuggestion {
     pattern: &'static str, // high-level label
     hint: &'static str,    // compact micro-logic
@@ -129,8 +161,9 @@ fn bridge_table(kind: &str, intensity: f32) -> BridgeSuggestion {
 
 /// GET /patterns/bridge_suggest?kind=panic&intensity=0.7
 pub async fn bridge_suggest(Query(q): Query<BridgeQuery>) -> Json<serde_json::Value> {
-    let intensity = q.intensity.unwrap_or(0.5);
-    let out = bridge_table(&q.kind, intensity);
+    let kind = q.kind.as_deref().unwrap_or("panic");
+    let intensity = q.intensity.filter(|v| v.is_finite()).unwrap_or(0.5);
+    let out = bridge_table(kind, intensity);
     Json(json!({
         "pattern": out.pattern,
         "hint": out.hint,
@@ -145,6 +178,7 @@ pub async fn bridge_suggest(Query(q): Query<BridgeQuery>) -> Json<serde_json::Va
 /// "two sides of a coin" metaphor. We expose it as `/patterns/lanes`.
 
 #[derive(Serialize)]
+#[serde(rename_all = "snake_case")]
 pub struct LaneInfo {
     pub reflex: &'static str,
     pub fuel: &'static str,
@@ -152,6 +186,7 @@ pub struct LaneInfo {
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "snake_case")]
 pub struct LanesMap {
     pub victim: LaneInfo,
     pub aggressor: LaneInfo,
@@ -159,7 +194,7 @@ pub struct LanesMap {
 }
 
 /// GET /patterns/lanes
-pub async fn lanes_map() -> Json<LanesMap> {
+pub async fn lanes() -> Json<LanesMap> {
     Json(LanesMap {
         victim: LaneInfo {
             reflex: "collapse / appease",
@@ -256,7 +291,7 @@ pub fn router() -> Router<AppState> {
     Router::new()
         .route("/detect", post(detect_victim_aggressor))
         .route("/bridge_suggest", get(bridge_suggest))
-        .route("/lanes", get(lanes_map))
+        .route("/lanes", get(lanes))
         .route("/productivity", get(productivity_map))
 }
 
@@ -343,6 +378,17 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn detect_handles_curly_apostrophe() {
+        let resp = super::detect_victim_aggressor(Json(DetectRequest {
+            text: "I can’t do this".into(),
+        }))
+        .await;
+        let out = resp.0;
+        assert_eq!(out.role, "Victim");
+        assert!(out.cues.iter().any(|c| c == "can't" || c == "can’t"));
+    }
+
+    #[tokio::test]
     async fn detect_unclear_on_neutral_text() {
         let resp = super::detect_victim_aggressor(Json(DetectRequest {
             text: "The sky is blue today".into(),
@@ -354,11 +400,11 @@ mod tests {
         assert_eq!(out.confidence, 0.0);
     }
 
-    // --- lanes_map ---
+    // --- Lanes ---
 
     #[tokio::test]
-    async fn lanes_map_has_three_routes() {
-        let Json(map) = super::lanes_map().await;
+    async fn lanes_has_three_routes() {
+        let Json(map) = super::lanes().await;
         assert_eq!(map.victim.reflex, "collapse / appease");
         assert_eq!(map.aggressor.reflex, "control / push");
         assert_eq!(map.sovereign.reflex, "recenter / choose");

@@ -8,6 +8,24 @@
 
 ---
 
+## 💡 Patterns Sync — 2025-09-16
+
+- **Server:** `/patterns` namespace hardened
+  - `detect`: normalize text (case, smart quotes, whitespace); captures cues reliably
+  - `bridge_suggest`: safer intensity (non‑finite → default), `kind` now optional (defaults to `panic`)
+  - `lanes`: handler name aligned with route; JSON keys locked to `snake_case`
+- Added unit test for curly apostrophes in detection
+
+🌬 whisper: _"maps become doors."_
+
+---
+
+## 📜 Docs Sync — 2025-09-16 (append)
+
+- **Added:** `docs/patterns/README.md` — Patterns API overview with `curl` examples for **detect**, **bridge_suggest**, **lanes**, **productivity**.
+
+---
+
 ## 🔧 CI Sync — 2025-09-16
 
 - **Updated:** `.github/workflows/ci.yml`
