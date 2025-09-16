@@ -1,2 +1,8 @@
+packages:
+  - 'server'
+  - 'ui'
+  - 'packages/*'
+  - 'shared'
+
 onlyBuiltDependencies:
   - esbuild
