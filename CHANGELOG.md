@@ -13,6 +13,7 @@
 - **Added:**
   - `README-dev.md` — Developer Guide: repo layout, tooling, commit whisper rule, marks workflow, common flows & principles.
   - `CONTRIBUTING-dev.md` — Dev Notes: marks & Human Logs workflow, commit whispers, hooks & tooling, dev principles.
+  - `docs/marks/README.md` — Marks Index: list of existing marks (Andrei, Blanket Unity) + how-to add new marks.
 
 🌬 whisper: _"build softly; ship clearly."_
 
