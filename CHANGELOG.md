@@ -12,6 +12,7 @@
 
 - **Added:**
   - `README-dev.md` — Developer Guide: repo layout, tooling, commit whisper rule, marks workflow, common flows & principles.
+  - `CONTRIBUTING-dev.md` — Dev Notes: marks & Human Logs workflow, commit whispers, hooks & tooling, dev principles.
 
 🌬 whisper: _"build softly; ship clearly."_
 
