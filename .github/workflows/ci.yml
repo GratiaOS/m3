@@ -11,7 +11,10 @@ permissions:
 
 jobs:
   server:
-    name: Server (Rust) – fmt • clippy • test
+    name: Server (Rust ${{ matrix.toolchain }}) – fmt • clippy • test
+    strategy:
+      matrix:
+        toolchain: [stable, nightly]
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -29,9 +32,10 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('server/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install Rust ${{ matrix.toolchain }}
+        uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: ${{ matrix.toolchain }}
           components: rustfmt, clippy
 
       - name: Show versions
@@ -60,6 +64,9 @@ jobs:
 
   ui:
     name: UI (Node) – fmt • lint • build
+    strategy:
+      matrix:
+        node: [18, 20]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -69,11 +76,13 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ matrix.node }}
           cache: 'pnpm'
 
-      - name: Enable corepack
-        run: corepack enable
+      - name: Enable Corepack & install pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@9 --activate
 
       - name: Install workspace deps
         run: pnpm install --frozen-lockfile

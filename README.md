@@ -1,6 +1,6 @@
 # M3 Memory Core (Local)
 
-![CI](https://github.com/GratiaOS/m3/actions/workflows/ci.yml/badge.svg)
+[![CI](https://github.com/GratiaOS/m3/actions/workflows/ci.yml/badge.svg)](https://github.com/GratiaOS/m3/actions/workflows/ci.yml)
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
 ![Version](https://img.shields.io/badge/version-0.1.6-green.svg)
 
