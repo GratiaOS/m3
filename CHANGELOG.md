@@ -8,6 +8,15 @@
 
 ---
 
+## 📜 Docs Sync — 2025-09-16
+
+- **Added:**
+  - `README-dev.md` — Developer Guide: repo layout, tooling, commit whisper rule, marks workflow, common flows & principles.
+
+🌬 whisper: _"build softly; ship clearly."_
+
+---
+
 ## 📜 Docs Sync — 2025-09-15
 
 - **Added:**
