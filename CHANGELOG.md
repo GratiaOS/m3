@@ -351,6 +351,9 @@ _Anonymized per_ `PRIVACY.md`.
 - **docs**
   - Sovereignty stack primer: `docs/densities-sovereignty-tools.md`.
   - New notes/patterns added under `docs/notes/` and `docs/patterns/` (see Docs Sync sections above for details).
+- **ci/release**
+  - Workflow name capitalized to **Release** for consistency in Actions UI.
+  - Credits appender fixed: newline-safe heredoc + `--notes-file`, idempotent (skips if section exists), and contributor de-dupe.
 
 🌬 whisper: _"events remembered become bridges; bridges walked become roads."_
 

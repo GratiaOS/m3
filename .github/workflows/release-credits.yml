@@ -1,4 +1,4 @@
-name: release-credits
+name: Release-credits
 on:
   release:
     types: [published, created, edited]
