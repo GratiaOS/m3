@@ -3,6 +3,17 @@ name = "m3-memory-server"
 version = "0.1.6"
 edition = "2021"
 
+[features]
+# Fast-by-default. Enable `ephemeris` to swap in precise astronomy for /cycles.
+# When enabled, the server will use a heavier, more accurate solver behind the
+# `compute` facade in server/src/cycles.rs.
+#
+# To enable locally:
+#   cargo run -p m3-memory-server --features ephemeris
+# To test:
+#   cargo test -p m3-memory-server --features ephemeris
+ephemeris = []
+
 [dependencies]
 axum = { version = "0.7", features = ["json"] }
 tokio = { version = "1", features = ["full"] }
@@ -31,6 +42,12 @@ reqwest = { version = "0.12", default-features = false, features = ["json", "rus
 sha2 = "0.10"
 tower = "0.5"
 once_cell = "1.21.3"
+
+# --- Optional (for `ephemeris` feature): suggested crates to consider
+# astro-rust = { version = "0.1", optional = true }      # example placeholder; evaluate real crate later
+# vsop87 = { version = "2", optional = true }            # planetary positions (if needed)
+# moon-phase = { version = "0.3", optional = true }       # if we choose a maintained lunar phase crate
+# elp2000 = { version = "0.1", optional = true }          # precise lunar theory (evaluate)
 
 [dev-dependencies]
 uuid = { version = "1", features = ["v4"] }

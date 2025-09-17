@@ -1,3 +1,4 @@
+use crate::consciousness::{band_from_emotion, Band};
 use crate::tells;
 use crate::AppState;
 use axum::http::StatusCode;
@@ -28,6 +29,7 @@ pub struct EmotionOut {
     pub details: Option<String>,
     pub sealed: bool,
     pub archetype: Option<String>,
+    pub band: Band,
     pub privacy: String,
 }
 
@@ -138,6 +140,7 @@ async fn resolve_emotion(
                     params![ts, who, kind, intensity, note_id, details, sealed, archetype, privacy],
                 )?;
                 let id = conn.last_insert_rowid();
+                let band = band_from_emotion(&kind, intensity);
                 Ok(EmotionOut {
                     id,
                     ts,
@@ -148,6 +151,7 @@ async fn resolve_emotion(
                     details,
                     sealed,
                     archetype,
+                    band,
                     privacy,
                 })
             },
@@ -215,6 +219,7 @@ async fn add_emotion(
                     params![ts, who, kind, intensity, note_id, details, sealed, archetype, privacy],
                 )?;
                 let id = conn.last_insert_rowid();
+                let band = band_from_emotion(&kind, intensity);
                 Ok(EmotionOut {
                     id,
                     ts,
@@ -225,6 +230,7 @@ async fn add_emotion(
                     details,
                     sealed,
                     archetype,
+                    band,
                     privacy,
                 })
             },
@@ -251,18 +257,18 @@ async fn recent_emotions(
                 )?;
 
                 let rows = stmt.query_map([], |row| {
-                    Ok(EmotionOut {
-                        id: row.get(0)?,
-                        ts: row.get(1)?,
-                        who: row.get(2)?,
-                        kind: row.get(3)?,
-                        intensity: row.get(4)?,
-                        note_id: row.get(5)?,
-                        details: row.get(6)?,
-                        sealed: row.get(7)?,
-                        archetype: row.get(8)?,
-                        privacy: row.get(9)?,
-                    })
+                    let id: i64 = row.get(0)?;
+                    let ts: String = row.get(1)?;
+                    let who: String = row.get(2)?;
+                    let kind: String = row.get(3)?;
+                    let intensity: f32 = row.get(4)?;
+                    let note_id: Option<i64> = row.get(5)?;
+                    let details: Option<String> = row.get(6)?;
+                    let sealed: bool = row.get(7)?;
+                    let archetype: Option<String> = row.get(8)?;
+                    let privacy: String = row.get(9)?;
+                    let band = band_from_emotion(&kind, intensity);
+                    Ok(EmotionOut { id, ts, who, kind, intensity, note_id, details, sealed, archetype, band, privacy })
                 })?;
 
                 let mut out = Vec::new();

@@ -7,6 +7,8 @@ use webhook::Webhook;
 // use auth::WriteGuard;
 
 mod bus;
+mod consciousness;
+mod cycles;
 mod db;
 mod emotions;
 mod energy;
@@ -1739,6 +1741,7 @@ async fn main() -> anyhow::Result<()> {
         .nest("/rhythm", rhythm::router())
         .nest("/tells", tells::router())
         .nest("/timeline", timeline::router())
+        .nest("/cycles", cycles::router())
         .layer(cors)
         .with_state(state.clone());
 
