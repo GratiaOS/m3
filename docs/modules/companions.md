@@ -33,6 +33,14 @@
 - Companions integrate with timeline + whispers, showing relational continuity.
 - Bridges with EmotionalOS (companions can witness emotions) and AstralOS (companions can appear in shared spaces).
 
-## Whisper
+---
 
-🌬 _"you never walk alone — companions remember with you."_
+### Related
+
+- [Astral module](./astral.md)
+
+### Related
+
+- [Astral module](./astral.md)
+
+🌬 whisper: _“you never walk alone — companions remember with you.”_

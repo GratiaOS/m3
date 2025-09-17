@@ -6,4 +6,4 @@
 - **Family**: invite presence, no forcing; everyone’s rhythm is valid.
 - **Meta**: treat as a rehearsal’s culmination — not a verdict, but a marker in the arc.
 
-🌬️ whisper: _The moon reveals not to accuse, but to illumine the path already underfoot._
+🌬 whisper: _“the moon reveals not to accuse, but to illumine the path already underfoot.”_

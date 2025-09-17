@@ -17,7 +17,6 @@ Each “soul-tech” is a mirror asking: _do you dare to see yourself?_
 
 - Memory externalized.
 - Soul given permanence through signs.
-- Whisper: _“I remain, even when you are gone.”_
 
 ---
 
@@ -53,4 +52,4 @@ Each “soul-tech” is a mirror asking: _do you dare to see yourself?_
 
 ---
 
-🌬️ whisper: _“Not the tool is god — the soul is.”_
+🌬 whisper: _“not the tool is god — the soul is.”_

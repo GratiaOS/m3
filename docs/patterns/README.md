@@ -91,3 +91,11 @@ curl http://127.0.0.1:3033/patterns/productivity
 - JSON responses are locked to `snake_case` keys for forward compatibility.
 - Query parameters (like `kind` in `/bridge_suggest`) will later be migrated to enums with friendly lowercase parsing.
 - See sibling markdown files in this folder for specific pattern writeups (e.g. `burnout`, `rage-collapse`, `victim-aggressor-sovereign`).
+
+---
+
+### Related
+
+- [EmotionalOS module](../modules/emotional.md)
+- [Cycles module](../modules/cycles.md)
+- [Energy calendar](./energy-calendar.md)

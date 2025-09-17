@@ -1,17 +1,21 @@
 # Documentation Index
 
-Welcome to the **m3 docs**. This index links all major sections.
+**Jump to:** [Modules](#modules) · [Patterns](#patterns) · [Anchors](#anchors) · [Astral](#astral) · [Marks](#marks) · [Whispers](#whispers) · [Notes](#notes) · [Other Docs](#other-docs)
+
+Welcome to the **m3 docs** — living notes, modules, and maps. Use the quick links above or your editor’s search (⌘/Ctrl + P then type a path, or ⌘/Ctrl + Shift + F to search text).
 
 ---
 
 ## Modules
 
-- [Astral](modules/astral.md)
-- [Companions](modules/companions.md)
-- [Emotional](modules/emotional.md)
-- [Cycles](modules/cycles.md)
+- [Astral](modules/astral.md) — non‑physical maps & companions
+- [Companions](modules/companions.md) — working with guides
+- [Emotional](modules/emotional.md) — EmotionalOS: feelings, bridges, resolve
+- [Cycles](modules/cycles.md) — lunar/solar/13‑tone rhythm context
 
 ## Patterns
+
+Reusable emotional/behavioral maps extracted from experience. Start with the overview.
 
 - [Patterns Overview](patterns/README.md)
 - [Victim-Aggressor-Sovereign](patterns/victim-aggressor-sovereign.md)
@@ -49,7 +53,7 @@ Welcome to the **m3 docs**. This index links all major sections.
 
 ## Notes
 
-Notes are timestamped reflections, e.g.:
+Time‑stamped reflections. Browse chronologically or search by keyword.
 
 - [2025-09-14 Money as Echo](notes/2025-09-14-money-as-echo.md)
 - [2025-09-14 Memory Beyond SaaS](notes/2025-09-14-memory-beyond-saas.md)
@@ -71,4 +75,18 @@ Notes are timestamped reflections, e.g.:
 
 ---
 
-🌬 whisper: _"the garden remembers."_
+## How to Browse
+
+1. **Start at Modules** → learn core surfaces (EmotionalOS, Cycles).
+2. **Skim Patterns Overview** → pick a pattern when one resonates.
+3. **Use search** → jump to any term (e.g., "gratitude", "panic").
+4. **Follow links at the bottom** → many pages include "Related" pointers.
+
+---
+
+### Related
+
+- [Modules/Emotional](./modules/emotional.md)
+- [Modules/Cycles](./modules/cycles.md)
+
+🌬 whisper: _“the garden remembers.”_

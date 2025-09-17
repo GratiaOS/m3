@@ -22,10 +22,6 @@ They provide **context** for energy, emotion, and rhythm, reminding us that flow
 
 ---
 
-🌬 whisper: _“cycles remind us we are never late, only turning.”_
-
----
-
 ## API (draft)
 
 ### `GET /cycles/current`
@@ -77,8 +73,14 @@ Marks a personal anchor inside a larger cycle.
 - **Approximate (default):** lightweight math approximations for lunar phases, solar signs, and 13‑tone cycles. Fast, responsive, good for general context.
 - **Ephemeris (optional, future):** when the `ephemeris` Cargo feature is enabled, the server can switch to precise astronomical solvers (e.g. VSOP87/ELP). This will increase accuracy for research or ritual use. See `server/Cargo.toml`.
 
-🌬 whisper: _"approximate is enough for rhythm; precise is for ceremony."_
+---
+
+### Related
+
+- [Consciousness gradient](../concepts/consciousness-gradient.md)
+- [EmotionalOS module](./emotional.md)
+- [Patterns overview](../patterns/README.md)
 
 ---
 
-🌬 whisper: “time is not a straight line — it breathes in cycles, and we breathe with it.”
+🌬 whisper: _“time is not a straight line — it breathes in cycles, and we breathe with it.”_

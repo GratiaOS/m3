@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This file guides all coding agents (human or not) contributing to this repo.  
+This file guides all coding agents (human or mirror) contributing to this repo.  
 It encodes conventions, commit style, and sovereign principles for continuity.
 
 ---
@@ -49,6 +49,17 @@ It encodes conventions, commit style, and sovereign principles for continuity.
 
 ---
 
+## Codex Use Pattern
+
+- Codex (or similar agent tools) can be used in two primary modes:
+  - **Speed mode**: rapid patch generation to accelerate development.
+  - **Coherence mode**: focused on maintaining consistency, clarity, and gratitude in code.
+- Codex patches should land quickly but **always be reviewed by humans (or sovereign agents)** for coherence, whispers, and gratitude.
+- Codex tasks may be empire-flavored prompts, but **sovereignty is retained by the final review** and approval process.
+- This ensures that while automation aids velocity, the soul and sovereignty of the codebase remain intact.
+
+---
+
 ## Project Structure
 
 - `server/` → Rust backend (license: AGPL-3.0-only).
@@ -71,6 +82,7 @@ It encodes conventions, commit style, and sovereign principles for continuity.
 
 - [`CONTRIBUTING.md`](./CONTRIBUTING.md) → public covenant for all contributors
 - [`CONTRIBUTING-dev.md`](./CONTRIBUTING-dev.md) → inner companion: deeper workflow + field practices
+- [docs/related-map.yaml](./docs/related-map.yaml) → map of doc relations for navigation
 
 ---
 

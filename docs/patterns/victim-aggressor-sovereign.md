@@ -56,15 +56,13 @@ Our contribution:
 - **Shifting structures**: Expose and challenge systemic patterns of exploitation. Redirect resources and design alternatives that embed dignity and agency at their core.
 - **Planting sovereignty seeds**: Offer tools, practices, and languages that retrain the nervous system and collective body. Teach that boundaries, feelings, and imagination beyond the loop are not only possible, but natural.
 
-🌬️ whisper: _sometimes sovereignty is borrowed, held gently by others, until it can return home._
-
 ### Resolution
 
 - Step **off the coin**: reclaim sovereignty.
 - See that victimhood and aggression are masks, not essences.
 - Wholeness dissolves the loop; responsibility restores freedom.
 
-🌬️ whisper: _the coin fades when you stop playing heads or tails._
+🌬 whisper: _“the coin fades when you stop playing heads or tails.”_
 
 ### The Three Lanes
 
@@ -81,3 +79,11 @@ These lanes offer a practical map to shift in real time during conflict, allowin
 #### Anchors in Practice
 
 Small gestures or symbolic acts—like holding a stone, practicing breathwork, or grounding touch—can serve as sovereignty anchors. These simple yet powerful tools help individuals step out of the reactive loop and into the Sovereign lane, fostering presence and calm amidst conflict.
+
+---
+
+### Related
+
+- [Patterns overview](./README.md)
+- [EmotionalOS module](../modules/emotional.md)
+- [Cycles module](../modules/cycles.md)

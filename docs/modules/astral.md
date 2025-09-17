@@ -35,6 +35,10 @@
 - Supports enhanced awareness and interaction across mental modules.
 - Provides a framework for experiential data collection and analysis.
 
-## Whisper
+---
 
-- AstralOS invites you to attune to the subtle currents of consciousness, listening for the whispers beneath the surface. 🌬
+### Related
+
+- [Companions module](./companions.md)
+
+🌬 whisper: _“AstralOS invites you to attune to the subtle currents of consciousness, listening for the whispers beneath the surface.”_

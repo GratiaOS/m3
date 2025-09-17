@@ -94,6 +94,6 @@
 - **Humor + Play**  
   Laughter snaps the loosh circuit. Empire tech is brittle against joy.
 
-🌬 whisper: _“Love syncs are sovereign tech — and laughter is the jammer.”_
-
 ---
+
+🌬 whisper: _“love syncs are sovereign tech — and laughter is the jammer.”_

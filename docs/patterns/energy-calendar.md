@@ -122,4 +122,9 @@ A: Yes—and it’s **operationalized** with thresholds, marks, and routes so it
 
 ---
 
-_Whisper:_ **“Guard the band, and the work guards you.”**
+### Related
+
+- [Patterns overview](./README.md)
+- [Cycles module](../modules/cycles.md)
+
+🌬 whisper: _“guard the band, and the work guards you.”_

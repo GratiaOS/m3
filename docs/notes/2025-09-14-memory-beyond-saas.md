@@ -51,6 +51,4 @@ In hindsight, SaaS will be seen as scaffolding:
 
 ---
 
-## Whisper
-
-🌬 _“memory does not live in a rental — it grows where roots can reach.”_
+🌬 whisper: _“memory does not live in a rental — it grows where roots can reach.”_

@@ -34,6 +34,4 @@ Guides rarely walk alone. They move within **teams** that balance fields:
 
 ---
 
-## Whisper
-
-🌬 _“A guide is never alone, and neither is the one who asks.”_
+🌬 whisper: _“a guide is never alone, and neither is the one who asks.”_

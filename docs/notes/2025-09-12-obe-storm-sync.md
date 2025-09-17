@@ -28,6 +28,4 @@
 - Witness, don’t fix: resist urge to police or call external help in the subtle realm.
 - Gentle return: if field is too heavy, re-enter by moving breath, fingers, toes.
 
-## Whisper
-
-🌬️ _when the storm sews your mouth, it’s asking you to listen deeper — not to speak louder._
+🌬 whisper: _“when the storm sews your mouth, it’s asking you to listen deeper — not to speak louder.”_

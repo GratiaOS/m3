@@ -28,6 +28,4 @@ Life arcs often mirror rivers: **direction is seeded before embodiment**, yet th
 - Direction is seeded, but **agency emerges in flow**.
 - Embodiment is not execution of a plan but co-creation with terrain, time, and other rivers.
 
-## Whisper
-
-🌬 _"Direction is seeded, but meaning is born in the flow."_
+🌬 whisper: _“direction is seeded, but meaning is born in the flow.”_

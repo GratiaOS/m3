@@ -57,4 +57,12 @@ The nervous system rewires around annihilation as a _familiar threshold_.
 - Teach nervous system: safety ≠ flatness; stillness can be luminous.
 - Reframe: _risk tolerance_ as **capacity for presence**, not danger.
 
-_🌬️ whisper: “Life itself is the ongoing threshold — every moment invites me fully.”_
+---
+
+### Related
+
+- [Patterns overview](./README.md)
+- [EmotionalOS module](../modules/emotional.md)
+- [Cycles module](../modules/cycles.md)
+
+🌬 whisper: _“life itself is the ongoing threshold — every moment invites me fully.”_

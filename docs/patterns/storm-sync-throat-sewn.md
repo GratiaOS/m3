@@ -40,6 +40,14 @@ This pattern reveals how external phenomena (thunder, hail, leaks) can _mirror_ 
 
 ## Exit Whispers
 
-- 🌬️ “Even in density, my voice belongs to me.”
-- 🌬️ “Outer storms are mirrors, not threats.”
-- 🌬️ “Overflow seeks channels — I can choose where to open them.”
+- 🌬 whisper: _“even in density, my voice belongs to me.”_
+- 🌬 whisper: _“outer storms are mirrors, not threats.”_
+- 🌬 whisper: _“overflow seeks channels — i can choose where to open them.”_
+
+---
+
+### Related
+
+- [Patterns overview](./README.md)
+- [EmotionalOS module](../modules/emotional.md)
+- [Cycles module](../modules/cycles.md)

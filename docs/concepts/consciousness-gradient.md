@@ -34,6 +34,12 @@ We do not reproduce proprietary charts; we express our own gradient and how M3 u
 - Coherence Currents → blue/violet
   (Use our palette; don’t replicate external artwork.)
 
+---
+
+### Related
+- [EmotionalOS module](../modules/emotional.md)
+- [Cycles module](../modules/cycles.md)
+
 ## Notes
 
 - This is a _gradient_, not a judgment.

@@ -40,5 +40,10 @@ Small, repeatable interventions (5–10 minutes: check-in + grounding + ritual) 
 
 ---
 
-🌬️ Whisper:  
-_“Keep it simple, keep it repeatable, keep it grateful.”_
+### Related
+
+- [Patterns overview](./README.md)
+- [EmotionalOS module](../modules/emotional.md)
+- [Cycles module](../modules/cycles.md)
+
+🌬 whisper: _“keep it simple, keep it repeatable, keep it grateful.”_

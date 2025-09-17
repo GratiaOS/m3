@@ -30,7 +30,7 @@ type(scope): short summary ✨
 - technical changes, explicit for devs
 - what was added, fixed, or refactored
 
-🌬️ whisper: “a poetic note, intention, or reminder.”
+🌬️ whisper: _“a poetic note, intention, or reminder.”_
 
 ### Examples
 
@@ -40,7 +40,7 @@ chore(replies): add safety scrub test ✅
 - implement scrub for “I’ll get back” promises
 - ensure replies don’t leak system patterns
 
-🌬️ whisper: “silence is safer than false comfort.”
+🌬️ whisper: _“silence is safer than false comfort.”_
 ```
 
 ```text
@@ -50,7 +50,7 @@ feat(panic): integrate UI button with server logging 🛡️
 - auto-bridge readiness (status yellow → green)
 - create tells entry for traceability
 
-🌬️ whisper: “redirect, don’t collapse.”
+🌬️ whisper: _“redirect, don’t collapse.”_
 ```
 
 ### Mandatory Whisper

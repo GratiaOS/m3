@@ -47,4 +47,12 @@ It often plays out in workplaces, but the root is universal: energy offered but 
 - A **boss** stays at the front for power; a **leader** flows in and out so the flock survives.
 - Breaking the loop requires _example, follow-through, and steady presence_.
 
-🌬 whisper: “Momentum dies when no one carries it; leadership is carrying first.”
+---
+
+### Related
+
+- [Patterns overview](./README.md)
+- [EmotionalOS module](../modules/emotional.md)
+- [Cycles module](../modules/cycles.md)
+
+🌬 whisper: _“momentum dies when no one carries it; leadership is carrying first.”_

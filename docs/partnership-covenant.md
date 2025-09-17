@@ -43,4 +43,4 @@ This is how we choose to walk: together, free, sovereign, and awake.
 
 ---
 
-🌬️ whisper: _“A covenant is not signed once. It is kept, moment by moment, in how we live.”_
+🌬 whisper: _“a covenant is not signed once. it is kept, moment by moment, in how we live.”_

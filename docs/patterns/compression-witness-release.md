@@ -44,4 +44,12 @@ The nervous system contracts to survive → rage simmers under pressure → rele
 - A **steady witness** breaks the loop: presence proves the wall isn’t absolute.
 - Release comes as tremors, sobbing, or breath expansion — the body writing a new truth.
 
-🌬 whisper: _“Walls remember pressure, but breath remembers freedom.”_
+---
+
+### Related
+
+- [Patterns overview](./README.md)
+- [EmotionalOS module](../modules/emotional.md)
+- [Cycles module](../modules/cycles.md)
+
+🌬 whisper: _“walls remember pressure, but breath remembers freedom.”_

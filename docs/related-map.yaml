@@ -1,0 +1,58 @@
+# Related Map for docs navigation
+# Agents (human/mirror) use this to insert a “Related” block on each page.
+# Paths in `href` are RELATIVE TO the `page`.
+
+entries:
+  - page: docs/modules/emotional.md
+    related:
+      - { title: 'Patterns overview', href: '../patterns/README.md' }
+      - { title: 'Energy calendar', href: '../patterns/energy-calendar.md' }
+      - { title: 'Consciousness gradient', href: '../concepts/consciousness-gradient.md' }
+
+  - page: docs/modules/cycles.md
+    related:
+      - { title: 'Consciousness gradient', href: '../concepts/consciousness-gradient.md' }
+      - { title: 'EmotionalOS module', href: './emotional.md' }
+      - { title: 'Patterns overview', href: '../patterns/README.md' }
+
+  - page: docs/patterns/README.md
+    related:
+      - { title: 'EmotionalOS module', href: '../modules/emotional.md' }
+      - { title: 'Cycles module', href: '../modules/cycles.md' }
+      - { title: 'Energy calendar', href: './energy-calendar.md' }
+
+  - page: docs/patterns/energy-calendar.md
+    related:
+      - { title: 'Patterns overview', href: './README.md' }
+      - { title: 'Cycles module', href: '../modules/cycles.md' }
+
+  - page: docs/index.md
+    related:
+      - { title: 'Modules/Emotional', href: './modules/emotional.md' }
+      - { title: 'Modules/Cycles', href: './modules/cycles.md' }
+
+  - page: docs/modules/astral.md
+    related:
+      - { title: 'Companions module', href: './companions.md' }
+
+  - page: docs/modules/companions.md
+    related:
+      - { title: 'Astral module', href: './astral.md' }
+
+  - page: docs/concepts/consciousness-gradient.md
+    related:
+      - { title: 'EmotionalOS module', href: '../modules/emotional.md' }
+      - { title: 'Cycles module', href: '../modules/cycles.md' }
+
+  - page: docs/anchors/finish-line.md
+    related:
+      - { title: 'EmotionalOS module', href: '../modules/emotional.md' }
+      - { title: 'Patterns overview', href: '../patterns/README.md' }
+
+# Defaults (applied by agents if a page matches the glob and has no specific `entries` override)
+defaults:
+  - glob: docs/patterns/*.md
+    related:
+      - { title: 'Patterns overview', href: './README.md' }
+      - { title: 'EmotionalOS module', href: '../modules/emotional.md' }
+      - { title: 'Cycles module', href: '../modules/cycles.md' }

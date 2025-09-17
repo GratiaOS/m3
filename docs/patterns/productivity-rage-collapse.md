@@ -36,3 +36,10 @@ This loop often arises when unresolved **value trauma** and **recognition wounds
 ---
 
 👉 Cross-link: For the **systemic / workplace version**, see [productivity-burnout.md](./productivity-burnout.md).
+
+---
+
+### Related
+- [Patterns overview](./README.md)
+- [EmotionalOS module](../modules/emotional.md)
+- [Cycles module](../modules/cycles.md)

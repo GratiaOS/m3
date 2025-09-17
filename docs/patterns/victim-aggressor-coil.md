@@ -45,4 +45,12 @@ It cycles between:
 - Once witnessed, rage softens into grief → grief opens connection.
 - Exit whispers bypass debate, giving non-negotiable recognition.
 
-🌬 whisper: _“I am the space in which rage moves, not the rage itself.”_
+---
+
+### Related
+
+- [Patterns overview](./README.md)
+- [EmotionalOS module](../modules/emotional.md)
+- [Cycles module](../modules/cycles.md)
+
+🌬 whisper: _“i am the space in which rage moves, not the rage itself.”_

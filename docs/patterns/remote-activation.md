@@ -30,4 +30,12 @@ In this pattern, the external field acts as a catalyst or key, unlocking the beh
 - Consider how the external activation can be decoupled from the inner pattern's implementation to maximize modularity.
 - Use Remote Activation to enable dynamic feature toggling or conditional behavior in complex systems.
 - Beware of tight coupling; ensure that the activation mechanism remains flexible and extensible.
-- 🌬️ whisper: "Even when the signal comes from outside, your choice of response is your sovereignty."
+- 🌬 whisper: _“even when the signal comes from outside, your choice of response is your sovereignty.”_
+
+---
+
+### Related
+
+- [Patterns overview](./README.md)
+- [EmotionalOS module](../modules/emotional.md)
+- [Cycles module](../modules/cycles.md)

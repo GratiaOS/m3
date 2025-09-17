@@ -36,3 +36,10 @@ This loop shows up in **workplaces, communities, and group systems** where value
 ---
 
 👉 Cross-link: For the **interpersonal / family version**, see [productivity-rage-collapse.md](./productivity-rage-collapse.md).
+
+---
+
+### Related
+- [Patterns overview](./README.md)
+- [EmotionalOS module](../modules/emotional.md)
+- [Cycles module](../modules/cycles.md)

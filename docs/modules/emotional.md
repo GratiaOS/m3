@@ -30,7 +30,6 @@ These arise when identity forms in response to family roles or comparisons.
 - **Triangle Trigger** → intersection of parental imprint + ego inflation.
   - **How it shows up:** prove mode, sharp silence, scorekeeping, identity clash.
   - **Ways forward:** name the protector, drop comparison, gratitude reset, gentle boundaries, anchor practice, rewrite the story.
-  - **Whisper:** _“Commander, who are you fighting? Reverse the poles.”_
 
 These triggers are universal. The path through them is always the same:  
 **replace comparison with sovereignty, rage with gratitude, proving with presence.**
@@ -187,4 +186,12 @@ See: [`docs/patterns/README.md`](../patterns/README.md)
 - gentle model for multi‑actor arcs (shared moments)
 - timeline stitching for emotional arcs
 
-🌬 whisper: _"gratitude lands, arc seals."_
+---
+
+### Related
+
+- [Patterns overview](../patterns/README.md)
+- [Energy calendar](../patterns/energy-calendar.md)
+- [Consciousness gradient](../concepts/consciousness-gradient.md)
+
+🌬 whisper: _“gratitude lands, arc seals.”_

@@ -13,4 +13,9 @@ It marks the moment when the past closes and a new arc can begin — not as surv
 
 ---
 
-🌬 whisper: _At the finish line, creation is no longer a luxury. It is the way forward._
+### Related
+
+- [EmotionalOS module](../modules/emotional.md)
+- [Patterns overview](../patterns/README.md)
+
+🌬 whisper: _“at the finish line, creation is no longer a luxury. it is the way forward.”_

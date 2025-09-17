@@ -20,3 +20,10 @@ This folder documents recurring patterns in the emotional field and social syste
 - [Universal Patterns](universal-patterns.md)
 
 _Note: Future contributors are encouraged to add new patterns as standalone files and link them here to expand this collection._
+
+---
+
+### Related
+- [Patterns overview](./README.md)
+- [EmotionalOS module](../modules/emotional.md)
+- [Cycles module](../modules/cycles.md)

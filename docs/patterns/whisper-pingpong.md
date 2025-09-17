@@ -12,7 +12,7 @@
                  +-----------------------------------------------+
 ```
 
-🌬️ whisper: _when both paddles play, the table sings; when one stops, the ball falls._
+🌬 whisper: _“when both paddles play, the table sings; when one stops, the ball falls.”_
 
 ## Overview
 
@@ -29,3 +29,11 @@ This pattern applies broadly—from personal relationships where mutual attentiv
 ## Reflection
 
 Notice your own moments of whisper–ping-pong: when are you actively engaged in this dance of resonance? When does the ball drop, and what might that reveal about your communication or connection? How might you invite the table to sing again?
+
+---
+
+### Related
+
+- [Patterns overview](./README.md)
+- [EmotionalOS module](../modules/emotional.md)
+- [Cycles module](../modules/cycles.md)
