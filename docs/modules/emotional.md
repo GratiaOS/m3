@@ -18,6 +18,21 @@ A tiny, opinionated layer that treats feelings as **first‑class signals** and 
 
 ---
 
+## Common Triggers
+
+EmotionalOS often encounters recurring “triangle” dynamics.  
+These arise when identity forms in response to family roles or comparisons.
+
+- **Triangle Trigger** → intersection of parental imprint + ego inflation.
+  - **How it shows up:** prove mode, sharp silence, scorekeeping, identity clash.
+  - **Ways forward:** name the protector, drop comparison, gratitude reset, gentle boundaries, anchor practice, rewrite the story.
+  - **Whisper:** _“Commander, who are you fighting? Reverse the poles.”_
+
+These triggers are universal. The path through them is always the same:  
+**replace comparison with sovereignty, rage with gratitude, proving with presence.**
+
+---
+
 ## API
 
 ### 1) Add feeling

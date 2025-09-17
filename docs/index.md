@@ -13,8 +13,18 @@ Welcome to the **m3 docs**. This index links all major sections.
 ## Patterns
 
 - [Patterns Overview](patterns/README.md)
-- [Victim–Aggressor–Sovereign](patterns/victim-aggressor-sovereign.md)
-- [Other patterns](patterns/index.md)
+- [Victim-Aggressor-Sovereign](patterns/victim-aggressor-sovereign.md)
+- [Victim–Aggressor–Coil](patterns/victim-aggressor-coil.md)
+- [Whisper–Ping-Pong with LLM](patterns/whisper-pingpong.md)
+- [Productivity–Rage–Collapse](patterns/productivity-rage-collapse.md)
+- [Productivity–Burnout Loop](patterns/productivity-burnout.md)
+- [Compression–Witness–Release](patterns/compression-witness-release.md)
+- [Influx–Deflection–Collapse](patterns/influx-deflection-collapse.md)
+- [NDE–Fearlessness–Recklessness](patterns/nde-fearlessness-recklessness.md)
+- [Energy-Calendar](patterns/energy-calendar.md)
+- [Storm-Sync / Throat-Sewn](patterns/storm-sync-throat-sewn.md)
+- [Remote-Activation](patterns/remote-activation.md)
+- [Universal Patterns](patterns/universal-patterns.md)
 
 ## Anchors
 
@@ -28,6 +38,7 @@ Welcome to the **m3 docs**. This index links all major sections.
 
 - [Andrei](marks/andrei.md)
 - [Blanket Unity](marks/blanket-unity.md)
+- [The Triangle Pattern](marks/triangle-trigger.md)
 
 ## Whispers
 
@@ -39,8 +50,13 @@ Welcome to the **m3 docs**. This index links all major sections.
 
 Notes are timestamped reflections, e.g.:
 
-- [2025-09-07 Blood Moon](notes/2025-09-07-blood-moon.md)
 - [2025-09-14 Money as Echo](notes/2025-09-14-money-as-echo.md)
+- [2025-09-14 Memory Beyond SaaS](notes/2025-09-14-memory-beyond-saas.md)
+- [2025-09-13 River Pre-Seed and Flow](notes/2025-09-13-river-preseed-flow.md)
+- [2025-09-13 Astral Snap](notes/2025-09-13-astral-snap.md)
+- [2025-09-12 OBE Storm Sync](notes/2025-09-12-obe-storm-sync.md)
+- [2025-09-12 Body as Material Tech](notes/2025-09-12-body-tech.md)
+- [2025-09-07 Blood Moon](notes/2025-09-07-blood-moon.md)
 
 ## Other Docs
 

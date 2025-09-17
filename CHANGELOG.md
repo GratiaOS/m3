@@ -8,6 +8,18 @@
 
 ---
 
+## 📜 Docs Sync — 2025-09-17
+
+- **Added:** `docs/patterns/universal-patterns.md` — distilled, reusable protocols (projection→witness, embodied presence, nature reset, gratitude loop, micro‑ritual design).
+
+- **Updated:** `docs/patterns/index.md` and `docs/index.md` — linked **Universal Patterns** for easy discovery.
+
+- **Added:** `CODING_AGENT.md` — conventions for humans & agents (principles, commit style, agent behavior, project structure, release flow, whisper).
+
+🌬 whisper: _"keep it simple, repeatable, grateful."_
+
+---
+
 ## 📜 Docs Sync — 2025-09-16 (EmotionalOS)
 
 - **Added:** `docs/modules/emotional.md` — overview + API examples (`/emotions/*`, `/panic` with `suggested_bridge`), and linkage to `/patterns`.

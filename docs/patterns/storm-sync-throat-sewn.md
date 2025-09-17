@@ -1,5 +1,3 @@
-<!-- Consider renaming this file to `storm-sync-throat-sewn.md` for consistency with other pattern doc naming conventions. -->
-
 # Storm Sync / Throat Sewn Threshold
 
 ## Description
