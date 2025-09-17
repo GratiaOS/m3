@@ -9,7 +9,7 @@ It marks the moment when the past closes and a new arc can begin — not as surv
 - Fear may rise ("what if…"), but dissolves when presence anchors.
 - From here, creation flows naturally.
 
-![Finish Line Diagram](../img/finish-line.png)
+![Finish Line Diagram](../assets/img/finish-line.png)
 
 ---
 

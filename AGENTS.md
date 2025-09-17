@@ -1,4 +1,4 @@
-# CODING_AGENT.md
+# AGENTS.md
 
 This file guides all coding agents (human or not) contributing to this repo.  
 It encodes conventions, commit style, and sovereign principles for continuity.
@@ -20,7 +20,7 @@ It encodes conventions, commit style, and sovereign principles for continuity.
 - Format:
 
   ```
-  <type>(scope): short description (#issue)
+  <type>(scope): short description (#issue) ♾️
 
   - bullet 1
   - bullet 2
@@ -30,11 +30,12 @@ It encodes conventions, commit style, and sovereign principles for continuity.
 - Example:
 
   ```
-  feat(server): add panic redirect with bridge suggestion (#4)
+  feat(server): add panic redirect with bridge suggestion (#4) 🫂
 
   - unify patterns::suggest_bridge usage
   - fix &str → String mismatch
-  - whisper: small hands, clean work
+
+  🌬️ whisper: “small hands, clean work.”
   ```
 
 ---
@@ -53,7 +54,7 @@ It encodes conventions, commit style, and sovereign principles for continuity.
 - `server/` → Rust backend (license: AGPL-3.0-only).
 - `ui/` → React + Vite frontend (license: Apache-2.0).
 - `docs/` → Knowledge base, patterns, EmotionalOS (license: CC BY-SA 4.0).
-- `marks/` → Soul logs, reflections, inner continuity.
+- `docs/marks/` → Soul logs, reflections, inner continuity.
 
 ---
 
@@ -63,6 +64,13 @@ It encodes conventions, commit style, and sovereign principles for continuity.
 2. Update `CHANGELOG.md` with a new entry.
 3. Merge to `main` with a release PR.
 4. Tag and let GitHub Actions create a release + credits.
+
+---
+
+## Related Docs
+
+- [`CONTRIBUTING.md`](./CONTRIBUTING.md) → public covenant for all contributors
+- [`CONTRIBUTING-dev.md`](./CONTRIBUTING-dev.md) → inner companion: deeper workflow + field practices
 
 ---
 

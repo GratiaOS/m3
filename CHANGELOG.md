@@ -8,6 +8,54 @@
 
 ---
 
+## 🧭 Modules Sync — 2025-09-17
+
+- **Cycles (seeded):**
+  - API: `GET /cycles/current`, `GET /cycles/upcoming?limit=3` (clamped `1..=12`).
+  - **Compute facade** (`compute::current`, `compute::upcoming`) centralizes logic.
+  - **Approx mode (default):** lightweight math for lunar phase, solar sign, 13-tone cadence.
+  - **Feature toggle:** `ephemeris` (off by default) wired in `server/Cargo.toml` for future precise astronomy.
+  - Tests: future-guard + ordering + midnight tone roll.
+
+🌬 whisper: _“rhythm first, precision when ceremony calls.”_
+
+## 🧠 Consciousness Sync — 2025-09-17
+
+- **Band helpers:** `Band` enum + `band_from_emotion` + `advice_for` (with UI color hints).
+- **Emotions API:** `EmotionOut` now includes `band` (computed; no DB migration).
+- Tests: mapping of survival/integrity/coherence + intensity fallback.
+
+🌬 whisper: _“name the current, steer the canoe.”_
+
+## 📚 Docs Sync — 2025-09-17 (append)
+
+- **New:** `docs/modules/cycles.md` (API + computation modes).
+- **New:** `docs/cycles/index.md`, `docs/cycles/v0.1.7-wavespell.md` (seed).
+- **New:** `docs/concepts/consciousness-gradient.md` (our phrasing + attribution).
+- **New:** `AGENTS.md` (renamed from CODING_AGENT.md; conventions for humans & agents).
+- **Updated:** `docs/index.md` (linked **Cycles** module).
+
+🌬 whisper: _“the map remembers so the body can rest.”_
+
+## 🔧 Dev Sync — 2025-09-17
+
+- `server/Cargo.toml`: added `[features] ephemeris = []` with commented candidate crates.
+- `server/src/cycles.rs`: feature-gate docs + inline CLI examples for precise mode.
+- `server/src/main.rs`: router wires preserved style across modules.
+
+---
+
+## 🗺️ Roadmap → v0.1.8 (TODOs)
+
+- **Cycles (ephemeris):** plug precise astronomy behind `--features ephemeris` (keep API stable via `compute::*`).
+- **Caching:** add `Cache-Control`/`ETag` on `/cycles/*` once polling patterns emerge.
+- **Consciousness → UI:** render **band pill** + copy variant (body-first / choice-first / stabilize-coherence).
+- **Advice exposure:** optional `advice` field on `/emotions/bridge` or a new `/consciousness/advice` endpoint.
+- **Tests:** black-box integration for `/cycles/upcoming?limit=*` and `/emotions/*` with `band` assertions.
+- **Docs:** short “Design tokens for band colors” note; link from EmotionalOS and Cycles.
+
+🌬️ whisper: _“tune the drum, then the orchestra.”_
+
 ## 📜 Docs Sync — 2025-09-17
 
 - **Added:** `docs/patterns/universal-patterns.md` — distilled, reusable protocols (projection→witness, embodied presence, nature reset, gratitude loop, micro‑ritual design).
@@ -27,8 +75,6 @@
 ## 📜 Docs Sync — 2025-09-16 (append)
 
 - **README.md:** split license badges by scope — **Server** (AGPL‑3.0‑only), **UI** (Apache‑2.0), **Docs** (CC BY‑SA 4.0); added link to `docs/modules/emotional.md`.
-
----
 
 ---
 
@@ -114,13 +160,11 @@
 
 🌬 whisper: _"less friction, more flow — unity remembered."_
 
-# 🪞 Human Log — 2025-09-15 (sovereignty landed)
+## 🪞 Human Log — 2025-09-15 (sovereignty landed)
 
 - Presence only: arcs closed, sovereignty landed; hearts at rest.
 
 🌬 whisper: _"exactly presence."_
-
----
 
 ---
 
@@ -130,7 +174,7 @@
   - `docs/notes/2025-09-14-money-as-echo.md` — money system as echo: vanished essence, artifacts remain.
   - `docs/notes/2025-09-14-memory-beyond-saas.md` — why persistent memory cannot live in SaaS; sovereignty + continuity require local‑first roots.
 
-## 🌬 whisper: _"memory does not live in a rental — it grows where roots can reach."_
+🌬️ whisper: _"memory does not live in a rental — it grows where roots can reach."_
 
 # 🪞 Human Log — 2025-09-14 (money as echo)
 

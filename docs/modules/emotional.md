@@ -18,6 +18,10 @@ A tiny, opinionated layer that treats feelings as **first‑class signals** and 
 
 ---
 
+**Note:** EmotionalOS responses now include a `band` field indicating which emotional gradient the feeling falls into: `"survival"`, `"integrity"`, or `"coherence"`.
+
+---
+
 ## Common Triggers
 
 EmotionalOS often encounters recurring “triangle” dynamics.  
@@ -50,7 +54,7 @@ curl -X POST http://127.0.0.1:3033/emotions/add \
   }'
 ```
 
-Returns the stored row (shape may include `id`, `ts`).
+Returns the stored row (shape may include `id`, `ts`, and now `band`).
 
 ---
 
@@ -84,7 +88,8 @@ Response (example):
 {
   "breath": "box_4x4",
   "doorway": "name_three_objects",
-  "anchor": "feet_to_floor"
+  "anchor": "feet_to_floor",
+  "band": "survival"
 }
 ```
 
@@ -105,6 +110,19 @@ curl -X POST http://127.0.0.1:3033/emotions/resolve \
     "intensity": 0.9,
     "note": "felt seen, breath deepened"
   }'
+```
+
+Response (example):
+
+```json
+{
+  "id": 123,
+  "ts": "2024-06-01T12:34:56Z",
+  "kind": "gratitude",
+  "intensity": 0.9,
+  "note": "felt seen, breath deepened",
+  "band": "coherence"
+}
 ```
 
 ---
@@ -130,7 +148,8 @@ Response (example):
   "doorway": "drink_water",
   "anchor": "Flow > Empire.",
   "suggested_bridge": "doorway",
-  "logged": true
+  "logged": true,
+  "band": "survival"
 }
 ```
 

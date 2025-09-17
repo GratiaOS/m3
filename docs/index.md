@@ -9,6 +9,7 @@ Welcome to the **m3 docs**. This index links all major sections.
 - [Astral](modules/astral.md)
 - [Companions](modules/companions.md)
 - [Emotional](modules/emotional.md)
+- [Cycles](modules/cycles.md)
 
 ## Patterns
 

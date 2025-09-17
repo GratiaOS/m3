@@ -1,10 +1,16 @@
 # M3 Memory Core (Local)
 
+<p>
+  <img src="docs/assets/mark/gratia-mark.png" alt="Gratia Mark" width="90" />
+</p>
+
 [![CI](https://github.com/GratiaOS/m3/actions/workflows/ci.yml/badge.svg)](https://github.com/GratiaOS/m3/actions/workflows/ci.yml)
 ![Server License](https://img.shields.io/badge/server-AGPL--3.0--only-blue.svg)
 ![UI License](https://img.shields.io/badge/ui-Apache%202.0-green.svg)
 ![Docs License](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-orange.svg)
 ![Version](https://img.shields.io/badge/version-0.1.6-green.svg)
+
+[Features](#-features) · [What’s New](#-whats-new-in-v016) · [API](#-api-reference) · [EmotionalOS](#emotionalos-healing-arcs) · [Cycles](#cycles-rhythm-context) · [Privacy](#-privacy) · [License](#-license) · [Covenant](#-partnership-covenant)
 
 Your personal, local-first memory and knowledge system.\
 Designed for offline resilience, privacy, and joyful retrieval.
@@ -209,8 +215,7 @@ See also:
 - [docs/emotionalos-workflow.md](docs/emotionalos-workflow.md) for curl examples
 - [docs/modules/emotional.md](docs/modules/emotional.md) — full API + concepts
 
-Tracks emotional events and offers gentle bridges (breath, doorway, anchor).  
-Supports gratitude as a stable landing point.
+Tracks emotional events and offers gentle bridges (breath, doorway, anchor). Responses include a computed `band` (survival | integrity | coherence) to help UI copy and patterns. Supports gratitude as a stable landing point.
 
 | Method | Path                | Purpose                | Body (JSON)                                                                                                            |
 | ------ | ------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------- |
@@ -247,6 +252,7 @@ Response:
   "note": "optional",
   "sealed": true,
   "archetype": "hero",
+  "band": "survival",
   "privacy": "private"
 }
 ```
@@ -278,6 +284,7 @@ Response:
   "details": "manual test",
   "sealed": true,
   "archetype": "hero",
+  "band": "coherence",
   "privacy": "private"
 }
 ```
@@ -307,6 +314,29 @@ Marks (visual gestures) live under `/mark`. We avoid 'brand' framing; see also d
 Mirror fields (`sealed`, `archetype`, `privacy`) are preserved end‑to‑end, including in `/resolve` and `/recent`.
 
 ---
+
+### Cycles (rhythm context)
+
+Rhythm helpers offering lightweight context about lunar phase, solar sign, and a 13‑tone cadence. Defaults to **approximate** mode (fast math). A precise mode is planned behind the `ephemeris` cargo feature.
+
+See also: [docs/modules/cycles.md](docs/modules/cycles.md).
+
+| Method | Path                       | Purpose                             |
+| ------ | -------------------------- | ----------------------------------- |
+| GET    | `/cycles/current`          | Current cycle snapshot              |
+| GET    | `/cycles/upcoming?limit=3` | Next milestones (1..=12, default 3) |
+
+Example `/cycles/upcoming` response:
+
+```json
+[
+  { "kind": "lunar", "phase": "first_quarter", "at": "2025-09-18T03:12:00Z" },
+  { "kind": "solar", "phase": "virgo", "at": "2025-09-22T06:00:00Z" },
+  { "kind": "pleiadian", "phase": "tone_8_harmony", "at": "2025-09-18T00:00:00Z" }
+]
+```
+
+## 🌬 whisper: _"rhythm first, precision when ceremony calls."_
 
 ### Panic summary
 
