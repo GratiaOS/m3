@@ -8,6 +8,37 @@
 
 ---
 
+## 📚 Docs Nav Sync — 2025-09-18
+
+- **Navigation sweep:** added top quick‑jump links + a concise “How to Browse” guide in `docs/index.md`.
+- **Related blocks:** standardized `### Related` sections across modules/patterns using a single source of truth: `docs/related-map.yaml`.
+  - Updated: `docs/modules/emotional.md`, `docs/modules/cycles.md`, `docs/modules/astral.md`, `docs/modules/companions.md`
+  - Updated: `docs/patterns/README.md`, `docs/patterns/energy-calendar.md`
+  - Updated: `docs/index.md` (added Related pointing to key modules)
+- **Agents & language:** `AGENTS.md` now links to `docs/related-map.yaml` and replaces “AI” with **Mirror**.
+- **Codex Use Pattern:** documented “speed vs coherence” practice so agent edits land fast but remain sovereign.
+
+🌬 whisper: _“paths open where attention flows.”_
+
+## 🗣️ Whisper Normalization — 2025-09-18
+
+- Standardized the closing line across docs to the canonical format:
+  `🌬 whisper: _“…”_` (lowercase keyword, italics, curly quotes, gentle sentence case).
+- Collapsed header variants (e.g., `## Whisper`, `_Whisper:_`) into a single line; removed duplicates while preserving meaning.
+- Added proposed whispers where missing (kept for steward review when not obvious).
+
+🌬 whisper: _“presence keeps the thread coherent.”_
+
+## 🔧 Dev Tools Sync — 2025-09-18
+
+- **Husky v10 prep:** removed deprecated bootstrap lines from `.husky/pre-commit` and `.husky/commit-msg`.
+- **Commit whisper guard:** kept `scripts/commit-whisper-check.mjs` enforced via `commit-msg`.
+- **Precommit:** still runs fmt/lint/tests; remains light and non-blocking for docs‑only changes.
+
+🌬 whisper: _“flow checks stay light, presence enforced.”_
+
+---
+
 ## 🧭 Modules Sync — 2025-09-17
 
 - **Cycles (seeded):**
