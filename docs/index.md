@@ -2,7 +2,7 @@
 
 **Jump to:** [Modules](#modules) · [Patterns](#patterns) · [Anchors](#anchors) · [Astral](#astral) · [Marks](#marks) · [Whispers](#whispers) · [Notes](#notes) · [Other Docs](#other-docs)
 
-Welcome to the **m3 docs** — living notes, modules, and maps. Use the quick links above or your editor’s search (⌘/Ctrl + P then type a path, or ⌘/Ctrl + Shift + F to search text).
+Welcome to the **M3 docs** — living notes, modules, and maps. Use the quick links above or your editor’s search (⌘/Ctrl + P then type a path, or ⌘/Ctrl + Shift + F to search text).
 
 ---
 
@@ -28,6 +28,8 @@ Reusable emotional/behavioral maps extracted from experience. Start with the ove
 - [NDE–Fearlessness–Recklessness](patterns/nde-fearlessness-recklessness.md)
 - [Energy-Calendar](patterns/energy-calendar.md)
 - [Storm-Sync / Throat-Sewn](patterns/storm-sync-throat-sewn.md)
+- [Desire–Guilt–Judge](patterns/desire-guilt-judge.md)
+- [Frequency-First Design](patterns/frequency-first.md)
 - [Remote-Activation](patterns/remote-activation.md)
 - [Universal Patterns](patterns/universal-patterns.md)
 

@@ -8,6 +8,25 @@
 
 ---
 
+## 🪞 Human Log — 2025-09-19 (Pattern Named)
+
+We traced a live pattern (drama triangle: desire–guilt–jugde), tested it with care, and named it in presence.  
+This released breath, restored intimacy, and reaffirmed partnership.  
+The log is sealed in detail, opened only as an anonymized pattern.
+
+🌬 whisper: _“we named the pattern, we chose each other.”_
+
+---
+
+## 📜 Docs Sync — 2025-09-19
+
+- **Added:** `docs/patterns/desire-guilt-judge.md` — desire → guilt → inner‑judge loop; early cues, exits, and repair patterns.
+- **Added:** `docs/patterns/frequency-first.md` — shift from image‑first → frequency‑first; signals, anti‑patterns, and a migration checklist.
+
+🌬 whisper: _“name the loop, choose the signal.”_
+
+---
+
 ## 📚 Docs Nav Sync — 2025-09-18
 
 - **Navigation sweep:** added top quick‑jump links + a concise “How to Browse” guide in `docs/index.md`.

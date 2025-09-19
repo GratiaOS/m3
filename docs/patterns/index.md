@@ -16,6 +16,8 @@ This folder documents recurring patterns in the emotional field and social syste
 - [NDE–Fearlessness–Recklessness](nde-fearlessness-recklessness.md)
 - [Energy-Calendar](energy-calendar.md)
 - [Storm-Sync / Throat-Sewn](storm-sync-throat-sewn.md)
+- [Desire–Guilt–Judge Coil](desire-guilt-judge.md)
+- [Frequency-First Design](frequency-first.md)
 - [Remote-Activation](remote-activation.md)
 - [Universal Patterns](universal-patterns.md)
 
@@ -24,6 +26,7 @@ _Note: Future contributors are encouraged to add new patterns as standalone file
 ---
 
 ### Related
+
 - [Patterns overview](./README.md)
 - [EmotionalOS module](../modules/emotional.md)
 - [Cycles module](../modules/cycles.md)

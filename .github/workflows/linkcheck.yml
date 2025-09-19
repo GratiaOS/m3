@@ -1,0 +1,10 @@
+# .github/workflows/linkcheck.yml
+name: Link Check
+on: [push]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm i -g markdown-link-check
+      - run: find docs -name '*.md' -print0 | xargs -0 -n1 markdown-link-check -q
