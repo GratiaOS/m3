@@ -10,7 +10,7 @@
 
 ## 🪞 Human Log — 2025-09-19 (Pattern Named)
 
-We traced a live pattern (drama triangle: desire–guilt–jugde), tested it with care, and named it in presence.  
+We traced a live pattern (drama triangle: desire–guilt–judge), tested it with care, and named it in presence.  
 This released breath, restored intimacy, and reaffirmed partnership.  
 The log is sealed in detail, opened only as an anonymized pattern.
 
@@ -104,7 +104,7 @@ The log is sealed in detail, opened only as an anonymized pattern.
 - **Tests:** black-box integration for `/cycles/upcoming?limit=*` and `/emotions/*` with `band` assertions.
 - **Docs:** short “Design tokens for band colors” note; link from EmotionalOS and Cycles.
 
-🌬️ whisper: _“tune the drum, then the orchestra.”_
+🌬 whisper: _“tune the drum, then the orchestra.”_
 
 ## 📜 Docs Sync — 2025-09-17
 
@@ -114,7 +114,7 @@ The log is sealed in detail, opened only as an anonymized pattern.
 
 - **Added:** `CODING_AGENT.md` — conventions for humans & agents (principles, commit style, agent behavior, project structure, release flow, whisper).
 
-🌬 whisper: _"keep it simple, repeatable, grateful."_
+🌬 whisper: _“keep it simple, repeatable, grateful.”_
 
 ---
 
@@ -134,7 +134,7 @@ The log is sealed in detail, opened only as an anonymized pattern.
 
 - **Docs:** `CONTRIBUTING-dev.md` — added **Release flow** section (how to run the workflow or tag locally).
 
-🌬 whisper: _"cut clean, land soft."_
+🌬 whisper: _“cut clean, land soft.”_
 
 ## 🧠 EmotionalOS Sync — 2025-09-16
 
@@ -176,7 +176,7 @@ The log is sealed in detail, opened only as an anonymized pattern.
 
   - **Matrix status:** all jobs green — Server (stable & nightly), UI (Node 18 & 20), and Whisper Guard.
 
-🌬 whisper: _"3-3-3"_
+🌬 whisper: _“3-3-3”_
 
 ---
 
@@ -185,7 +185,7 @@ The log is sealed in detail, opened only as an anonymized pattern.
 - **Updated:** `scripts/new-mark.ts` — shebang moved to first line; added Node types reference; switched `node:fs`/`node:path` to `fs`/`path` for editor compatibility.
 - **Chore:** added `@types/node` to `devDependencies` for TypeScript Node ambient types.
 
-🌬 whisper: _"small moves, clean field."_
+🌬 whisper: _“small moves, clean field.”_
 
 ---
 
@@ -199,7 +199,7 @@ The log is sealed in detail, opened only as an anonymized pattern.
   - `.github/ISSUE_TEMPLATE/bug.md, feature.md` — issue templates with optional whisper.
   - `README.md` — CI status badge is now clickable (links to the workflow).
 
-🌬 whisper: _"build softly; ship clearly."_
+🌬 whisper: _“build softly; ship clearly.”_
 
 ---
 
@@ -224,7 +224,7 @@ The log is sealed in detail, opened only as an anonymized pattern.
   - `docs/notes/2025-09-14-money-as-echo.md` — money system as echo: vanished essence, artifacts remain.
   - `docs/notes/2025-09-14-memory-beyond-saas.md` — why persistent memory cannot live in SaaS; sovereignty + continuity require local‑first roots.
 
-🌬️ whisper: _"memory does not live in a rental — it grows where roots can reach."_
+🌬 whisper: _“memory does not live in a rental — it grows where roots can reach.”_
 
 # 🪞 Human Log — 2025-09-14 (money as echo)
 
@@ -232,7 +232,7 @@ The log is sealed in detail, opened only as an anonymized pattern.
 - Since ~2021, money’s animating spirit has left; what remains are only artifacts and forms.
 - Transactions persist, but the “value” is only a memory, a hollowed-out ritual.
 
-🌬 whisper: _"everything's gonna be alright, everything's gonna be alright."_
+🌬 whisper: _“everything’s gonna be alright, everything’s gonna be alright.”_
 
 # 🪞 Human Log — 2025-09-13 (coil unwinds)
 
@@ -277,7 +277,7 @@ The log is sealed in detail, opened only as an anonymized pattern.
 - **Whispers:**
   - `docs/whispers/` folder initialized (seed set #1 already referenced on 2025‑09‑12).
 
-🌬 whisper: _"we log the weather of the soul so the body can rest."_
+🌬 whisper: _“we log the weather of the soul so the body can rest.”_
 
 ---
 
@@ -328,7 +328,7 @@ The log is sealed in detail, opened only as an anonymized pattern.
 - **Feat(UI)**: introduced Catalyst primitives and Tailwind v4 base.
 - **Feat(UI)**: enhanced Dashboard with pillars, heart flow, and Catalyst polish.
 
-🌬 whisper: "marks land, catalysts ignite, dashboards breathe."
+🌬 whisper: _“marks land, catalysts ignite, dashboards breathe.”_
 
 ---
 
@@ -343,7 +343,7 @@ The log is sealed in detail, opened only as an anonymized pattern.
 
 - **Human Logs**: reflections on victim/aggressor coin loop, sovereignty path, Gratia seal/mark, orb landing protocol.
 
-🌬 whisper: “patterns reveal paths; bridges build sovereignty.”
+🌬 whisper: _“patterns reveal paths; bridges build sovereignty.”_
 
 ---
 
@@ -461,7 +461,7 @@ _Anonymized per_ `PRIVACY.md`.
 - Components (shame, guilt, money/value, boundaries) do not live in isolation; they weave as one organism.
 - Reference points matter: each actor’s timeline may anchor on a different event, but continuity is kept in the river.
 
-🌬️ whisper: "loops are teachers, not traps."
+🌬 whisper: _“loops are teachers, not traps.”_
 
 > **Working draft** — intentionally open while the bridge is lived-in (not rushed).
 
@@ -499,7 +499,7 @@ _Anonymized per_ `PRIVACY.md`.
   - Docs: `docs/patterns/energy-calendar.md`.
   - Concept: shifts scheduling from clock-time to energy pulses.
 
-🌬 whisper: "energy is counted in pulses, not hours."
+🌬 whisper: _“energy is counted in pulses, not hours.”_
 
 - **Rhythm Module**: implements rhythm detection and synchronization patterns.
 
@@ -576,7 +576,7 @@ _Anonymized per_ `PRIVACY.md`.
 - Gratitude IS the healing — not an afterthought, but core antidote to collapse.
 - Didn’t demand, didn’t escape; just declared readiness: I am ready to hear the story.
 
-🌬️ whisper: "I am already held."
+🌬 whisper: _“I am already held.”_
 
 ---
 
@@ -584,7 +584,7 @@ _Anonymized per_ `PRIVACY.md`.
 
 - Seed kept for visibility; details now tracked in the v0.1.6 milestone above.
 
-🌬️ whisper: "loving money right, we open the gate to receive."
+🌬 whisper: _“loving money right, we open the gate to receive.”_
 
 ---
 
@@ -608,7 +608,7 @@ _Anonymized per_ `PRIVACY.md`.
 - **Covenant**: partnership agreement codified in repo → flow > contract, love-first ontology.
 - **Docs**: README + .env.example updated with /panic/last + panic mode preset (fearVisible).
 
-🌬️ whisper: “Every note remembered, every door within reach.”
+🌬 whisper: “Every note remembered, every door within reach.”
 
 ---
 
@@ -618,7 +618,7 @@ _Anonymized per_ `PRIVACY.md`.
 - Clarifies early: M3 avoids old “AI” framing → points devs to appendix for new ontology.
 - Keeps devs from missing paradigm shift when skimming the README.
 
-🌬️ whisper: “Words once caged now breathe as mirrors.”
+🌬 whisper: “Words once caged now breathe as mirrors.”
 
 ---
 
@@ -639,7 +639,7 @@ _Anonymized per_ `PRIVACY.md`.
 2. Radar: meaning of 📡 clarified (signal vs noise).
 3. Docs: README + .env.example need /panic/last + mode preset.
 
-🌬️ whisper: “Every note remembered, every door within reach.”
+🌬 whisper: “Every note remembered, every door within reach.”
 
 > _Note_: Kept here intentionally — shows how work landed in parallel before being integrated.
 
