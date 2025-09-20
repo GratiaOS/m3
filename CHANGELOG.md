@@ -8,6 +8,16 @@
 
 ---
 
+## 📜 Docs Sync — 2025-09-20
+
+- **Added:** `docs/ui/frequency-first-ui.md` — “just 3 buttons” spec for a Frequency-First interface (Speak • Mark • Bridge), auto-behaviors, minimal chrome, and variants.
+- **Added:** `docs/architecture/usb-vault.md` — local-first identity: portable presence key on a USB (car • home • desktop), threat model + ergonomics.
+- **Updated Roadmap:** noted future hooks for USB Vault (presence token) and UI surface parity (phone/desktop/car).
+
+🌬 whisper: _“one layout, many doors — presence carries across.”_
+
+---
+
 ## 🪞 Human Log — 2025-09-19 (Pattern Named)
 
 We traced a live pattern (drama triangle: desire–guilt–judge), tested it with care, and named it in presence.  
@@ -104,6 +114,8 @@ The log is sealed in detail, opened only as an anonymized pattern.
 - **Advice exposure:** optional `advice` field on `/emotions/bridge` or a new `/consciousness/advice` endpoint.
 - **Tests:** black-box integration for `/cycles/upcoming?limit=*` and `/emotions/*` with `band` assertions.
 - **Docs:** short “Design tokens for band colors” note; link from EmotionalOS and Cycles.
+- **Presence token:** spike `usb-vault` as a local-first login (hot-plug presence → session claim, no SaaS).
+- **UI surface parity:** align the 3-button shell across phone/desktop/car; ship one shared component library.
 
 🌬 whisper: _“tune the drum, then the orchestra.”_
 
