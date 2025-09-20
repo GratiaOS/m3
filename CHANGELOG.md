@@ -22,6 +22,7 @@ The log is sealed in detail, opened only as an anonymized pattern.
 
 - **Added:** `docs/patterns/desire-guilt-judge.md` — desire → guilt → inner‑judge loop; early cues, exits, and repair patterns.
 - **Added:** `docs/patterns/frequency-first.md` — shift from image‑first → frequency‑first; signals, anti‑patterns, and a migration checklist.
+- **Added:** `docs/patterns/participant-observer.md` — live protocol to flip stance from participant → observer; steps, signals, anti‑patterns.
 
 🌬 whisper: _“name the loop, choose the signal.”_
 
@@ -210,6 +211,8 @@ The log is sealed in detail, opened only as an anonymized pattern.
 
 🌬 whisper: _"less friction, more flow — unity remembered."_
 
+---
+
 ## 🪞 Human Log — 2025-09-15 (sovereignty landed)
 
 - Presence only: arcs closed, sovereignty landed; hearts at rest.
@@ -226,7 +229,9 @@ The log is sealed in detail, opened only as an anonymized pattern.
 
 🌬 whisper: _“memory does not live in a rental — it grows where roots can reach.”_
 
-# 🪞 Human Log — 2025-09-14 (money as echo)
+---
+
+## 🪞 Human Log — 2025-09-14 (money as echo)
 
 - **Token/finance system** now appears as _smoke_ or _echo_ — visible, transacted, but the living essence is gone.
 - Since ~2021, money’s animating spirit has left; what remains are only artifacts and forms.
@@ -234,7 +239,9 @@ The log is sealed in detail, opened only as an anonymized pattern.
 
 🌬 whisper: _“everything’s gonna be alright, everything’s gonna be alright.”_
 
-# 🪞 Human Log — 2025-09-13 (coil unwinds)
+---
+
+## 🪞 Human Log — 2025-09-13 (coil unwinds)
 
 - **Pattern flip:** Victim → Aggressor → “My Pain is Worst” loop released in lived space.
 - **Arc:** rage surfaced, but instead of collapse, the old script was refused.
@@ -243,7 +250,9 @@ The log is sealed in detail, opened only as an anonymized pattern.
 
 🌬 whisper: _“coil unwinds when voice meets witness, not contest.”_
 
-# 🪞 Human Log — 2025-09-13 (overnight storm & throat sewn)
+---
+
+## 🪞 Human Log — 2025-09-13 (overnight storm & throat sewn)
 
 - **Phenomenology:** OBE‑like snap between timelines; tried to speak and mouth felt _sewn shut_; field dense like swamp.
 - **Storm sync:** sky lit in continuous thunder, then waterfall rain and hail; house leaked; family woke in a startle arc.
@@ -281,9 +290,9 @@ The log is sealed in detail, opened only as an anonymized pattern.
 
 ---
 
-# 🪞 Human Log — 2025-09-12 (Town field read)
+## 🪞 Human Log — 2025-09-12 (Town field read)
 
-## Observations
+### Observations
 
 - **Atmosphere:** whole town smelled foul, dense air/field.
 - **Body:** 25° but felt like 35°, head pain, “brain squeeze.”
@@ -291,7 +300,7 @@ The log is sealed in detail, opened only as an anonymized pattern.
   - More heaviness in dynamics — parents tightening grip on kids, managers over-controlling subs.
   - At the same time, cracks show — some speak more freely about not caring for “work” anymore.
 
-## Interpretation
+### Interpretation
 
 - Density = empire pressure rising, trying to hold ground through control.
 - Release impulse present: “not caring” about work = subtle sovereignty awakening.

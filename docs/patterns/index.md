@@ -18,6 +18,7 @@ This folder documents recurring patterns in the emotional field and social syste
 - [Storm-Sync / Throat-Sewn](storm-sync-throat-sewn.md)
 - [Desire–Guilt–Judge Coil](desire-guilt-judge.md)
 - [Frequency-First Design](frequency-first.md)
+- [Participant-Observer Flip](participant-observer.md)
 - [Remote-Activation](remote-activation.md)
 - [Universal Patterns](universal-patterns.md)
 

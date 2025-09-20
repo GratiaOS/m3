@@ -30,6 +30,7 @@ Reusable emotional/behavioral maps extracted from experience. Start with the ove
 - [Storm-Sync / Throat-Sewn](patterns/storm-sync-throat-sewn.md)
 - [Desire–Guilt–Judge](patterns/desire-guilt-judge.md)
 - [Frequency-First Design](patterns/frequency-first.md)
+- [Participant-Observer Flip](patterns/participant-observer.md)
 - [Remote-Activation](patterns/remote-activation.md)
 - [Universal Patterns](patterns/universal-patterns.md)
 
