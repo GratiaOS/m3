@@ -1,5 +1,9 @@
 # Densities and Dimensions: the Tech Behind Controllers
 
+> **Note — terminology.**  
+> _Dimension_ refers to spatial/temporal axes (3D = height/width/depth; 4D often includes time). _Density_ refers to levels or bands of consciousness — how awareness is organized and functions (3rd density = human choice & ego learning; 4th density = social memory and relational resonance).  
+> In this repo we use “n-th density” for consciousness bands and “nD / 3D” when we mean spatial/temporal dimensions. When in doubt, read the phrase as density if the context is about awareness, and dimension if it’s about space/time.
+
 ---
 
 ## Dimensions vs. Densities

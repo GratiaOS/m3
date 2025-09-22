@@ -49,6 +49,12 @@ entries:
       - { title: 'EmotionalOS module', href: '../modules/emotional.md' }
       - { title: 'Patterns overview', href: '../patterns/README.md' }
 
+  - page: docs/modules/bands.md
+    related:
+      - { title: 'EmotionalOS module', href: './emotional.md' }
+      - { title: 'Cycles module', href: './cycles.md' }
+      - { title: 'Consciousness gradient', href: '../concepts/consciousness-gradient.md' }
+
 # Defaults (applied by agents if a page matches the glob and has no specific `entries` override)
 defaults:
   - glob: docs/patterns/*.md

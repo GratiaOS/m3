@@ -8,6 +8,16 @@
 
 ---
 
+## 📜 Docs Sync — 2025-09-22 (append)
+
+- **New:** `docs/modules/bands.md` — Survival / Integrity / Coherence bands; mapping logic, UI color hints, sample cues, and a consistent whisper.
+- **Updated:** `docs/concepts/consciousness-gradient.md` — linked the **Bands** module, expanded Related, clarified how bands map to redirects.
+- **Index touch:** added Bands to local Related blocks where relevant.
+
+🌬 whisper: _“name the bands, steer the tone.”_
+
+---
+
 ## 🔧 UI Sync — 2025-09-22
 
 - **BoundaryComposer** simplified to EN-only.
