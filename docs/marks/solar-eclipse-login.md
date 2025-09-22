@@ -8,3 +8,11 @@
 - **Tags:** #eclipse #sync #usb-vault #mark
 
 🦺 _if you ever physically stare at the sun, please use safe solar-viewing methods (eclipse glasses, pinhole box, or close-eye visualization)_
+
+---
+
+### Related
+
+- [USB Vault](../identity/usb-vault.md)
+
+🌬 whisper: _“portals open when presence meets pattern.”_

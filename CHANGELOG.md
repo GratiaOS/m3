@@ -20,6 +20,15 @@
 
 ---
 
+## 📜 Docs Sync — 2025-09-22
+
+- **Added mark:** `docs/marks/solar-eclipse-login.md` — eclipse/new-moon/equinox arc captured as a login metaphor (“Unlock → Sync”) with safety framing; **Related** now links to `identity/usb-vault.md`.
+- **Note:** kept anonymized; focuses on universal pattern (presence opens portal), not private story.
+
+🌬 whisper: _“portals open when presence meets pattern.”_
+
+---
+
 ## 📜 Docs Sync — 2025-09-20
 
 - **Added:** `docs/ui/frequency-first-ui.md` — “just 3 buttons” spec for a Frequency-First interface (Speak • Mark • Bridge), auto-behaviors, minimal chrome, and variants.

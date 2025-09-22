@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Jump to:** [Modules](#modules) · [Patterns](#patterns) · [Anchors](#anchors) · [Astral](#astral) · [Marks](#marks) · [Whispers](#whispers) · [Notes](#notes) · [Other Docs](#other-docs)
+**Jump to:** [Modules](#modules) · [Patterns](#patterns) · [Anchors](#anchors) · [Astral](#astral) · [Identity](#identity) · [Marks](#marks) · [Whispers](#whispers) · [Notes](#notes) · [Other Docs](#other-docs)
 
 Welcome to the **M3 docs** — living notes, modules, and maps. Use the quick links above or your editor’s search (⌘/Ctrl + P then type a path, or ⌘/Ctrl + Shift + F to search text).
 
@@ -41,6 +41,10 @@ Reusable emotional/behavioral maps extracted from experience. Start with the ove
 ## Astral
 
 - [Guides & Companions](astral/guides-and-companions.md)
+
+## Identity
+
+- [Identity Overview](identity/README.md)
 
 ## Marks
 

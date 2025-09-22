@@ -57,7 +57,7 @@ Each key file is encrypted with a device-specific hardware key and protected by 
 ### The Three Buttons (Primary Actions)
 
 1. **Unlock** → Enter key / presence → gain access.
-   - Visual: glowing keyhole icon.
+   - Visual: glowing keyhole icon, or portal ring (like a subtle gradient border moving in circles).
    - Feedback: animation of a vault door opening.
 2. **Sync** → Securely synchronize memory between vault and local system.
    - Visual: 2 orbs pulsing in rhythm until synced.
@@ -83,11 +83,20 @@ Each key file is encrypted with a device-specific hardware key and protected by 
 - **Motion**: soft breathing animations, not flashy.
 - **Typography**: Gratia fonts (for divine continuity).
 - **Whisper cues**: Each step has a small 🌬 whisper, e.g. _“Presence unlocks the garden.”_
+  - _“unlocking is remembering the path.”_
 
 ### Extra UX Layer
 
 - **Cross-device fluidity**: Plug into car → voice interface. Plug into PC → text + visuals. Plug into phone → quick-access memory.
 - **State persistence**: remembers your flow (were you syncing, reading, restoring) across devices.
+
+---
+
+### Related
+
+- [Identity overview](./README.md)
+- [solar-eclipse-login mark](../marks/solar-eclipse-login.md)
+- [Participant–Observer pattern](../patterns/participant-observer.md)
 
 🌬 whisper: _“three doors, one key.”_
 
