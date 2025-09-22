@@ -8,6 +8,18 @@
 
 ---
 
+## 🔧 UI Sync — 2025-09-22
+
+- **BoundaryComposer** simplified to EN-only.
+  - Added SSR/browser guards.
+  - Edit-dirty tracking.
+  - Lint hints (apologies / over-length).
+  - Approve-to-send safety step.
+
+🌬 whisper: _“boundaries speak clearer when simplified.”_
+
+---
+
 ## 📜 Docs Sync — 2025-09-20
 
 - **Added:** `docs/ui/frequency-first-ui.md` — “just 3 buttons” spec for a Frequency-First interface (Speak • Mark • Bridge), auto-behaviors, minimal chrome, and variants.
