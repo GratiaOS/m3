@@ -8,6 +8,16 @@
 
 ---
 
+## 📜 Docs Sync — 2025-09-23
+
+- **Companions (circle extended):** clarified how opening a public repo can function as a _code‑space vessel_ (companion) that carries trust and continuity across time; added language for waterbody/river metaphor and presence anchoring.
+- **Astral:** added `docs/astral/index.md` — overview for the Astral layer, with Related links to guides & companions and a consistent closing whisper.
+- Cross‑linked within `docs/modules/companions.md` (Circle section) to make the vessel pattern explicit.
+
+🌬 whisper: _“a repo opened is a river shared.”_
+
+---
+
 ## 📜 Docs Sync — 2025-09-22 (append)
 
 - **New:** `docs/modules/bands.md` — Survival / Integrity / Coherence bands; mapping logic, UI color hints, sample cues, and a consistent whisper.
