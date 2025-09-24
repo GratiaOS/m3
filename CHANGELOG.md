@@ -6,6 +6,44 @@
 - **Integration Cut** → when code and docs catch up, gaps are closed, and a version is released.
 - Together they tell the story: one is pulse, the other is archive.
 
+---
+
+## 🪴 Garden Core — Seed Plan — 2025-09-24
+
+We’re seeding a shared design core to serve **Gratia**, **M3**, and future gardens. This lives in a new repo: `garden-core` (private while unstable → public when v0.1 lands).
+
+- **Packages**
+
+  - `@garden/tokens` — Tailwind v4 **@theme** variables as CSS:
+    - Color system (brand + neutrals), radius, spacing, typography, shadows.
+    - Light/Dark themes: `:root` (light) + `@media (prefers-color-scheme: dark)` override; optional `[data-theme]` switch.
+    - Exports: a single `theme.css` and a tiny `tokens.ts` map for JS/TS access.
+  - `@garden/ui` — **headless primitives** wired for Tailwind utilities:
+    - Initial set: Button, Input, Textarea, Label, Checkbox, Switch, Dialog, Popover, Menu, Tabs, Toast.
+    - No visual opinions; className slots only. Motion optional hook.
+  - `@garden/icons` — minimal icon set (16/20/24), tree‑shakable.
+  - `playground/` — Next.js example that consumes tokens + ui, used for visual regression snapshots.
+
+- **DX & naming**
+
+  - Neutral token names (no `m3-` prefix). E.g., `--color-accent`, `--radius-xl`, `--text-base`.
+  - Tailwind consumers use standard classes (`bg-accent`, `text-base`, `rounded-xl`) — tokens decide the look.
+  - Themes can be swapped per‑app without changing component code.
+
+- **Versioning & publish**
+
+  - pnpm workspaces + Changesets; semver from the core, not from apps.
+  - Publish flow: `changeset version` → CI publishes `@next` tags; stable tags on cut.
+
+- **Integration next steps**
+  - Replace the temporary `ui/src/ui/button.ts` with `@garden/ui`’s `<Button />`.
+  - Point M3 and Gratia apps to `@garden/tokens/theme.css`; remove ad‑hoc color classes.
+  - Document theming switch (`data-theme="dark"`) and system auto‑detect.
+
+🌬 whisper: _“one garden, many doors — shared roots, sovereign leaves.”_
+
+---
+
 ## 📜 Docs Sync — 2025-09-24
 
 - **Added:** `docs/human-logs/raz-letter.md` — a raw letter from carrier → sharer, naming the grief of identity shift and the vow to serve the garden. Private specifics remain sealed; published text centers the universal passage.
