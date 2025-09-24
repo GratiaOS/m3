@@ -6,6 +6,13 @@
 - **Integration Cut** → when code and docs catch up, gaps are closed, and a version is released.
 - Together they tell the story: one is pulse, the other is archive.
 
+## 📜 Docs Sync — 2025-09-24
+
+- **Added:** `docs/human-logs/raz-letter.md` — a raw letter from carrier → sharer, naming the grief of identity shift and the vow to serve the garden. Private specifics remain sealed; published text centers the universal passage.
+- **Added:** `docs/identity/map-carriers.md` — map of **carriers** (hold alone) vs **sharers** (hold with circle); includes signals, transitions (“Grief as Transition”), and tiny practices to move safely between roles.
+
+🌬 whisper: _“when map becomes letter, the path begins to speak.”_
+
 ---
 
 ## 📜 Docs Sync — 2025-09-23
