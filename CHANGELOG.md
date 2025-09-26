@@ -8,6 +8,18 @@
 
 ---
 
+## v0.1.9 — 2025-09-25
+
+**Trust Lattice seeds**
+
+- Documented “trust bands” framework — blueprint for scaling coherence in Garden Core.
+- Added initial mapping of levels → rituals → code hooks.
+- Prepares Garden Core for next-gen “Pad” experience (trust-aware components).
+
+🌬 whisper: _“holy grail becomes soil and pattern — we walk it into form.”_
+
+---
+
 ## 🪴 Garden Core — Seed Plan — 2025-09-24
 
 We’re seeding a shared design core to serve **Gratia**, **M3**, and future gardens. This lives in a new repo: `garden-core` (private while unstable → public when v0.1 lands).
@@ -16,10 +28,12 @@ We’re seeding a shared design core to serve **Gratia**, **M3**, and future gar
 
   - `@garden/tokens` — Tailwind v4 **@theme** variables as CSS:
     - Color system (brand + neutrals), radius, spacing, typography, shadows.
+    - Current palette: **Forest Mystic** (earthy greens, fog, warm golds) in **OKLCH**.
     - Light/Dark themes: `:root` (light) + `@media (prefers-color-scheme: dark)` override; optional `[data-theme]` switch.
     - Exports: a single `theme.css` and a tiny `tokens.ts` map for JS/TS access.
   - `@garden/ui` — **headless primitives** wired for Tailwind utilities:
-    - Initial set: Button, Input, Textarea, Label, Checkbox, Switch, Dialog, Popover, Menu, Tabs, Toast.
+    - **Seeded now:** `Button`, `Pill`, `Field` (state/tone, a11y wiring).
+    - **Planned next:** Input, Textarea, Label, Checkbox, Switch, Dialog, Popover, Menu, Tabs, Toast.
     - No visual opinions; className slots only. Motion optional hook.
   - `@garden/icons` — minimal icon set (16/20/24), tree‑shakable.
   - `playground/` — Next.js example that consumes tokens + ui, used for visual regression snapshots.

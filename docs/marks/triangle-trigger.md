@@ -61,6 +61,7 @@ Replace proving with presence.**
 
 ## Whisper
 
+🌬 whisper:  
 _“Commander, who are you fighting?  
 Reverse the poles.  
 Gratitude is the upgrade.”_
