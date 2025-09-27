@@ -74,7 +74,7 @@ jobs:
         if: failure() || always()
         uses: actions/upload-artifact@v4
         with:
-          name: server-panic-logs
+          name: server-panic-logs-${{ matrix.toolchain }}-attempt-${{ github.run_attempt }}
           path: server/exports/panic/**/*.log
           if-no-files-found: ignore
 
@@ -134,7 +134,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: ui-dist-${{ matrix.node }}
+          name: ui-dist-node-${{ matrix.node }}-attempt-${{ github.run_attempt }}
           path: ui/dist
           if-no-files-found: warn
 
