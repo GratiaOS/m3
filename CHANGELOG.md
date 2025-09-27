@@ -96,7 +96,7 @@ We’re seeding a shared design core to serve **Gratia**, **M3**, and future gar
 ## 📜 Docs Sync — 2025-09-22 (append)
 
 - **New:** `docs/modules/bands.md` — Survival / Integrity / Coherence bands; mapping logic, UI color hints, sample cues, and a consistent whisper.
-- **Updated:** `docs/concepts/consciousness-gradient.md` — linked the **Bands** module, expanded Related, clarified how bands map to redirects.
+- **Updated:** `docs/maps/consciousness-gradient.md` — linked the **Bands** module, expanded Related, clarified how bands map to redirects.
 - **Index touch:** added Bands to local Related blocks where relevant.
 
 🌬 whisper: _“name the bands, steer the tone.”_
@@ -208,7 +208,7 @@ The log is sealed in detail, opened only as an anonymized pattern.
 
 - **New:** `docs/modules/cycles.md` (API + computation modes).
 - **New:** `docs/cycles/index.md`, `docs/cycles/v0.1.7-wavespell.md` (seed).
-- **New:** `docs/concepts/consciousness-gradient.md` (our phrasing + attribution).
+- **New:** `docs/maps/consciousness-gradient.md` (our phrasing + attribution).
 - **New:** `AGENTS.md` (renamed from CODING_AGENT.md; conventions for humans & agents).
 - **Updated:** `docs/index.md` (linked **Cycles** module).
 

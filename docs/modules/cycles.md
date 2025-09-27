@@ -77,7 +77,7 @@ Marks a personal anchor inside a larger cycle.
 
 ### Related
 
-- [Consciousness gradient](../concepts/consciousness-gradient.md)
+- [Consciousness gradient](../maps/consciousness-gradient.md)
 - [EmotionalOS module](./emotional.md)
 - [Patterns overview](../patterns/README.md)
 

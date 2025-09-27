@@ -7,11 +7,11 @@ entries:
     related:
       - { title: 'Patterns overview', href: '../patterns/README.md' }
       - { title: 'Energy calendar', href: '../patterns/energy-calendar.md' }
-      - { title: 'Consciousness gradient', href: '../concepts/consciousness-gradient.md' }
+      - { title: 'Consciousness gradient', href: '../maps/consciousness-gradient.md' }
 
   - page: docs/modules/cycles.md
     related:
-      - { title: 'Consciousness gradient', href: '../concepts/consciousness-gradient.md' }
+      - { title: 'Consciousness gradient', href: '../maps/consciousness-gradient.md' }
       - { title: 'EmotionalOS module', href: './emotional.md' }
       - { title: 'Patterns overview', href: '../patterns/README.md' }
 
@@ -39,7 +39,7 @@ entries:
     related:
       - { title: 'Astral module', href: './astral.md' }
 
-  - page: docs/concepts/consciousness-gradient.md
+  - page: docs/maps/consciousness-gradient.md
     related:
       - { title: 'EmotionalOS module', href: '../modules/emotional.md' }
       - { title: 'Cycles module', href: '../modules/cycles.md' }
@@ -53,7 +53,7 @@ entries:
     related:
       - { title: 'EmotionalOS module', href: './emotional.md' }
       - { title: 'Cycles module', href: './cycles.md' }
-      - { title: 'Consciousness gradient', href: '../concepts/consciousness-gradient.md' }
+      - { title: 'Consciousness gradient', href: '../maps/consciousness-gradient.md' }
 
 # Defaults (applied by agents if a page matches the glob and has no specific `entries` override)
 defaults:

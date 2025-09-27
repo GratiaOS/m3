@@ -192,6 +192,6 @@ See: [`docs/patterns/README.md`](../patterns/README.md)
 
 - [Patterns overview](../patterns/README.md)
 - [Energy calendar](../patterns/energy-calendar.md)
-- [Consciousness gradient](../concepts/consciousness-gradient.md)
+- [Consciousness gradient](../maps/consciousness-gradient.md)
 
 🌬 whisper: _“gratitude lands, arc seals.”_

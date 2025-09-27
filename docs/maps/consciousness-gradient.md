@@ -84,7 +84,6 @@ To make the gradient actionable, M3 maps each band to **observable markers** (la
 - [Cycles module](../modules/cycles.md)
 - [Marks overview](../marks/README.md)
 - [Patterns index](../patterns/index.md)
-- [UI components](../ui/README.md)
 
 ## Notes
 
