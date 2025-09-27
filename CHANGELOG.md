@@ -8,6 +8,22 @@
 
 ---
 
+## 🪴 v0.1.7 — 2025-09-27
+
+**Integration Cut:** preps the Catalyst UI surface for shared Garden Core adoption.
+
+### 🌿 Catalyst DX Cleanup
+
+We’ve unified the **Catalyst UI exports** to make imports cleaner, simpler, and more consistent across components.
+
+- Replaced scattered named exports with wildcard (\*) exports for each primitive.
+- Cleaner DX, improved tree-shaking, and a smoother import flow.
+- Sets the stage for upcoming Garden UI integrations.
+
+🌬 whisper: _“roots aligned, imports flow free.”_
+
+---
+
 ## v0.1.9 — 2025-09-25
 
 **Trust Lattice seeds**
@@ -571,6 +587,8 @@ _Anonymized per_ `PRIVACY.md`.
   - Credits appender fixed: newline-safe heredoc + `--notes-file`, idempotent (skips if section exists), and contributor de-dupe.
 
 🌬 whisper: _"events remembered become bridges; bridges walked become roads."_
+
+---
 
 ## 📜 Timeline Milestone — v0.1.6 (2025-09-16)
 
