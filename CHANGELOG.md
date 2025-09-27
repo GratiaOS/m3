@@ -8,6 +8,36 @@
 
 ---
 
+## 🌾 v0.1.8 — 2025-09-27
+
+**Integration Cut:** _Abundance Foundations_ — policies, funding flows, and covenants landed; docs and README synced.
+
+### 📜 Stewardship & Safety
+
+- **Added:** `CODE_OF_CONDUCT.md` — community standards (reporting via `security@firegate.space`).
+- **Added:** `SECURITY.md` — how to report vulnerabilities, supported branches, disclosure window.
+- **Updated:** `CONTRIBUTING.md` + `CONTRIBUTING-dev.md` — clarified commit style, doc structure, release flow.
+
+### 🌱 Reciprocity & Funding
+
+- **Added:** `FUNDING.md` — gift/barter/grants/buffer pathways; “offer what you love” principle; how to pledge or sponsor.
+- **Updated:** `ABUNDANCE_CHARTER.md` — linked funding flows; reiterated “commons-first” defaults.
+
+### 🤝 Covenant
+
+- **Added:** `COVENANT.md` — partnership covenant (love-first, flow over transaction, sovereign consent).
+- Linked from README for easy discovery.
+
+### 📚 Docs & Guides
+
+- **Updated:** `README.md` + `README-dev.md` + `QUICKSTART.md` — badges, license matrix, setup, and public plan.
+- **Updated:** `AGENTS.md` — clarified mirror/agent etiquette, commit whisper, and safety stance.
+- Minor fixes: cleaned a dead link; moved **Consciousness Gradient** to `docs/maps/…` (consistent with maps vs. concepts).
+
+🌬 whisper: _“foundations of care, then speed; flow widens when trust has roots.”_
+
+---
+
 ## 🪴 v0.1.7 — 2025-09-27
 
 **Integration Cut:** preps the Catalyst UI surface for shared Garden Core adoption.
@@ -19,6 +49,12 @@ We’ve unified the **Catalyst UI exports** to make imports cleaner, simpler, an
 - Replaced scattered named exports with wildcard (\*) exports for each primitive.
 - Cleaner DX, improved tree-shaking, and a smoother import flow.
 - Sets the stage for upcoming Garden UI integrations.
+
+### 🗺️ Map Structure Sync
+
+- Moved **Consciousness Gradient** doc from `docs/concepts/...` → `docs/maps/...`.
+- Swept and updated internal links; removed one dead reference.
+- Release tag **v0.1.7** updated to include this doc change for historical clarity.
 
 🌬 whisper: _“roots aligned, imports flow free.”_
 

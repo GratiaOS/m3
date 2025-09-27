@@ -8,9 +8,10 @@
 ![Server License](https://img.shields.io/badge/server-AGPL--3.0--only-blue.svg)
 ![UI License](https://img.shields.io/badge/ui-Apache%202.0-green.svg)
 ![Docs License](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-orange.svg)
-![Version](https://img.shields.io/badge/version-0.1.6-green.svg)
+![Version](https://img.shields.io/badge/version-0.1.8-green.svg)
+[![Covenant](https://img.shields.io/badge/Covenant-kept_in_practice-2e7d32.svg)](COVENANT.md)
 
-[Features](#-features) · [What’s New](#-whats-new-in-v016) · [API](#-api-reference) · [EmotionalOS](#emotionalos-healing-arcs) · [Cycles](#cycles-rhythm-context) · [Privacy](#-privacy) · [License](#-license) · [Covenant](#-partnership-covenant)
+[Features](#-features) · [What’s New](#-whats-new-in-v018) · [API](#-api-reference) · [EmotionalOS](#emotionalos-healing-arcs) · [Cycles](#cycles-rhythm-context) · [Privacy](#-privacy) · [Public Plan](#-public-plan) · [Funding](#-funding) · [Contributing](#-contributing) · [Code of Conduct](#-code-of-conduct) · [Security](#-security) · [License](#-license) · [License Matrix](#-license-matrix) · [Covenant](#-partnership-covenant)
 
 Your personal, local-first memory and knowledge system.\
 Designed for offline resilience, privacy, and joyful retrieval.
@@ -40,16 +41,15 @@ Designed for offline resilience, privacy, and joyful retrieval.
 
 ---
 
-## 🔔 What’s New in v0.1.6
+## 🔔 What’s New in v0.1.8
 
-- added **energy** module (track levels, per kind)
-- added **rhythm** module (work/rest cycles with history)
-- added **timeline** module (aggregates recent events)
-- added **test helpers** (`tests/common/mod.rs`, integration tests)
-- improved **emotions → tells** propagation (resolve events create trace logs)
-- added **energy-calendar pattern** (flips from hours to energy thresholds for flexible scheduling)
+- **Stewardship & safety** → added `CODE_OF_CONDUCT.md` and `SECURITY.md` (responsible disclosure documented).
+- **Reciprocity & funding** → new `FUNDING.md` (pledge tiers, gift/timebank/grants), integrated into **ABUNDANCE_CHARTER.md**.
+- **Covenant** → introduced `COVENANT.md` and added the badge to README.
+- **Docs** → synced README & license matrix; moved `concepts/consciousness-gradient.md` → `maps/consciousness-gradient.md`; removed a dead link.
+- **Dev DX** → refined `CONTRIBUTING.md`, added `CONTRIBUTING-dev.md`, and updated `README-dev.md`.
 
-🌬 whisper: _the garden remembers each cycle, each breath, each spark._
+🌬 whisper: _offer only what you love; flow sustains itself._
 
 ---
 
@@ -384,22 +384,94 @@ Can be triggered via CLI (`panic.sh`) or via the UI Panic Button (long press).
 
 ---
 
+## 🌍 Public Plan
+
+We’re opening M3 carefully, in service of local-first privacy and clear boundaries.
+
+**Phase 1 — Public Read (v0.1.7)**
+
+- Repo visible; CI green; changelog and README synced.
+- Community files present: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`.
+- Issues enabled; Discussions optional; Security reporting via `SECURITY.md`.
+
+**Phase 2 — Onboarding (v0.1.8)**
+
+- Label hygiene: `good first issue`, `help wanted`, `a11y`, `privacy`, `docs`.
+- “One-True-Step” workflow: ship the smallest meaningful patch.
+
+**Phase 3 — Extensions (v0.1.9)**
+
+- Stable webhook contract + sample receivers.
+- UI primitives published as `@gratiaos/garden-core` preview.
+- Docs: “How to run fully offline”, “Sealed notes threat model (home use)”.
+
+**Phase 4 — Bundles (v0.1.10+)**
+
+- Signed binaries / containers for local use (no telemetry).
+- Packaging: Homebrew, winget/scoop, and a portable zip/tarball.
+
+Principles:
+
+- **No SaaS enclosure** (server stays AGPL).
+- **Consent-first** (no hidden collection, ever).
+- **Reciprocity over extraction** (see Covenant).
+
+---
+
 ## 📜 License
 
-**License gradient (proposed for v0.1.6):**
+**License gradient (as of v0.1.8):**
 
 - **Server** → **AGPL-3.0-only** (prevents closed “SaaS enclosure”).
 - **UI** → **Apache-2.0**.
 - **Docs** → **CC BY-SA 4.0**.
 
-Ethos docs: see **ABUNDANCE_CHARTER.md** (no chosen ones, reciprocity, no surveillance).
+Ethos docs: see **[ABUNDANCE_CHARTER.md](ABUNDANCE_CHARTER.md)** (no chosen ones, reciprocity, no surveillance).
 
 ---
+
+## 🧾 License Matrix
+
+| Area         | Path                | License           | Why                                                               |
+| ------------ | ------------------- | ----------------- | ----------------------------------------------------------------- |
+| Server       | `/server`           | **AGPL-3.0-only** | Prevents closed hosted forks; improvements must flow back.        |
+| UI           | `/ui`               | **Apache-2.0**    | Permissive for adoption; encourages contributions without fear.   |
+| Docs         | `/docs`             | **CC BY-SA 4.0**  | Knowledge should stay share‑alike and attributable.               |
+| Marks        | `/docs/assets/mark` | **CC BY-SA 4.0**  | Visual gestures follow docs terms; no proprietary brand lock‑in.  |
+| Exports/Logs | `server/exports`    | User-owned data   | Outputs are yours; license of repo doesn’t restrict your content. |
+
+Notes:
+
+- Third‑party deps remain under their own licenses.
+- Trademark-style use of the project name should honor the spirit of the Covenant (no deception, no enclosure).
+- If you need a different license for a specific integration, open an issue and propose a scope‑limited exception.
+
+---
+
+## 💚 Funding
+
+This project runs on reciprocity, not extraction. See **[FUNDING.md](FUNDING.md)** for pledge options (money, timebank, skills, grants) and how we keep flows open without enclosure.
+
+🌬 whisper: _no guilt, no shame — offer only what you love._
+
+## 🤲 Contributing
+
+We welcome small, well-scoped patches (“one true step”). Please read **[CONTRIBUTING.md](CONTRIBUTING.md)** for local setup, coding style, commit message conventions, and how to propose changes.
+Deeper setup notes: see **[CONTRIBUTING-dev.md](CONTRIBUTING-dev.md)** and **[README-dev.md](README-dev.md)**.
+
+## 🧭 Code of Conduct
+
+We are committed to a harassment‑free experience for everyone. By participating, you agree to uphold our **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)**. If you observe or experience a violation, follow the reporting steps in that document.
+
+## 🔐 Security
+
+If you discover a vulnerability, please **do not** file a public issue. Follow the instructions in **[SECURITY.md](SECURITY.md)** for responsible disclosure. We will acknowledge receipt and work with you to resolve it.
 
 ## 🤝 Partnership Covenant
 
 M3 is not just code, but a lived practice.  
-See [docs/partnership-covenant.md](docs/partnership-covenant.md) for the covenant we keep:  
+See [COVENANT.md](COVENANT.md) for the covenant we keep:  
+Related: [docs/partnership-covenant.md](docs/partnership-covenant.md) (earlier narrative form).
 love over transaction, mirrors over judgment, fidelity to depth.
 
 ---

@@ -4,6 +4,28 @@ Welcome aboard. This project is built with heart, grit, and clarity. To keep the
 
 ---
 
+## 🚀 Quick Start
+
+1. **Fork & clone** the repository
+
+   ```bash
+   git clone https://github.com/YOUR_HANDLE/m3.git
+   cd m3
+   ```
+
+2. **Create a branch** for your contribution
+
+   ```bash
+   git checkout -b feat/your-feature
+   ```
+
+3. **Code, commit, and push**
+   - Follow the [Commit Message](#-commit-messages) guidelines
+   - Run tests and linters locally before pushing
+   - Open a Pull Request 🪄
+
+---
+
 ## Ground rules
 
 - Be kind, keep code local-first, privacy-first.
@@ -15,7 +37,9 @@ Welcome aboard. This project is built with heart, grit, and clarity. To keep the
 
 ## Developer Certificate of Origin (DCO)
 
-Add `Signed-off-by: Your Name <email>` to each commit.
+Add `Signed-off-by: Your Name <email>` to each commit.  
+This ensures both legal clarity and trust in contributions.  
+You can sign automatically by using `git commit -s`.
 
 ---
 
@@ -52,6 +76,12 @@ feat(panic): integrate UI button with server logging 🛡️
 
 🌬️ whisper: _“redirect, don’t collapse.”_
 ```
+
+✅ **Commit Checklist**
+
+- Clear technical summary
+- Bullet points for changes
+- One poetic whisper line 🌬️
 
 ### Mandatory Whisper
 
@@ -132,3 +162,11 @@ To make credit explicit and traceable:
    Each release includes a **Credits** section in the changelog/release notes.
 
 This way, **individual accountability** and **collective soul-credit** both remain visible.
+
+---
+
+## 📚 Related Docs
+
+- [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) – community expectations
+- [SECURITY.md](./SECURITY.md) – reporting vulnerabilities
+- [README.md](./README.md) – project overview

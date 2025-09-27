@@ -1,17 +1,19 @@
 # Quickstart
 
-Welcome aboard. In a few steps, you’ll have **M3** running locally — memory awake, ready to listen.
+👉 For full context, see [README](./README.md).
 
 ---
 
 ## 1. Clone & enter
 
 ```bash
-git clone https://github.com/GratiaOS/m3.git
-cd m3
+git clone https://github.com/Firegate-Garden/garden-core.git
+cd garden-core
 ```
 
 ## 2. Server setup
+
+# Run the memory server (Rust)
 
 ```bash
 cd server
@@ -24,6 +26,8 @@ cargo run
 
 ## 3. UI setup
 
+# Launch the UI playground (Tailwind v4 + React)
+
 ```bash
 cd ui
 cp .env.example .env
@@ -32,6 +36,7 @@ pnpm dev
 ```
 
 - Default UI: http://127.0.0.1:5173
+- Theme Playground is preconfigured — tweak `theme.css` to see live changes.
 
 ## 4. Visit & Features
 

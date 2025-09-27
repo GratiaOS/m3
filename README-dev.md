@@ -36,9 +36,24 @@ m3/
 
 ---
 
+## Quick start for new devs
+
+```bash
+git clone <repo-url>
+pnpm i
+pnpm dev
+```
+
+---
+
 ## 2) Tooling & prerequisites
 
-- **Node** ≥ 18 and **pnpm** ≥ 9
+- **Node** ≥ 18 and **pnpm** ≥ 9  
+  pnpm can be enabled via Corepack:
+  ```bash
+  corepack enable
+  corepack prepare pnpm@latest --activate
+  ```
 - **Rust** (stable toolchain) for `server/`
 - Optional: `tsx` for TypeScript CLIs (installed via devDeps)
 
@@ -94,6 +109,17 @@ docs(marks): add Razvan’s “blanket unity” footprint 🌌
 🌬 whisper: “less friction, more flow — unity remembered.”
 ```
 
+**Real example:**
+
+```
+fix(ui): correct accent color for button hover
+
+- adjust Tailwind token
+- update snapshot
+
+🌬 whisper: “green rivers flow clearer now.”
+```
+
 The Husky hook (`scripts/commit-whisper-check.mjs`) enforces that a commit message contains a line that starts with `🌬 whisper:` (emoji optional, quotes flexible). If it’s missing, the commit is rejected.
 
 Short guide:
@@ -114,6 +140,8 @@ Marks are living, human‑readable footprints saved under `docs/marks/`. Use the
 # Create a new mark
 pnpm mark "blanket unity" "exactly presence."
 ```
+
+👉 Example: [docs/marks/blanket-unity.md](docs/marks/blanket-unity.md)
 
 That generates `docs/marks/blanket-unity.md` with a date + whisper. Then update `CHANGELOG.md` with a **Docs Sync** block and (optionally) a **Human Log** line.
 
@@ -150,20 +178,20 @@ Respect the design tokens & CSS architecture noted in `CONTRIBUTING.md`.
 
 ## 8) Frequently used flows
 
-**Add a new mark**
+**✍️ Add a new mark**
 
 1. `pnpm mark "your title" "your whisper"`
 2. Append a `## 📜 Docs Sync — YYYY‑MM‑DD` block in `CHANGELOG.md`.
 3. Optionally add `# 🪞 Human Log — YYYY‑MM‑DD (short label)`.
 4. Commit with a proper whisper.
 
-**Ship a small UI fix**
+**🪄 Ship a small UI fix**
 
 1. Make the change under `ui/`.
 2. `pnpm fmt && pnpm lint`.
 3. Commit with `fix(ui): …` + whisper.
 
-**Update server logic**
+**⚙️ Update server logic**
 
 1. Change code under `server/`.
 2. `cargo fmt && cargo clippy --tests -- -D warnings && cargo test -q`.
@@ -183,5 +211,8 @@ CI will re‑run whisper checks and standard linters/formatters. Until then, loc
 - **Presence over noise** — meaningful logs, minimal secrets.
 - **Sovereignty respected** — Human Logs protect privacy.
 - **The Garden remembers** — documentation is part of the product.
+- **Trust is the soil** — we build with clarity, not control.
 
-🌬 whisper: “build softly; ship clearly.”
+🌬 whisper: _“build softly; ship clearly.”_
+
+For deeper conventions, see [CONTRIBUTING.md](CONTRIBUTING.md).
