@@ -1,10 +1,15 @@
 name: CI
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
-    branches: ['**']
+    branches: [main]
   pull_request:
-    branches: ['**']
+    branches: [main]
+  workflow_dispatch: {}
 
 permissions:
   contents: read
@@ -16,6 +21,9 @@ jobs:
       matrix:
         toolchain: [stable, nightly]
     runs-on: ubuntu-latest
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_TARGET_DIR: target/${{ matrix.toolchain }}
     defaults:
       run:
         working-directory: server
@@ -28,9 +36,9 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('server/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-cargo-
+            target/${{ matrix.toolchain }}
+          key: ${{ runner.os }}-cargo-${{ matrix.toolchain }}-${{ hashFiles('server/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-${{ matrix.toolchain }}-
 
       - name: Install Rust ${{ matrix.toolchain }}
         uses: dtolnay/rust-toolchain@master
@@ -50,7 +58,7 @@ jobs:
         run: cargo clippy -- -D warnings
 
       - name: Test
-        run: cargo test --all --all-features --no-fail-fast
+        run: cargo test --workspace --all-features --no-fail-fast
 
       - name: Panic redirect script – smoke test
         working-directory: .
@@ -61,6 +69,14 @@ jobs:
           M3_EXPORTS_DIR="$GITHUB_WORKSPACE/server/exports" ./panic.sh
           # Assert at least one panic log was created
           find server/exports/panic -type f -name '*.log' -print -quit | grep -q .
+
+      - name: Upload panic logs
+        if: failure() || always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-panic-logs
+          path: server/exports/panic/**/*.log
+          if-no-files-found: ignore
 
   ui:
     name: UI (Node) – fmt • lint • build
@@ -113,6 +129,14 @@ jobs:
       - name: Build UI
         working-directory: ui
         run: pnpm build
+
+      - name: Upload UI dist
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-dist-${{ matrix.node }}
+          path: ui/dist
+          if-no-files-found: warn
 
   whisper:
     name: Whisper Guard – commit messages
