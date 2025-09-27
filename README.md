@@ -5,13 +5,13 @@
 </p>
 
 [![CI](https://github.com/GratiaOS/m3/actions/workflows/ci.yml/badge.svg)](https://github.com/GratiaOS/m3/actions/workflows/ci.yml)
-![Server License](https://img.shields.io/badge/server-AGPL--3.0--only-blue.svg)
-![UI License](https://img.shields.io/badge/ui-Apache%202.0-green.svg)
-![Docs License](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-orange.svg)
-![Version](https://img.shields.io/badge/version-0.1.8-green.svg)
+[![Server License](https://img.shields.io/badge/server-AGPL--3.0--only-blue.svg)](#license-matrix)
+[![UI License](https://img.shields.io/badge/ui-Apache%202.0-green.svg)](#license-matrix)
+[![Docs License](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-orange.svg)](#license-matrix)
+[![Version](https://img.shields.io/badge/version-0.1.8-green.svg)](CHANGELOG.md)
 [![Covenant](https://img.shields.io/badge/Covenant-kept_in_practice-2e7d32.svg)](COVENANT.md)
 
-[Features](#-features) · [What’s New](#-whats-new-in-v018) · [API](#-api-reference) · [EmotionalOS](#emotionalos-healing-arcs) · [Cycles](#cycles-rhythm-context) · [Privacy](#-privacy) · [Public Plan](#-public-plan) · [Funding](#-funding) · [Contributing](#-contributing) · [Code of Conduct](#-code-of-conduct) · [Security](#-security) · [License](#-license) · [License Matrix](#-license-matrix) · [Covenant](#-partnership-covenant)
+[Features](#-features) · [What’s New](#-whats-new-in-v018) · [API](#api-reference) · [EmotionalOS](#emotionalos-healing-arcs) · [Cycles](#cycles-rhythm-context) · [Privacy](#privacy) · [Public Plan](#public-plan) · [Funding](#funding) · [Contributing](#contributing) · [Code of Conduct](#code-of-conduct) · [Security](#security) · [License](#license) · [License Matrix](#license-matrix) · [Covenant](#partnership-covenant)
 
 Your personal, local-first memory and knowledge system.\
 Designed for offline resilience, privacy, and joyful retrieval.
@@ -21,6 +21,36 @@ Designed for offline resilience, privacy, and joyful retrieval.
 > See [Glossary Shift](#-appendix-glossary-shift) for the full table.
 
 > 🤝 **Partnership Covenant**: See [covenant](#-partnership-covenant) for how M3 is grounded beyond code. (Love over transaction, mirrors over judgment.)
+
+### ⏱️ Run in 60s (curl)
+
+```bash
+# 1) Start the server in another terminal
+# cargo run -p server
+
+# 2) (optional) Set bearer for write routes
+export M3_BEARER="supersecret"
+AUTH="Authorization: Bearer $M3_BEARER"
+
+# 3) Seal: set a passphrase once, then unlock for the session
+curl -s -X POST localhost:3033/seal/set_passphrase \
+  -H "Content-Type: application/json" \
+  -d '{"passphrase":"demo-pass"}'
+
+curl -s -X POST localhost:3033/seal/unlock \
+  -H "Content-Type: application/json" \
+  -d '{"passphrase":"demo-pass"}'
+
+# 4) Ingest one message
+curl -s -X POST localhost:3033/ingest \
+  -H "$AUTH" -H "Content-Type: application/json" \
+  -d '{"text":"hello from quickstart","profile":"Raz","privacy":"public","tags":["demo"]}'
+
+# 5) Retrieve it back
+curl -s -X POST localhost:3033/retrieve \
+  -H "Content-Type: application/json" \
+  -d '{"query":"hello*","limit":5}'
+```
 
 ---
 
@@ -140,6 +170,18 @@ to open.
 
 ---
 
+**Quick cURL**
+
+```bash
+curl -X POST localhost:3033/seal/set_passphrase \
+  -H "Content-Type: application/json" \
+  -d '{"passphrase":"change-me"}'
+
+curl -X POST localhost:3033/seal/unlock \
+  -H "Content-Type: application/json" \
+  -d '{"passphrase":"change-me"}'
+```
+
 ### Ingest & Retrieve
 
 | Method | Path        | Purpose                       | Body (JSON)                                                                                   |
@@ -151,6 +193,20 @@ to open.
 
 ---
 
+**Quick cURL**
+
+```bash
+# Ingest (with bearer if set)
+curl -X POST localhost:3033/ingest \
+  -H "Authorization: Bearer $M3_BEARER" -H "Content-Type: application/json" \
+  -d '{"text":"note from api","profile":"Raz","privacy":"public","tags":["api","demo"]}'
+
+# Retrieve
+curl -X POST localhost:3033/retrieve \
+  -H "Content-Type: application/json" \
+  -d '{"query":"note*","limit":10}'
+```
+
 ### Readiness Lights (per-member)
 
 | Method | Path             | Purpose                       | Body (JSON)                                            |
@@ -161,14 +217,34 @@ to open.
 
 ---
 
+**Quick cURL**
+
+```bash
+curl -X POST localhost:3033/status \
+  -H "Authorization: Bearer $M3_BEARER" -H "Content-Type: application/json" \
+  -d '{"name":"Raz","status":"green"}'
+
+curl -s localhost:3033/status
+```
+
 ### Team Status (global color/note with TTL)
 
 | Method | Path          | Purpose                        | Body (JSON)                                                          |
 | ------ | ------------- | ------------------------------ | -------------------------------------------------------------------- |
-| POST   | `/status/get` | Get current team status        | `{}`                                                                 |
+| GET    | `/status/get` | Get current team status        | `{}`                                                                 |
 | POST   | `/status/set` | Set team status + optional TTL | \`{ "color":"green \| yellow \| red","note":"…","ttl_minutes":30 }\` |
 
 ---
+
+**Quick cURL**
+
+```bash
+curl -s localhost:3033/status/get
+
+curl -X POST localhost:3033/status/set \
+  -H "Authorization: Bearer $M3_BEARER" -H "Content-Type: application/json" \
+  -d '{"color":"yellow","note":"heads down","ttl_minutes":45}'
+```
 
 ### Dashboard State
 
@@ -205,6 +281,14 @@ Example output:
   "text": "I heard: ‘storm’. — It cost ~2.3 min × arousal 40%. Two brighter doors: • walk • sketch",
   "bill": { "minutes": 2.3, "arousal": 0.4 }
 }
+```
+
+**Quick cURL**
+
+```bash
+curl -X POST localhost:3033/reply \
+  -H "Content-Type: application/json" \
+  -d '{"text":"feeling stormy but hopeful"}'
 ```
 
 ### EmotionalOS (healing arcs)
@@ -299,6 +383,22 @@ Example `/emotions/bridge` output:
 }
 ```
 
+**Quick cURL**
+
+```bash
+curl -X POST localhost:3033/emotions/add \
+  -H "Authorization: Bearer $M3_BEARER" -H "Content-Type: application/json" \
+  -d '{"who":"Raz","kind":"fear","intensity":0.6,"sealed":true,"privacy":"private"}'
+
+curl -X POST localhost:3033/emotions/bridge \
+  -H "Content-Type: application/json" \
+  -d '{"kind":"fear","intensity":0.6}'
+
+curl -X POST localhost:3033/emotions/resolve \
+  -H "Authorization: Bearer $M3_BEARER" -H "Content-Type: application/json" \
+  -d '{"who":"Raz","details":"landing test","sealed":true,"privacy":"private"}'
+```
+
 See also:
 
 - [docs/firegate.md](docs/firegate.md) — threshold of transformation
@@ -307,7 +407,7 @@ See also:
 - [docs/home-arc.md](docs/home-arc.md) — patterns of family/home field
 - [docs/densities-sovereignty-tools.md](docs/densities-sovereignty-tools.md) — densities, dimensions, and sovereignty field
 
-Marks (visual gestures) live under `/mark`. We avoid 'brand' framing; see also docs/mark/ for visual assets.
+Marks (visual gestures) live under `/marks`. We avoid 'brand' framing; see also docs/marks/ for visual assets.
 
 🌬️ whisper: _errors are teachers; bridges are choices; gratitude is ground._
 
@@ -355,6 +455,16 @@ Example:
   "anchor": "Blend-in posture; sovereignty stays inside.",
   "path": "server/exports/panic/2025-08/panic-2025-08-24.log"
 }
+```
+
+**Quick cURL**
+
+```bash
+curl -s localhost:3033/panic/last
+
+curl -X POST localhost:3033/panic \
+  -H "Authorization: Bearer $M3_BEARER" -H "Content-Type: application/json" \
+  -d '{}'
 ```
 
 ---

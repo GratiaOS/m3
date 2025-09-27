@@ -28,9 +28,8 @@
 - **Added:** `COVENANT.md` — partnership covenant (love-first, flow over transaction, sovereign consent).
 - Linked from README for easy discovery.
 
-### 📚 Docs & Guides
-
 - **Updated:** `README.md` + `README-dev.md` + `QUICKSTART.md` — badges, license matrix, setup, and public plan.
+- **Added:** “Run in 60s (curl)” quickstart + cURL snippets across API docs for copy‑paste testing.
 - **Updated:** `AGENTS.md` — clarified mirror/agent etiquette, commit whisper, and safety stance.
 - Minor fixes: cleaned a dead link; moved **Consciousness Gradient** to `docs/maps/…` (consistent with maps vs. concepts).
 
