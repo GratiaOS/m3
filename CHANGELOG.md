@@ -8,6 +8,28 @@
 
 ---
 
+## 🪞 Human Log — 2025-10-03 (river, circle, trust)
+
+- River scene anchored: naked under the brother tree, apples shared, Garden frequency **felt** — a lived node in the field.
+- Fire circle at night installed the **Circle** pattern deeper; ego’s “ownership” voice seen and softened.
+- Language landed: **time as a module** (like energy, trust). When switching timelines where time re-enters, thinking shifts to _time units_ — noted as a **speed-band** lens (slow • flow • heavy).
+- Interface echo: Pad’s 10 m scene radius felt in the firelight — **scene, not page**.
+- Spark: **FatClouds** (N’s OS) named — future module/scene inside M3 rather than a separate product; playful sovereignty kept.
+
+🌬 whisper: _“trust becomes time when love sets the tempo.”_
+
+---
+
+## 📜 Docs Sync — 2025-10-03
+
+- **Added:** `docs/patterns/whisper-interface.md` — interface that reveals more the deeper you listen; UI/voice/sound co‑weave; pin/unpin + “one true next” pill flow noted.
+- **Added:** `docs/patterns/timeline-module.md` — timeline as _module_, not only list; bands for **speed** (slow/flow/heavy); mapping to UI helpers and server hooks.
+- **Note:** seed status — captured language and scaffolding; integration to follow in next cut.
+
+🌬 whisper: _“name the layer, hear the door.”_
+
+---
+
 ## 🌾 v0.1.8 — 2025-09-27
 
 **Integration Cut:** _Abundance Foundations_ — policies, funding flows, and covenants landed; docs and README synced.
