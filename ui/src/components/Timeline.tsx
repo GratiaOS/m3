@@ -1,6 +1,38 @@
 import React from 'react';
 
 /**
+ * Roadmap — Timeline polish & theming bridge
+ *
+ * 1) Tokenize styles:
+ *    - Replace hardcoded `text-zinc-*` / `bg-zinc-*` with semantic tokens/utilities
+ *      from Garden Core (e.g. `text-muted`, `border-border`, `bg-[var(--color-elev)]`).
+ *    - Goal: the component auto-themes with light/dark and future palettes.
+ *
+ * 2) Animate dot & line:
+ *    - Add soft ambient motion: `animate-breathe` / `animate-twinkle` on the dot,
+ *      subtle opacity shift on the vertical line based on depth.
+ *    - Tie into Pad depth tokens when rendered inside the Pad.
+ *
+ * 3) Whisper entrance:
+ *    - On mount / item add, ease in each `<li>` with opacity+translate-y for a
+ *      gentle "bloom" effect (no harsh pop-ins).
+ *
+ * 4) Density variants helper:
+ *    - Extract density logic (`compact` paddings/spacing) into a small helper so
+ *      the render tree reads cleaner and is easy to extend.
+ *
+ * 5) Optional header slot:
+ *    - Support an optional header/title/date label pinned at the top to enable
+ *      multi-day groupings later without changing call sites.
+ *
+ * Bridge plan (repo-level):
+ *  - garden-core: ensure `@garden/tokens` and (optional) `@garden/ui/styles/base.css`
+ *    are published/linked.
+ *  - m3/ui: import tokens once at the root (e.g. `import '@garden/tokens'`) so
+ *    Timeline responds to global semantics immediately.
+ */
+
+/**
  * Minimal, presentational timeline for recent events (emotions, etc).
  * Tailwind v4-friendly classes. No data fetching here — just render.
  */

@@ -133,11 +133,12 @@ async fn recent(
         .0
         .call(move |c| -> tokio_rusqlite::Result<_> {
             let mut out = Vec::new();
+            // NOTE: Order by ts, not id — keeps the global merge truly time-based.
             let mut st = c.prepare(
                 "SELECT id, ts, who, kind, level, note
-             FROM energy_marks
-             ORDER BY id DESC
-             LIMIT ?1",
+                FROM energy_marks
+                ORDER BY ts DESC
+                LIMIT ?1",
             )?;
             let it = st.query_map([limit], |r| {
                 let id: i64 = r.get(0)?;
