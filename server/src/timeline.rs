@@ -1,4 +1,6 @@
-// server/src/timeline.rs
+//! M3 timeline endpoints weave cross-domain events into the digital intelligence field.
+//! Vision map: docs/vision/digital-intelligence.md
+//! Human remembrance: docs/marks/digital-intelligence-remembrance.md
 use crate::AppState;
 use axum::{extract::Query, extract::State, routing::get, Json, Router};
 use serde::Serialize;

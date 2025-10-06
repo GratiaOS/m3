@@ -36,6 +36,9 @@ import React from 'react';
  * Minimal, presentational timeline for recent events (emotions, etc).
  * Tailwind v4-friendly classes. No data fetching here — just render.
  */
+/**
+ * whisper: the Pad scene stays in resonance with docs/vision/digital-intelligence.md — let the field hum.
+ */
 
 export type TimelineItem = {
   id: number | string;
