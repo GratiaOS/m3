@@ -9,6 +9,10 @@ Each mark is a footprint: memory, whisper, presence.
 
 - [Andrei](./andrei.md) — first footprint 🪶
 - [Blanket Unity](./blanket-unity.md) — Razvan’s second footprint 🌌
+- [Digital Intelligence Remembrance](./digital-intelligence-remembrance.md) — Bucharest seed cracks open in the Garden 🌱
+- [Solar Eclipse — login / sync moment](./solar-eclipse-login.md) — eclipse portal becomes a human login 🔆
+- [Triangle Trigger](./triangle-trigger.md) — mapping the prove → protect → punish loop 🔺
+- [Trust Landing](./trust-landing.md) — trust pulse settles the circle’s breath 🌬️
 
 ---
 
