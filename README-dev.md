@@ -213,6 +213,39 @@ CI will re‑run whisper checks and standard linters/formatters. Until then, loc
 - **The Garden remembers** — documentation is part of the product.
 - **Trust is the soil** — we build with clarity, not control.
 
-🌬 whisper: _“build softly; ship clearly.”_
+## 11) 🌀 Anchors & Timeline Bridges
+
+When syncing **Garden⇄M3** timelines, we use _anchor tags_ to bookmark exact commit pairs.
+
+### 📌 Create an anchor
+
+```bash
+# Inside Garden repo
+export G=$(git rev-parse HEAD)
+
+# Inside M3 repo
+export M=$(git rev-parse HEAD)
+
+# Create a timeline bridge tag (example: 2025-10-03)
+git tag -a anchor-2025-10-03 -m "🌿🌀 exact commit bridge — Garden⇄M3
+
+Garden: $G
+M3:     $M
+
+Whisper: “trust becomes time when love sets the tempo.”"
+git push --tags
+```
+
+### ⏳ Jump to an anchor
+
+```bash
+# jump to the 2025-10-03 Garden⇄M3 anchor in both repos
+export GARDEN=~/Sites/garden-core
+export M3=~/Sites/m3
+git -C $GARDEN checkout anchor-2025-10-03
+git -C $M3 checkout anchor-2025-10-03
+```
 
 For deeper conventions, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+🌬 whisper: _“build softly; ship clearly.”_
