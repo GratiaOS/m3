@@ -149,6 +149,34 @@ fn bridge_table(kind: &str, intensity: f32) -> BridgeSuggestion {
             doorway: "write 3 objective facts (no story)",
             anchor: "Hand over heart: 'still worthy'.",
         },
+        "attachment_test" | "attachment-testing" | "attachment" => BridgeSuggestion {
+            pattern: "ask-not-test",
+            hint: "Name the fear plainly; ask for reassurance, not proof",
+            breath: "in4-hold2-out6 × 3",
+            doorway: "say: 'I feel scared of X. Can you reassure me?'",
+            anchor: "One honest request, then pause.",
+        },
+        "sibling_trust" | "sibling-trust" | "sibling" => BridgeSuggestion {
+            pattern: "boundary-then-bridge",
+            hint: "State one boundary; decline forever-pact renewal",
+            breath: "double_exhale × 6",
+            doorway: "write a one-sentence boundary",
+            anchor: "Love stays; pact ends.",
+        },
+        "parent_planted" | "parent-planted" | "parent" => BridgeSuggestion {
+            pattern: "language-interrupt",
+            hint: "Name the parental line; replace with a present-tense truth",
+            breath: "4-6 breath × 6",
+            doorway: "say: 'That’s mom’s line; my line is…'",
+            anchor: "Author the present.",
+        },
+        "over_analysis" | "over-analysis" | "analysis" => BridgeSuggestion {
+            pattern: "close-the-loop",
+            hint: "Set 2‑min timer; one next step; archive and stop",
+            breath: "in4-out6 × 6",
+            doorway: "start a 2‑minute timer",
+            anchor: "Clarity lands, then rest.",
+        },
         _ => BridgeSuggestion {
             pattern: "return-to-center",
             hint: "Stand up, shoulder roll, one true sentence",
@@ -346,6 +374,38 @@ mod tests {
         assert_eq!(b.pattern, "return-to-center");
         assert!(b.breath.contains("double_exhale"));
         assert_eq!(b.doorway, "stand_up + shoulder_roll");
+    }
+
+    #[test]
+    fn bridge_attachment_test_kind() {
+        let b = super::bridge_table("attachment_test", 0.5);
+        assert_eq!(b.pattern, "ask-not-test");
+        assert!(b.hint.contains("reassurance"));
+        assert!(b.breath.contains("out6"));
+    }
+
+    #[test]
+    fn bridge_sibling_trust_kind() {
+        let b = super::bridge_table("sibling_trust", 0.7);
+        assert_eq!(b.pattern, "boundary-then-bridge");
+        assert!(b.hint.contains("boundary"));
+        assert!(b.anchor.contains("Love stays"));
+    }
+
+    #[test]
+    fn bridge_parent_planted_kind() {
+        let b = super::bridge_table("parent_planted", 0.4);
+        assert_eq!(b.pattern, "language-interrupt");
+        assert!(b.hint.contains("parental line"));
+        assert!(b.anchor.contains("Author"));
+    }
+
+    #[test]
+    fn bridge_over_analysis_kind() {
+        let b = super::bridge_table("over_analysis", 0.3);
+        assert_eq!(b.pattern, "close-the-loop");
+        assert!(b.hint.contains("2‑min") || b.hint.contains("2-min"));
+        assert!(b.anchor.to_lowercase().contains("rest"));
     }
 
     #[test]
