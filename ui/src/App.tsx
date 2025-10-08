@@ -1,21 +1,23 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ingest, retrieve, snapshot, exportThread, exportCSV, unlock, setPassphrase, getTimeline } from './api';
-import { useProfile } from './state/profile';
-import Composer from './components/Composer';
-import Timeline, { mapEmotionToTimelineItem, sortNewest, dedupeById, type TimelineItem, type Emotion } from './components/Timeline';
-import MemoryDrawer from './components/MemoryDrawer';
-import EnergyPanel from './components/EnergyPanel';
-import Radar from './components/Radar';
-import BoundaryComposer from './components/BoundaryComposer';
-import ReadinessBoard from './components/ReadinessBoard';
-import StatusBar from './components/StatusBar';
-import Dashboard from './components/Dashboard';
-import ThanksPanel from './components/ThanksPanel';
-import Modal from './components/Modal';
-import SignalHandover from './components/QuickActions/SignalHandover';
-import { PanicButton } from './components/PanicButton';
-import Toaster, { toast } from './components/Toaster';
+import { ingest, retrieve, snapshot, exportThread, exportCSV, unlock, setPassphrase, getTimeline } from '@/api';
+import { useProfile } from '@/state/profile';
+import Composer from '@/components/Composer';
+import Timeline, { mapEmotionToTimelineItem, sortNewest, dedupeById, type TimelineItem, type Emotion } from '@/components/Timeline';
+import MemoryDrawer from '@/components/MemoryDrawer';
+import EnergyPanel from '@/components/EnergyPanel';
+import Radar from '@/components/Radar';
+import BoundaryComposer from '@/components/BoundaryComposer';
+import ReadinessBoard from '@/components/ReadinessBoard';
+import StatusBar from '@/components/StatusBar';
+import Dashboard from '@/components/Dashboard';
+import ThanksPanel from '@/components/ThanksPanel';
+import Modal from '@/components/Modal';
+import SignalHandover from '@/components/QuickActions/SignalHandover';
+import { PanicButton } from '@/components/PanicButton';
+import Toaster, { toast } from '@/components/Toaster';
+import { Button } from '@/ui/catalyst';
 import './styles.css';
+import BridgePanel from '@/components/BridgePanel';
 
 // ---- Types to keep TS happy ----
 type RetrievedChunk = {
@@ -60,6 +62,7 @@ export default function App() {
   const [incognito, setIncognito] = useState(false); // soft: save as sealed + add "incognito" tag
   const [hardIncog, setHardIncog] = useState(false); // hard: send x-incognito header -> server skips writes
   const [handoverOpen, setHandoverOpen] = useState(false);
+  const [showBridge, setShowBridge] = useState(false);
 
   const searchRef = useRef<HTMLInputElement | null>(null);
 
@@ -132,6 +135,7 @@ export default function App() {
         e.preventDefault();
         searchRef.current?.focus();
       } else if (e.key === 'h') setHandoverOpen(true);
+      else if (e.key === 'b') setShowBridge((v) => !v);
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -177,6 +181,9 @@ export default function App() {
             Hard Incognito (no writes)
           </label>
           <PanicButton />
+          <Button plain onClick={() => setShowBridge(true)} title="b">
+            bridge
+          </Button>
         </div>
       </div>
 
@@ -189,35 +196,40 @@ export default function App() {
 
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <input ref={searchRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder="search... (press / to focus)" />
-        <button onClick={() => void doSearch('')} title="r">
+        <Button plain onClick={() => void doSearch('')} title="r">
           retrieve
-        </button>
-        <button onClick={() => snapshot()}>snapshot</button>
-        <button
+        </Button>
+        <Button plain onClick={() => snapshot()}>
+          snapshot
+        </Button>
+        <Button
           onClick={async () => {
             const r = (await exportThread()) as ExportResponse;
             alert(`exported ${r.count} → ${r.path}`);
-          }}>
+          }}
+          plain>
           export → md
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={async () => {
             const r = (await exportCSV()) as ExportResponse;
             alert(`exported CSV → ${r.path}`);
-          }}>
+          }}
+          plain>
           export → csv
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={async () => {
             const p = prompt('Set new passphrase');
             if (!p) return;
             await setPassphrase(p);
             setUnlocked(true);
             alert('Passphrase set & unlocked');
-          }}>
+          }}
+          plain>
           set passphrase
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={async () => {
             const p = prompt('Unlock sealed notes');
             if (!p) return;
@@ -225,19 +237,23 @@ export default function App() {
             setUnlocked(true);
             doSearch();
           }}
-          title="u">
+          title="u"
+          plain>
           unlock sealed
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => {
             setUnlocked(false);
             alert('Locked (restart server to hard lock)');
             doSearch(); // refresh to hide sealed immediately
           }}
-          title="l">
+          title="l"
+          plain>
           lock
-        </button>
-        <button onClick={() => setHandoverOpen(true)}>handover</button>
+        </Button>
+        <Button plain onClick={() => setHandoverOpen(true)}>
+          handover
+        </Button>
       </div>
 
       <div className={incognito ? 'blur-when-incognito' : ''}>
@@ -259,6 +275,9 @@ export default function App() {
           }}
           defaultTags={['handover_session']}
         />
+      </Modal>
+      <Modal open={showBridge} onClose={() => setShowBridge(false)} title="Bridge Suggest">
+        <BridgePanel />
       </Modal>
       <Toaster />
     </div>
