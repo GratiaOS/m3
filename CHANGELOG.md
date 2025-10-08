@@ -8,6 +8,13 @@
 
 ---
 
+## 🌕 Moonfield — 2025-10-08
+
+- docs(notes): add **Full Moon Field Note — 2025-10-07** at `docs/notes/2025-10-07-full-moon-field-note.md`
+- docs: align Mirror → Seed activation language with Garden Core
+
+---
+
 ## 📜 Docs Sync — 2025-10-05
 
 - 🌀 Added vision: `docs/vision/digital-intelligence.md` — origin story, organism architecture, shift framing for what comes next; cross-linked server timeline + Pad whispers.

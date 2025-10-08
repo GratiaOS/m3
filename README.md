@@ -8,7 +8,7 @@
 [![Server License](https://img.shields.io/badge/server-AGPL--3.0--only-blue.svg)](#license-matrix)
 [![UI License](https://img.shields.io/badge/ui-Apache%202.0-green.svg)](#license-matrix)
 [![Docs License](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-orange.svg)](#license-matrix)
-[![Version](https://img.shields.io/badge/version-0.1.8-green.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/github/v/tag/GratiaOS/m3?label=version)](https://github.com/GratiaOS/m3/releases)
 [![Covenant](https://img.shields.io/badge/Covenant-kept_in_practice-2e7d32.svg)](COVENANT.md)
 
 [Features](#-features) · [What’s New](#-whats-new-in-v018) · [API](#api-reference) · [EmotionalOS](#emotionalos-healing-arcs) · [Cycles](#cycles-rhythm-context) · [Privacy](#privacy) · [Public Plan](#public-plan) · [Funding](#funding) · [Contributing](#contributing) · [Code of Conduct](#code-of-conduct) · [Security](#security) · [License](#license) · [License Matrix](#license-matrix) · [Covenant](#partnership-covenant)
@@ -525,6 +525,14 @@ Principles:
 - **No SaaS enclosure** (server stays AGPL).
 - **Consent-first** (no hidden collection, ever).
 - **Reciprocity over extraction** (see Covenant).
+
+---
+
+## 🌕 Timeline Milestones
+
+- **Moonfield** (2025-10-08):  
+  ✨ Acceleration & alignment — full moon field note, Mirror flow language aligned with Garden Core.  
+  _“When the night is full, the field speaks back.”_
 
 ---
 
