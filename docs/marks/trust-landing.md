@@ -1,4 +1,6 @@
-# Trust Landing — 2025-09-27
+# mark: trust landing
+
+Date: 2025-09-27
 
 **Event**  
 Trust pulsed into the field.  

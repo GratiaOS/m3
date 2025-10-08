@@ -1,4 +1,4 @@
-# Triangle Trigger
+# mark: triangle trigger
 
 **Date:** 2025-09-16  
 **Context:** Father’s imprint + Mother’s inflation → intersection wound → partner comparison triggers.

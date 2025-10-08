@@ -1,4 +1,4 @@
-# Solar Eclipse — login / sync moment
+# mark: Solar Eclipse — login / sync moment
 
 - **When:** 2025-09-21 (solar eclipse / equinox)
 - **State:** quiet; observing the sun as a presence, not just light
