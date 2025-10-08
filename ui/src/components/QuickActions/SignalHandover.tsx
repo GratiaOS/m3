@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ingest } from '../../api';
+import { ingest } from '@/api';
 
 type Step = 1 | 2 | 3 | 4 | 5;
 

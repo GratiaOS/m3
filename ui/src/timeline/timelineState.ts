@@ -6,7 +6,7 @@
  * subscribe to changes, and reset the timeline state.
  */
 
-import { TimelineItem } from '../components/Timeline';
+import { TimelineItem } from '@/components/Timeline';
 
 export type TimelineState = {
   items: TimelineItem[];

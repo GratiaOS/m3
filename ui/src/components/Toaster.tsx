@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import type { JoyMessage } from '../utils/joy';
+import type { JoyMessage } from '@/utils/joy';
 
 type ToastMessage = JoyMessage & { id: string };
 

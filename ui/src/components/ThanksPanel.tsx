@@ -1,5 +1,5 @@
 import React from 'react';
-import { createThanks } from '../api';
+import { createThanks } from '@/api';
 
 export default function ThanksPanel(props: { me?: string; attachNoteId?: number }) {
   const [subject, setSubject] = React.useState('');

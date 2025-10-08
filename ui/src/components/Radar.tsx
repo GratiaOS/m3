@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { retrieve } from '../api';
+import { retrieve } from '@/api';
 
 type RadarProps = {
   intervalMs?: number;

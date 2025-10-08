@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { toast } from './Toaster';
-import { getState, setState, TeamState, PillarStatus, getPanicLast, type PanicLast, getTells, type Tell, resolveEmotion } from '../api';
+import { toast } from '@/components/Toaster';
+import { getState, setState, TeamState, PillarStatus, getPanicLast, type PanicLast, getTells, type Tell, resolveEmotion } from '@/api';
 import { Heading, Subheading, Divider, Text, Strong, Input, Textarea, Badge, Button } from '@/ui/catalyst';
 
 const isDev = import.meta.env.DEV;

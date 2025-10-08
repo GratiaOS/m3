@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { runPanic, type PanicMode } from '../api';
-import { useProfile } from '../state/profile';
-import { toast } from './Toaster';
+import { runPanic, type PanicMode } from '@/api';
+import { useProfile } from '@/state/profile';
+import { toast } from '@/components/Toaster';
+import { Button, Select } from '@/ui/catalyst';
 
 type PanicResult = {
   whisper: string;
@@ -98,27 +99,28 @@ export function PanicButton() {
 
   return (
     <div className="flex items-center gap-2">
-      <button
+      <Button
+        color="rose"
+        type="button"
         onMouseDown={onDown}
         onMouseUp={onUp}
         onMouseLeave={onUp}
         onTouchStart={onDown}
         onTouchEnd={onUp}
         title="Hold to Panic (Alt+P)"
-        className={`px-4 py-2 rounded-xl font-medium transition ${pressing ? 'bg-red-700 text-white' : 'bg-red-600 hover:bg-red-700 text-white'}`}
         aria-label="Hold to Panic">
-        ⚡ Panic
-      </button>
+        <span data-slot="icon">⚡</span> Panic
+      </Button>
 
-      <select
+      <Select
         value={mode}
-        onChange={(e) => setMode(e.target.value as PanicMode)}
-        className="px-2 py-2 rounded-lg border border-neutral-300 bg-white text-sm"
+        onChange={(event) => setMode(event.target.value as PanicMode)}
+        aria-label="Redirect preset"
         title="Redirect preset"
-        aria-label="Redirect preset">
+        className="w-[9.5rem]">
         <option value="default">Default</option>
         <option value="fearVisible">FearVisible</option>
-      </select>
+      </Select>
     </div>
   );
 }

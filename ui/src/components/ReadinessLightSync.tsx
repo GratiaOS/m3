@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { LightStatus, setStatus, streamStatus } from '../api';
+import { LightStatus, setStatus, streamStatus } from '@/api';
 
 type LightMeta = { label: string; bg: string; color?: string };
 const MAP: Record<LightStatus, LightMeta> = {
