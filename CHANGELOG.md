@@ -8,6 +8,14 @@
 
 ---
 
+## 📜 Docs Sync — 2025-10-09
+
+- docs(patterns): add four relational loop patterns — Attachment Testing Loop, Sibling Trust Loop, Parent‑Planted Narrative Loop, Over‑Analysis Self‑Perpetuating Loop.
+- docs(patterns): categorize `docs/patterns/index.md` into Relationship • Productivity • Meta; add 🔌 API Quick Links.
+- docs(patterns): add **How to use patterns** tiny guide in `docs/patterns/README.md`.
+
+---
+
 ## 🌕 Moonfield — 2025-10-08
 
 - docs(notes): add **Full Moon Field Note — 2025-10-07** at `docs/notes/2025-10-07-full-moon-field-note.md`
