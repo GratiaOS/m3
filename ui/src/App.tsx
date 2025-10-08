@@ -18,6 +18,7 @@ import Toaster, { toast } from '@/components/Toaster';
 import { Button } from '@/ui/catalyst';
 import './styles.css';
 import BridgePanel from '@/components/BridgePanel';
+import type { BridgeKindAlias } from '@/types/patterns';
 
 // ---- Types to keep TS happy ----
 type RetrievedChunk = {
@@ -63,6 +64,14 @@ export default function App() {
   const [hardIncog, setHardIncog] = useState(false); // hard: send x-incognito header -> server skips writes
   const [handoverOpen, setHandoverOpen] = useState(false);
   const [showBridge, setShowBridge] = useState(false);
+  const [bridgeKind, setBridgeKind] = useState<BridgeKindAlias>('attachment_test');
+  const [bridgeIntensity, setBridgeIntensity] = useState(0.6);
+  const BRIDGE_LABELS: Record<string, string> = {
+    attachment_test: 'Attachment',
+    sibling_trust: 'Sibling',
+    parent_planted: 'Parent',
+    over_analysis: 'Over‑Analysis',
+  };
 
   const searchRef = useRef<HTMLInputElement | null>(null);
 
@@ -184,6 +193,20 @@ export default function App() {
           <Button plain onClick={() => setShowBridge(true)} title="b">
             bridge
           </Button>
+          <span
+            title="current bridge pattern"
+            style={{
+              fontSize: 12,
+              padding: '2px 6px',
+              border: '1px solid var(--border, #333)',
+              borderRadius: 6,
+              opacity: 0.85,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+            }}>
+            {BRIDGE_LABELS[bridgeKind] || bridgeKind} · {bridgeIntensity.toFixed(2)}
+          </span>
         </div>
       </div>
 
@@ -277,7 +300,7 @@ export default function App() {
         />
       </Modal>
       <Modal open={showBridge} onClose={() => setShowBridge(false)} title="Bridge Suggest">
-        <BridgePanel />
+        <BridgePanel kind={bridgeKind} intensity={bridgeIntensity} onKind={setBridgeKind} onIntensity={setBridgeIntensity} />
       </Modal>
       <Toaster />
     </div>

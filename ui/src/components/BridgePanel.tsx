@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useBridge } from '@/hooks/useBridge';
 import { Button, Heading, Select, Text } from '@/ui/catalyst';
 import type { BridgeKindAlias } from '@/types/patterns';
@@ -10,9 +10,17 @@ const OPTIONS: { value: BridgeKindAlias; label: string }[] = [
   { value: 'over_analysis', label: 'Over‑Analysis' },
 ];
 
-export default function BridgePanel() {
-  const [kind, setKind] = useState<BridgeKindAlias>('attachment_test');
-  const [intensity, setIntensity] = useState(0.6);
+export default function BridgePanel({
+  kind,
+  intensity,
+  onKind,
+  onIntensity,
+}: {
+  kind: BridgeKindAlias;
+  intensity: number;
+  onKind: (k: BridgeKindAlias) => void;
+  onIntensity: (n: number) => void;
+}) {
   const { data, loading, error, refresh } = useBridge(kind, intensity);
 
   const fields = useMemo(
@@ -38,7 +46,7 @@ export default function BridgePanel() {
   return (
     <div className="grid gap-5 ">
       <div className="flex flex-wrap items-center gap-4">
-        <Select value={kind} onChange={(event) => setKind(event.target.value as BridgeKindAlias)} aria-label="Bridge pattern kind" className="w-56">
+        <Select value={kind} onChange={(event) => onKind(event.target.value as BridgeKindAlias)} aria-label="Bridge pattern kind" className="w-56">
           {OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
@@ -53,7 +61,7 @@ export default function BridgePanel() {
             max={1}
             step={0.05}
             value={intensity}
-            onChange={(e) => setIntensity(Number(e.target.value))}
+            onChange={(e) => onIntensity(Number(e.target.value))}
             className="h-2 w-40 rounded-full accent-sky-500"
           />
           <span className="w-12 text-right tabular-nums text-zinc-500 dark:text-zinc-400">{intensity.toFixed(2)}</span>
