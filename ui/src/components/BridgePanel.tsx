@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useBridge } from '@/hooks/useBridge';
-import { Button, Heading, Select, Text } from '@/ui/catalyst';
-import type { BridgeKindAlias } from '@/types/patterns';
+import { Button, Select, Text } from '@/ui/catalyst';
+import type { BridgeKindAlias, BridgeSuggestion } from '@/types/patterns';
 
 const OPTIONS: { value: BridgeKindAlias; label: string }[] = [
   { value: 'attachment_test', label: 'Attachment Testing' },
@@ -15,13 +15,19 @@ export default function BridgePanel({
   intensity,
   onKind,
   onIntensity,
+  onSuggestion,
 }: {
   kind: BridgeKindAlias;
   intensity: number;
   onKind: (k: BridgeKindAlias) => void;
   onIntensity: (n: number) => void;
+  onSuggestion?: (s: BridgeSuggestion | null) => void;
 }) {
   const { data, loading, error, refresh } = useBridge(kind, intensity);
+
+  useEffect(() => {
+    if (onSuggestion) onSuggestion(data ?? null);
+  }, [data, onSuggestion]);
 
   const fields = useMemo(
     () =>

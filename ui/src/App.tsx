@@ -64,6 +64,7 @@ export default function App() {
   const [hardIncog, setHardIncog] = useState(false); // hard: send x-incognito header -> server skips writes
   const [handoverOpen, setHandoverOpen] = useState(false);
   const [showBridge, setShowBridge] = useState(false);
+  const [bridgeHint, setBridgeHint] = useState<string | null>(null);
   const [bridgeKind, setBridgeKind] = useState<BridgeKindAlias>('attachment_test');
   const [bridgeIntensity, setBridgeIntensity] = useState(0.6);
   const BRIDGE_LABELS: Record<string, string> = {
@@ -194,7 +195,7 @@ export default function App() {
             bridge
           </Button>
           <span
-            title="current bridge pattern"
+            title={bridgeHint || 'current bridge pattern'}
             style={{
               fontSize: 12,
               padding: '2px 6px',
@@ -300,7 +301,13 @@ export default function App() {
         />
       </Modal>
       <Modal open={showBridge} onClose={() => setShowBridge(false)} title="Bridge Suggest">
-        <BridgePanel kind={bridgeKind} intensity={bridgeIntensity} onKind={setBridgeKind} onIntensity={setBridgeIntensity} />
+        <BridgePanel
+          kind={bridgeKind}
+          intensity={bridgeIntensity}
+          onKind={setBridgeKind}
+          onIntensity={setBridgeIntensity}
+          onSuggestion={(s) => setBridgeHint(s?.hint ?? null)}
+        />
       </Modal>
       <Toaster />
     </div>
