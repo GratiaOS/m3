@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ENERGY_LABEL, MICRO_PLAYS, Energy, suggestNext } from '../energy';
-import { ingest } from '../api';
+import { ENERGY_LABEL, MICRO_PLAYS, Energy, suggestNext } from '@/energy';
+import { ingest } from '@/api';
 
 type RetrievedChunk = {
   id: number;

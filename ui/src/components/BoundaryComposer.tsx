@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ingest } from '../api';
+import { ingest } from '@/api';
 
 import { Heading, Subheading, Divider, Text, Strong, Input, Textarea, Badge, Button, Field, Label, Select } from '@/ui/catalyst';
 

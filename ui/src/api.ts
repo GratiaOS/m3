@@ -1,3 +1,5 @@
+import type { BridgeSuggestion, BridgeKindAlias } from '@/types/patterns';
+import { normalizeBridgeKind } from '@/types/patterns';
 export const BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:3033';
 const BEARER = localStorage.getItem('m3_token') || '';
 
@@ -436,4 +438,12 @@ export async function resolveEmotion(who: string, details?: string) {
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
+}
+
+// --- Patterns API -----------------------------------------------------------
+export async function fetchBridge(kind: BridgeKindAlias, intensity: number = 0.6): Promise<BridgeSuggestion> {
+  const search = new URLSearchParams();
+  search.set('kind', normalizeBridgeKind(kind));
+  if (Number.isFinite(intensity)) search.set('intensity', intensity.toString());
+  return request<BridgeSuggestion>(`/patterns/bridge_suggest?${search.toString()}`, { method: 'GET' });
 }

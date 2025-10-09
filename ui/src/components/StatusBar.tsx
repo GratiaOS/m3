@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getStatus, setStatus } from '../api';
+import { getStatus, setStatus } from '@/api';
 
 type Color = 'green' | 'yellow' | 'red';
 

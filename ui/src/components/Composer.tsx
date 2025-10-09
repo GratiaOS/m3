@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { fetchReply, createTell } from '../api';
+import { fetchReply, createTell } from '@/api';
 
 type Privacy = 'public' | 'private' | 'sealed';
 

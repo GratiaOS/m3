@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { getStatusSnapshot, LightStatus } from '../api';
-import ReadinessLightSync from './ReadinessLightSync';
+import { getStatusSnapshot, LightStatus } from '@/api';
+import ReadinessLightSync from '@/components/ReadinessLightSync';
 
 interface StatusRow {
   name: string;
