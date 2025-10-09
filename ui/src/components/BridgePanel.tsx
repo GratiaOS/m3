@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useBridge } from '@/hooks/useBridge';
 import { Button, Select, Text } from '@/ui/catalyst';
 import type { BridgeKindAlias, BridgeSuggestion } from '@/types/patterns';
@@ -16,14 +16,18 @@ export default function BridgePanel({
   onKind,
   onIntensity,
   onSuggestion,
+  onAddToTimeline,
 }: {
   kind: BridgeKindAlias;
   intensity: number;
   onKind: (k: BridgeKindAlias) => void;
   onIntensity: (n: number) => void;
   onSuggestion?: (s: BridgeSuggestion | null) => void;
+  onAddToTimeline?: (entry: { kind: BridgeKindAlias; intensity: number; suggestion: BridgeSuggestion }) => void;
 }) {
   const { data, loading, error, refresh } = useBridge(kind, intensity);
+
+  const [addedTick, setAddedTick] = useState(0);
 
   useEffect(() => {
     if (onSuggestion) onSuggestion(data ?? null);
@@ -47,6 +51,12 @@ export default function BridgePanel({
     try {
       await navigator.clipboard.writeText(text);
     } catch (_) {}
+  }
+
+  function handleAdd() {
+    if (!data) return;
+    onAddToTimeline?.({ kind, intensity, suggestion: data });
+    setAddedTick((n) => n + 1);
   }
 
   return (
@@ -74,6 +84,9 @@ export default function BridgePanel({
         </label>
         <Button onClick={() => refresh()} disabled={loading} aria-live="polite">
           {loading ? 'Loading…' : 'Suggest'}
+        </Button>
+        <Button onClick={handleAdd} disabled={!data} aria-live="polite">
+          {addedTick > 0 ? 'Added ✓' : 'Add to timeline'}
         </Button>
       </div>
 
