@@ -19,6 +19,7 @@ import { Button } from '@/ui/catalyst';
 import './styles.css';
 import BridgePanel from '@/components/BridgePanel';
 import type { BridgeKindAlias } from '@/types/patterns';
+import type { TimelineBridgeEntry } from '@/timeline/timelineState';
 
 // ---- Types to keep TS happy ----
 type RetrievedChunk = {
@@ -57,6 +58,25 @@ export default function App() {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  useEffect(() => {
+    function onTimelineAdd(ev: Event) {
+      const ce = ev as CustomEvent<any>;
+      const e = (ce && 'detail' in ce ? ce.detail : undefined) as TimelineBridgeEntry | undefined;
+      if (!e) return;
+      const item: TimelineItem = {
+        id: `bridge-${e.t}-${e.kind}`,
+        ts: new Date(e.t).toISOString(),
+        title: `Bridge: ${e.kind} · ${e.intensity.toFixed(2)}`,
+        subtitle: e.hint ?? '',
+        icon: '🧭',
+        meta: { source: e.source, breath: e.breath, doorway: e.doorway, anchor: e.anchor, tags: ['bridge', e.kind] },
+      };
+      setEmotions((prev) => dedupeById(sortNewest([...prev, item])));
+    }
+    window.addEventListener('timeline:add', onTimelineAdd as EventListener);
+    return () => window.removeEventListener('timeline:add', onTimelineAdd as EventListener);
   }, []);
 
   // Incognito modes
@@ -324,6 +344,22 @@ export default function App() {
           onSuggestion={(s) => {
             setBridgeHint(s?.hint ?? null);
             setChipPulse(true);
+          }}
+          onAddToTimeline={({ kind, intensity, suggestion }) => {
+            window.dispatchEvent(
+              new CustomEvent('timeline:add', {
+                detail: {
+                  t: Date.now(),
+                  source: 'bridge',
+                  kind,
+                  intensity,
+                  hint: suggestion.hint,
+                  breath: suggestion.breath,
+                  doorway: suggestion.doorway,
+                  anchor: suggestion.anchor,
+                },
+              })
+            );
           }}
         />
       </Modal>
