@@ -65,6 +65,7 @@ export default function App() {
   const [handoverOpen, setHandoverOpen] = useState(false);
   const [showBridge, setShowBridge] = useState(false);
   const [bridgeHint, setBridgeHint] = useState<string | null>(null);
+  const [chipPulse, setChipPulse] = useState(false);
   const [bridgeKind, setBridgeKind] = useState<BridgeKindAlias>('attachment_test');
   const [bridgeIntensity, setBridgeIntensity] = useState(0.6);
   const BRIDGE_LABELS: Record<string, string> = {
@@ -151,6 +152,12 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, [doSearch]);
 
+  useEffect(() => {
+    if (!chipPulse) return;
+    const t = setTimeout(() => setChipPulse(false), 1000);
+    return () => clearTimeout(t);
+  }, [chipPulse]);
+
   return (
     <div style={{ fontFamily: 'system-ui', padding: 16, display: 'grid', gap: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -205,6 +212,14 @@ export default function App() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: 6,
+              transition: 'box-shadow 200ms ease, border-color 200ms ease, background-color 200ms ease',
+              ...(chipPulse
+                ? {
+                    borderColor: '#6ee7b7',
+                    boxShadow: '0 0 0 3px rgba(110, 231, 183, 0.35)',
+                    backgroundColor: 'rgba(110, 231, 183, 0.10)',
+                  }
+                : null),
             }}>
             {BRIDGE_LABELS[bridgeKind] || bridgeKind} · {bridgeIntensity.toFixed(2)}
           </span>
@@ -306,7 +321,10 @@ export default function App() {
           intensity={bridgeIntensity}
           onKind={setBridgeKind}
           onIntensity={setBridgeIntensity}
-          onSuggestion={(s) => setBridgeHint(s?.hint ?? null)}
+          onSuggestion={(s) => {
+            setBridgeHint(s?.hint ?? null);
+            setChipPulse(true);
+          }}
         />
       </Modal>
       <Toaster />
