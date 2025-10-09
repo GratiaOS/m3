@@ -19,9 +19,18 @@ import { Button } from '@/ui/catalyst';
 import './styles.css';
 import BridgePanel from '@/components/BridgePanel';
 import type { BridgeKindAlias } from '@/types/patterns';
-import type { TimelineBridgeEntry } from '@/timeline/timelineState';
-
 // ---- Types to keep TS happy ----
+type BridgeEventDetail = {
+  t: number; // epoch ms
+  source: 'bridge';
+  kind: string;
+  intensity: number;
+  hint?: string;
+  breath?: string;
+  doorway?: string;
+  anchor?: string;
+};
+
 type RetrievedChunk = {
   id: number;
   text: string;
@@ -63,7 +72,7 @@ export default function App() {
   useEffect(() => {
     function onTimelineAdd(ev: Event) {
       const ce = ev as CustomEvent<any>;
-      const e = (ce && 'detail' in ce ? ce.detail : undefined) as TimelineBridgeEntry | undefined;
+      const e = (ce && 'detail' in ce ? ce.detail : undefined) as BridgeEventDetail | undefined;
       if (!e) return;
       const item: TimelineItem = {
         id: `bridge-${e.t}-${e.kind}`,
