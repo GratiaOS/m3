@@ -8,6 +8,18 @@
 
 ---
 
+## 🧭 Bridge UI + Timeline Adapter — 2025-10-09
+
+- **UI:** added controlled **BridgePanel** wired to `/patterns/bridge_suggest` via `useBridge` hook and `fetchBridge()` API.
+- **App:** header **Bridge** toggle + `b` hotkey; status chip (kind · intensity) with tooltip showing latest _hint_; soft pulse when a new suggestion lands.
+- **Timeline:** one-click **Add to timeline** from BridgePanel → maps to `TimelineItem` (🧭 icon, hint → `subtitle`, extras in `meta`: `source`, `breath`, `doorway`, `anchor`, `tags: ['bridge', kind]`); newest-first + dedupe preserved.
+- **Refactor:** migrated UI imports to `@/*` aliases; adopted Catalyst `Button`/`Select` in the panel for clarity.
+- **Server:** `/patterns/bridge_suggest` extended with kinds: `attachment_test`, `sibling_trust`, `parent_planted`, `over_analysis` (aliases supported).
+
+🌬 whisper: _“ask for safety, don’t test for it.”_
+
+---
+
 ## 📜 Docs Sync — 2025-10-09
 
 - docs(patterns): add four relational loop patterns — Attachment Testing Loop, Sibling Trust Loop, Parent‑Planted Narrative Loop, Over‑Analysis Self‑Perpetuating Loop.
