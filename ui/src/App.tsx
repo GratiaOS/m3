@@ -14,11 +14,12 @@ import ThanksPanel from '@/components/ThanksPanel';
 import Modal from '@/components/Modal';
 import SignalHandover from '@/components/QuickActions/SignalHandover';
 import { PanicButton } from '@/components/PanicButton';
-import Toaster, { toast } from '@/components/Toaster';
+import Toaster from '@/components/Toaster';
 import { Button } from '@/ui/catalyst';
 import './styles.css';
 import BridgePanel from '@/components/BridgePanel';
 import type { BridgeKindAlias } from '@/types/patterns';
+import PurposeChip from '@/components/PurposeChip';
 // ---- Types to keep TS happy ----
 type BridgeEventDetail = {
   t: number; // epoch ms
@@ -51,6 +52,21 @@ export default function App() {
 
   // Emotions state for Timeline
   const [emotions, setEmotions] = useState<TimelineItem[]>([]);
+
+  const addPurposeToTimeline = useCallback(
+    ({ title, subtitle, icon, meta }: { title: string; subtitle?: string; icon?: TimelineItem['icon']; meta?: TimelineItem['meta'] }) => {
+      const item: TimelineItem = {
+        id: `purpose-${Date.now()}`,
+        ts: new Date().toISOString(),
+        title,
+        subtitle,
+        icon: icon ?? '🎯',
+        meta: meta ?? { source: 'purpose' },
+      };
+      setEmotions((prev) => dedupeById(sortNewest([...prev, item])));
+    },
+    [setEmotions]
+  );
 
   // Load Timeline (server-backed) once on mount
   useEffect(() => {
@@ -226,6 +242,7 @@ export default function App() {
             <input type="checkbox" checked={hardIncog} onChange={(e) => setHardIncog(e.target.checked)} />
             Hard Incognito (no writes)
           </label>
+          <PurposeChip onAddToTimeline={addPurposeToTimeline} />
           <PanicButton />
           <Button plain onClick={() => setShowBridge(true)} title="b">
             bridge
