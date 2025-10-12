@@ -19,7 +19,7 @@ import { Button } from '@/ui/catalyst';
 import './styles.css';
 import BridgePanel from '@/components/BridgePanel';
 import type { BridgeKindAlias } from '@/types/patterns';
-import PurposeChip from '@/components/PurposeChip';
+import PurposeChip, { type PurposeChipHandle } from '@/components/PurposeChip';
 // ---- Types to keep TS happy ----
 type BridgeEventDetail = {
   t: number; // epoch ms
@@ -52,6 +52,7 @@ export default function App() {
 
   // Emotions state for Timeline
   const [emotions, setEmotions] = useState<TimelineItem[]>([]);
+  const purposeRef = useRef<PurposeChipHandle | null>(null);
 
   const addPurposeToTimeline = useCallback(
     ({ title, subtitle, icon, meta }: { title: string; subtitle?: string; icon?: TimelineItem['icon']; meta?: TimelineItem['meta'] }) => {
@@ -190,6 +191,9 @@ export default function App() {
       else if (e.key === '/') {
         e.preventDefault();
         searchRef.current?.focus();
+      } else if (e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        purposeRef.current?.align();
       } else if (e.key === 'h') setHandoverOpen(true);
       else if (e.key === 'b') setShowBridge((v) => !v);
     }
@@ -242,7 +246,7 @@ export default function App() {
             <input type="checkbox" checked={hardIncog} onChange={(e) => setHardIncog(e.target.checked)} />
             Hard Incognito (no writes)
           </label>
-          <PurposeChip onAddToTimeline={addPurposeToTimeline} />
+          <PurposeChip ref={purposeRef} onAddToTimeline={addPurposeToTimeline} />
           <PanicButton />
           <Button plain onClick={() => setShowBridge(true)} title="b">
             bridge

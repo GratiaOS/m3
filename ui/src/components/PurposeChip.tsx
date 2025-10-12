@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useImperativeHandle, useMemo, useState } from 'react';
 import { Button, Textarea } from '@/ui/catalyst';
 import Modal from '@/components/Modal';
 import { usePurpose } from '@/hooks/usePurpose';
@@ -22,13 +22,21 @@ type PurposeChipProps = {
   onAddToTimeline?: (entry: TimelinePayload) => void;
 };
 
+export type PurposeChipHandle = {
+  open: () => void;
+  align: () => void;
+};
+
 const STATUS_LABEL: Record<PurposeSignal, string> = {
   alive: 'alive',
   dim: 'dim',
   lost: 'lost',
 };
 
-export default function PurposeChip({ onAddToTimeline }: PurposeChipProps) {
+const PurposeChip = React.forwardRef<PurposeChipHandle, PurposeChipProps>(function PurposeChip(
+  { onAddToTimeline }: PurposeChipProps,
+  ref,
+) {
   const { data, loading, set, ping, align } = usePurpose();
   const [open, setOpen] = useState(false);
   const [draftStatement, setDraftStatement] = useState('');
@@ -48,7 +56,7 @@ export default function PurposeChip({ onAddToTimeline }: PurposeChipProps) {
 
   const currentSignal: PurposeSignal = data?.signal ?? 'dim';
 
-  if (loading || !data) return null;
+  const isReady = !loading && !!data;
 
   function handleSave() {
     const principles = draftPrinciples
@@ -79,18 +87,20 @@ export default function PurposeChip({ onAddToTimeline }: PurposeChipProps) {
     });
   }
 
-  function handleAlign() {
+  const handleAlign = useCallback(() => {
     const { next } = align();
-    const snapshot = {
-      statement: data.statement,
-      principlesHash: data.principles.join('|'),
-      last_check_ts: data.last_check_ts,
-      signal: data.signal,
-    };
+    const snapshot = data
+      ? {
+          statement: data.statement,
+          principlesHash: data.principles.join('|'),
+          last_check_ts: data.last_check_ts,
+          signal: data.signal,
+        }
+      : null;
     onAddToTimeline?.({
       title: '🎯 Purpose Align',
       subtitle: next,
-      meta: { source: 'purpose', purpose_snapshot: snapshot },
+      meta: snapshot ? { source: 'purpose', purpose_snapshot: snapshot } : { source: 'purpose' },
       icon: '🎯',
     });
     toast({
@@ -99,7 +109,18 @@ export default function PurposeChip({ onAddToTimeline }: PurposeChipProps) {
       icon: '🎯',
       body: next,
     });
-  }
+  }, [align, data, onAddToTimeline]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      open: () => setOpen(true),
+      align: () => handleAlign(),
+    }),
+    [handleAlign],
+  );
+
+  if (!isReady) return null;
 
   return (
     <>
@@ -169,4 +190,6 @@ export default function PurposeChip({ onAddToTimeline }: PurposeChipProps) {
       </Modal>
     </>
   );
-}
+});
+
+export default PurposeChip;
