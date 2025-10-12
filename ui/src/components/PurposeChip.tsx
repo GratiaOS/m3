@@ -98,7 +98,7 @@ const PurposeChip = React.forwardRef<PurposeChipHandle, PurposeChipProps>(functi
         }
       : null;
     onAddToTimeline?.({
-      title: '🎯 Purpose Align',
+      title: 'Purpose Align',
       subtitle: next,
       meta: snapshot ? { source: 'purpose', purpose_snapshot: snapshot } : { source: 'purpose' },
       icon: '🎯',
