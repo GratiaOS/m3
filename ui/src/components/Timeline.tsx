@@ -149,6 +149,7 @@ export const Timeline: React.FC<TimelineProps> = ({ items, compact = false, empt
                 <span className="text-sm font-medium text-zinc-900">{it.title}</span>
                 <span className="text-xs text-zinc-400">{formatClock(it.ts)}</span>
               </div>
+              <TimelineBadges item={it} />
               {it.subtitle ? <p className="text-sm text-zinc-600 break-words">{it.subtitle}</p> : null}
             </div>
           </div>
@@ -188,3 +189,30 @@ function formatClock(ts: string): string {
 }
 
 export default Timeline;
+
+const badgeStyles = 'inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300';
+
+function TimelineBadges({ item }: { item: TimelineItem }) {
+  const badges = badgesForItem(item);
+  if (badges.length === 0) return null;
+  return (
+    <div className="mt-1 flex flex-wrap gap-2">
+      {badges.map((badge) => (
+        <span key={badge.key} className={badgeStyles}>
+          <span aria-hidden>{badge.icon}</span>
+          {badge.label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function badgesForItem(item: TimelineItem) {
+  const badges: { key: string; icon: string; label: string }[] = [];
+  const metaSource = typeof item.meta === 'object' && item.meta ? (item.meta as { source?: unknown }).source : undefined;
+  const source = typeof metaSource === 'string' ? metaSource : undefined;
+  if (source === 'bridge') badges.push({ key: 'bridge', icon: '🧭', label: 'Bridge' });
+  if (source === 'purpose') badges.push({ key: 'purpose', icon: '🎯', label: 'Purpose' });
+  if (source === 'covenant') badges.push({ key: 'covenant', icon: '🤝', label: 'Covenant' });
+  return badges;
+}

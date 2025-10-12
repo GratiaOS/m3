@@ -21,6 +21,7 @@ import BridgePanel from '@/components/BridgePanel';
 import type { BridgeKindAlias } from '@/types/patterns';
 import PurposeChip, { type PurposeChipHandle } from '@/components/PurposeChip';
 import CovenantChip from '@/components/CovenantChip';
+import { useReversePoles } from '@/state/reversePoles';
 // ---- Types to keep TS happy ----
 type BridgeEventDetail = {
   t: number; // epoch ms
@@ -54,6 +55,9 @@ export default function App() {
   // Emotions state for Timeline
   const [emotions, setEmotions] = useState<TimelineItem[]>([]);
   const purposeRef = useRef<PurposeChipHandle | null>(null);
+  const { enabled: reversePolesEnabled } = useReversePoles();
+  const [pauseUntil, setPauseUntil] = useState<number | null>(null);
+  const [pauseRemainingMs, setPauseRemainingMs] = useState(0);
 
   const addPurposeToTimeline = useCallback(
     ({ title, subtitle, icon, meta }: { title: string; subtitle?: string; icon?: TimelineItem['icon']; meta?: TimelineItem['meta'] }) => {
@@ -85,6 +89,27 @@ export default function App() {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  useEffect(() => {
+    if (!pauseUntil) return;
+    const tick = () => {
+      const diff = pauseUntil - Date.now();
+      if (diff <= 0) {
+        setPauseUntil(null);
+        setPauseRemainingMs(0);
+      } else {
+        setPauseRemainingMs(diff);
+      }
+    };
+    tick();
+    const id = setInterval(tick, 500);
+    return () => clearInterval(id);
+  }, [pauseUntil]);
+
+  const resumePause = useCallback(() => {
+    setPauseUntil(null);
+    setPauseRemainingMs(0);
   }, []);
 
   useEffect(() => {
@@ -141,6 +166,8 @@ export default function App() {
     [q, unlocked, me, allProfiles]
   );
 
+  const pauseSeconds = Math.max(0, Math.ceil(pauseRemainingMs / 1000));
+
   async function onIngest(text: string, tags: string[], privacy?: 'sealed' | 'public' | 'private') {
     const finalPrivacy: 'sealed' | 'public' | 'private' = incognito ? 'sealed' : privacy ?? 'public';
     const finalTags = incognito ? Array.from(new Set([...(tags || []), 'incognito'])) : tags || [];
@@ -173,6 +200,23 @@ export default function App() {
   // Keyboard shortcuts: i,u,l,r,/
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (pauseUntil) {
+          resumePause();
+        } else {
+          const until = Date.now() + 120_000;
+          setPauseUntil(until);
+          setPauseRemainingMs(until - Date.now());
+        }
+        return;
+      }
+
+      if (pauseUntil) {
+        e.preventDefault();
+        return;
+      }
+
       const typingInField = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
       if (typingInField) return;
 
@@ -200,7 +244,7 @@ export default function App() {
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [doSearch]);
+  }, [doSearch, pauseUntil, resumePause]);
 
   useEffect(() => {
     if (!chipPulse) return;
@@ -289,6 +333,23 @@ export default function App() {
           </span>
         </div>
       </div>
+      {reversePolesEnabled && (
+        <div
+          style={{
+            border: '1px solid rgba(14,165,233,0.25)',
+            background: 'rgba(224,242,254,0.65)',
+            color: '#0f172a',
+            padding: '8px 12px',
+            borderRadius: 10,
+            fontSize: 13,
+            display: 'flex',
+            gap: 8,
+            alignItems: 'center',
+            flexWrap: 'wrap',
+          }}>
+          <span>No forced actions. Pause is sacred (Esc). Rest is repair when capacity is spent.</span>
+        </div>
+      )}
 
       <Dashboard />
 
@@ -408,6 +469,38 @@ export default function App() {
         />
       </Modal>
       <Toaster />
+      {pauseUntil && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15,23,42,0.55)',
+            backdropFilter: 'blur(6px)',
+            display: 'grid',
+            placeItems: 'center',
+            zIndex: 9999,
+          }}>
+          <div
+            style={{
+              background: '#0f172a',
+              color: '#f8fafc',
+              padding: '32px 36px',
+              borderRadius: 18,
+              maxWidth: 420,
+              textAlign: 'center',
+              display: 'grid',
+              gap: 14,
+              boxShadow: '0 24px 60px rgba(15,23,42,0.45)',
+            }}>
+            <h2 style={{ margin: 0, fontSize: 24 }}>Pause · sacred 2 minutes</h2>
+            <p style={{ margin: 0, fontSize: 16 }}>Breathe. Nothing is forced. You can stop anytime.</p>
+            <p style={{ margin: 0, fontSize: 14, opacity: 0.75 }}>
+              Time remaining: {String(Math.floor(pauseSeconds / 60)).padStart(2, '0')}:{String(pauseSeconds % 60).padStart(2, '0')}
+            </p>
+            <Button onClick={resumePause}>Resume now</Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
