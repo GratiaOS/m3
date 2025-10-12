@@ -20,7 +20,7 @@ export default function CovenantChip({ onAddToTimeline }: Props) {
   const [promise, setPromise] = useState('');
 
   function addToTimeline() {
-    const title = `🤝 Covenant — ${status}`;
+    const title = `Covenant — ${status}`;
     const parts = [
       `care: ${care.trim()}`,
       `consent: ${consent.trim()}`,
