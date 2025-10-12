@@ -20,6 +20,7 @@ import './styles.css';
 import BridgePanel from '@/components/BridgePanel';
 import type { BridgeKindAlias } from '@/types/patterns';
 import PurposeChip, { type PurposeChipHandle } from '@/components/PurposeChip';
+import CovenantChip from '@/components/CovenantChip';
 // ---- Types to keep TS happy ----
 type BridgeEventDetail = {
   t: number; // epoch ms
@@ -247,6 +248,19 @@ export default function App() {
             Hard Incognito (no writes)
           </label>
           <PurposeChip ref={purposeRef} onAddToTimeline={addPurposeToTimeline} />
+          <CovenantChip
+            onAddToTimeline={({ title, subtitle }) => {
+              const item: TimelineItem = {
+                id: `covenant-${Date.now()}`,
+                ts: new Date().toISOString(),
+                title,
+                subtitle,
+                icon: '🤝',
+                meta: { source: 'covenant', tags: ['covenant'] },
+              };
+              setEmotions((prev) => dedupeById(sortNewest([...prev, item])));
+            }}
+          />
           <PanicButton />
           <Button plain onClick={() => setShowBridge(true)} title="b">
             bridge
