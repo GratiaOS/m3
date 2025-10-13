@@ -3,7 +3,7 @@ import { Button, Textarea } from '@/ui/catalyst';
 import Modal from '@/components/Modal';
 import { usePurpose } from '@/hooks/usePurpose';
 import type { PurposeSignal } from '@/types/purpose';
-import { toast } from '@/components/Toaster';
+import { notifyJoy } from '@/utils/joy';
 
 const STATUS_COLOR: Record<PurposeSignal, string> = {
   alive: '#22c55e',
@@ -69,7 +69,7 @@ const PurposeChip = React.forwardRef<PurposeChipHandle, PurposeChipProps>(functi
       principles,
     });
     setOpen(false);
-    toast({
+    notifyJoy({
       level: 'success',
       title: 'Purpose saved',
       icon: '🎯',
@@ -79,7 +79,7 @@ const PurposeChip = React.forwardRef<PurposeChipHandle, PurposeChipProps>(functi
 
   function handlePing(signal: PurposeSignal) {
     ping(signal);
-    toast({
+    notifyJoy({
       level: 'info',
       title: `Purpose marked ${STATUS_LABEL[signal]}`,
       icon: '🟢',
@@ -103,7 +103,7 @@ const PurposeChip = React.forwardRef<PurposeChipHandle, PurposeChipProps>(functi
       meta: snapshot ? { source: 'purpose', purpose_snapshot: snapshot } : { source: 'purpose' },
       icon: '🎯',
     });
-    toast({
+    notifyJoy({
       level: 'info',
       title: 'One true next',
       icon: '🎯',

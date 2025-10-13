@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Button, Pill } from '@garden/ui';
-import { toast } from '@/components/Toaster';
+import { notifyJoy } from '@/utils/joy';
 import { getState, setState, TeamState, PillarStatus, getPanicLast, type PanicLast, getTells, type Tell, resolveEmotion } from '@/api';
 import { Heading, Subheading, Divider, Text, Strong, Input, Textarea } from '@/ui/catalyst';
 
@@ -109,9 +109,9 @@ export default function Dashboard() {
       const details =
         `doorway: ${lastRedirect.doorway || '—'} | ` + `anchor: ${lastRedirect.anchor || '—'} | ` + `whisper: ${lastRedirect.whisper || '—'}`;
       await resolveEmotion('Raz', details);
-      toast({ level: 'success', title: 'Gratitude landed', body: 'Arc sealed in EmotionalOS.', icon: '💚' });
+      notifyJoy({ level: 'success', title: 'Gratitude landed', body: 'Arc sealed in EmotionalOS.', icon: '💚' });
     } catch (e) {
-      toast({ level: 'error', title: 'Failed to land gratitude', body: String(e), icon: '⚠️' });
+      notifyJoy({ level: 'error', title: 'Failed to land gratitude', body: String(e), icon: '⚠️' });
     } finally {
       setLanding(false);
     }
@@ -171,11 +171,11 @@ export default function Dashboard() {
       const next = await setState({ members: state.members, pillars: state.pillars, note: state.note });
       set(next);
       setSavedSnapshot(JSON.stringify({ members: next.members, pillars: next.pillars, note: next.note || '' }));
-      toast({ level: 'success', title: 'State saved', body: 'Saved just now', icon: '💾' });
+      notifyJoy({ level: 'success', title: 'State saved', body: 'Saved just now', icon: '💾' });
       setError(null);
     } catch (e) {
       setError('Failed to save state');
-      toast({ level: 'error', title: 'Save failed', body: String(e), icon: '⚠️' });
+      notifyJoy({ level: 'error', title: 'Save failed', body: String(e), icon: '⚠️' });
     } finally {
       setSaving(false);
     }

@@ -14,7 +14,6 @@ import ThanksPanel from '@/components/ThanksPanel';
 import Modal from '@/components/Modal';
 import SignalHandover from '@/components/QuickActions/SignalHandover';
 import { PanicButton } from '@/components/PanicButton';
-import Toaster from '@/components/Toaster';
 import { Button } from '@/ui/catalyst';
 import './styles.css';
 import BridgePanel from '@/components/BridgePanel';
@@ -22,6 +21,7 @@ import type { BridgeKindAlias } from '@/types/patterns';
 import PurposeChip, { type PurposeChipHandle } from '@/components/PurposeChip';
 import CovenantChip from '@/components/CovenantChip';
 import { useReversePoles } from '@/state/reversePoles';
+import RTPResetToast from '@/components/RTPResetToast';
 // ---- Types to keep TS happy ----
 type BridgeEventDetail = {
   t: number; // epoch ms
@@ -468,7 +468,7 @@ export default function App() {
           }}
         />
       </Modal>
-      <Toaster />
+      <RTPResetToast />
       {pauseUntil && (
         <div
           style={{

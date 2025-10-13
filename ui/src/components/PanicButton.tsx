@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { runPanic, type PanicMode } from '@/api';
 import { useProfile } from '@/state/profile';
-import { toast } from '@/components/Toaster';
+import { notifyJoy } from '@/utils/joy';
 import { Button, Select } from '@/ui/catalyst';
 
 type PanicResult = {
@@ -23,7 +23,7 @@ export function PanicButton() {
     try {
       const res = await runPanic({ mode });
       const msg = `🌬️ ${res.whisper}\n` + `🫁 ${res.breath}\n` + `🚪 ${res.doorway}\n` + `⚓ ${res.anchor}`;
-      toast({
+      notifyJoy({
         level: 'success',
         title: `Redirect · ${mode}`,
         body: msg,
@@ -31,7 +31,7 @@ export function PanicButton() {
         ttl: 5000,
       });
       // Optimistic hint: server flips readiness to green; stream will reconcile
-      toast({
+      notifyJoy({
         level: 'info',
         title: 'Readiness',
         body: 'Light turning green… (server-confirmed)',
@@ -47,7 +47,7 @@ export function PanicButton() {
         anchor: 'Flow > Empire.',
       };
       const msg = `🌬️ ${local.whisper}\n` + `🫁 ${local.breath}\n` + `🚪 ${local.doorway}\n` + `⚓ ${local.anchor}`;
-      toast({
+      notifyJoy({
         level: 'info',
         title: `Redirect (local) · ${mode}`,
         body: msg,
@@ -75,7 +75,7 @@ export function PanicButton() {
       timer.current = null;
       if (!firedRef.current) {
         // short tap feedback so it doesn't feel like "nothing happened"
-        toast({
+        notifyJoy({
           level: 'info',
           title: 'Hold to Panic',
           body: 'Press & hold ~0.6s (or Alt+P) to trigger the redirect.',

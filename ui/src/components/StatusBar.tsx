@@ -160,6 +160,9 @@ export default function StatusBar() {
             <button
               key={index}
               aria-label={`capacity unit ${index + 1} ${used ? 'spent' : 'available'}`}
+              role="switch"
+              aria-checked={used}
+              title={used ? 'Mark available' : 'Mark spent'}
               onClick={() => rtpEnabled && setUnit(index, !used)}
               className={clsx(
                 'h-3.5 w-3.5 rounded-full border transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--color-accent)_35%,transparent)]',
