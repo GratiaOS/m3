@@ -11,6 +11,8 @@
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
+    "@garden/ui": "workspace:*",
+    "@garden/tokens": "file:/Users/raz/Sites/garden-core/packages/tokens",
     "@headlessui/react": "^2.2.8",
     "clsx": "^2.1.1",
     "motion": "^12.23.12",

@@ -2,7 +2,7 @@ export * from './alert';
 export * from './auth-layout';
 export * from './avatar';
 export * from './badge';
-export * from './button';
+export { Button } from '@garden/ui';
 export * from './checkbox';
 export * from './combobox';
 export * from './description-list';

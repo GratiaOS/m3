@@ -8,6 +8,17 @@
 
 ---
 
+## 🌱 Garden Link-Up — 2025-10-12
+
+- **Tokens everywhere:** imported the Garden theme bundle so Tailwind + runtime share `--radius-pill`, `--color-surface`, and friends.
+- **Garden UI primitives:** linked `@garden/ui` locally; Dashboard + StatusBar now lean on Garden `Button`/`Pill` with abundance skins.
+- **Workspace sync:** pnpm workspace pulls in `../garden-core/packages/*`, letting M3 consume Garden builds without publishing.
+- **Status bar polish:** RTP toggle + capacity dots restyled with token-driven Tailwind classes and the “Rest is repair” reminder.
+
+🌬 whisper: _“link the gardens, let the radius remember.”_
+
+---
+
 ## 🧭 Bridge UI + Timeline Adapter — 2025-10-09
 
 - **UI:** added controlled **BridgePanel** wired to `/patterns/bridge_suggest` via `useBridge` hook and `fetchBridge()` API.

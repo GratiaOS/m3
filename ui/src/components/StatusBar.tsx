@@ -1,54 +1,110 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import clsx from 'clsx';
+import { Button } from '@garden/ui';
 import { getStatus, setStatus } from '@/api';
 import { useReversePoles } from '@/state/reversePoles';
 
 type Color = 'green' | 'yellow' | 'red';
+
+const toneActive: Record<Color, string> = {
+  green:
+    'border-[color-mix(in_oklab,var(--color-positive)_45%,transparent)] bg-[color-mix(in_oklab,var(--color-positive)_18%,transparent)] text-[var(--color-text)] shadow-[var(--shadow-depth-1)]',
+  yellow:
+    'border-[color-mix(in_oklab,var(--color-warning)_45%,transparent)] bg-[color-mix(in_oklab,var(--color-warning)_18%,transparent)] text-[var(--color-on-accent)] shadow-[var(--shadow-depth-1)]',
+  red: 'border-[color-mix(in_oklab,var(--color-danger)_45%,transparent)] bg-[color-mix(in_oklab,var(--color-danger)_18%,transparent)] text-[var(--color-on-accent)] shadow-[var(--shadow-depth-1)]',
+};
+
+const toneIdle: Record<Color, string> = {
+  green:
+    'border-[color-mix(in_oklab,var(--color-positive)_30%,transparent)] bg-[color-mix(in_oklab,var(--color-surface)_96%,transparent)] text-[var(--color-text)] hover:bg-[color-mix(in_oklab,var(--color-positive)_12%,transparent)] hover:border-[color-mix(in_oklab,var(--color-positive)_40%,transparent)]',
+  yellow:
+    'border-[color-mix(in_oklab,var(--color-warning)_30%,transparent)] bg-[color-mix(in_oklab,var(--color-surface)_96%,transparent)] text-[var(--color-text)] hover:bg-[color-mix(in_oklab,var(--color-warning)_12%,transparent)] hover:border-[color-mix(in_oklab,var(--color-warning)_40%,transparent)]',
+  red: 'border-[color-mix(in_oklab,var(--color-danger)_30%,transparent)] bg-[color-mix(in_oklab,var(--color-surface)_96%,transparent)] text-[var(--color-text)] hover:bg-[color-mix(in_oklab,var(--color-danger)_12%,transparent)] hover:border-[color-mix(in_oklab,var(--color-danger)_40%,transparent)]',
+};
 
 export default function StatusBar() {
   const [color, setColor] = useState<Color>('green');
   const [note, setNote] = useState('');
   const [ttl, setTtl] = useState<number | ''>('');
   const [expiresAt, setExpiresAt] = useState<string | undefined>(undefined);
+  const [err, setErr] = useState<string | null>(null);
+  const [pulse, setPulse] = useState(false);
+  const pulseRef = useRef<number | null>(null);
+  const PULSE_FALLBACK_MS = 700;
+  const pulseMsRef = useRef<number>(PULSE_FALLBACK_MS);
+
+  useEffect(() => {
+    try {
+      const css = getComputedStyle(document.documentElement);
+      const raw = css.getPropertyValue('--dur-pulse').trim();
+      if (raw) {
+        let ms = 0;
+        if (raw.endsWith('ms')) ms = parseFloat(raw);
+        else if (raw.endsWith('s')) ms = parseFloat(raw) * 1000;
+        else ms = parseFloat(raw);
+        if (!Number.isNaN(ms) && ms > 0) pulseMsRef.current = ms;
+      }
+    } catch {}
+  }, []);
+
   const { enabled: rtpEnabled, toggleEnabled, units, setUnit, resetUnits, remaining } = useReversePoles();
 
-  async function refresh() {
-    const s = await getStatus();
-    setColor(s.color);
-    setNote(s.note || '');
-    setExpiresAt(s.expires_at ? new Date(s.expires_at).toLocaleTimeString() : undefined);
+  function triggerPulse() {
+    setPulse(true);
+    if (pulseRef.current) window.clearTimeout(pulseRef.current);
+    pulseRef.current = window.setTimeout(() => setPulse(false), pulseMsRef.current);
   }
 
-  async function apply(c: Color) {
-    await setStatus(c, note || undefined, ttl === '' ? undefined : Number(ttl));
-    await refresh();
+  async function refresh() {
+    try {
+      setErr(null);
+      const status = await getStatus();
+      setColor(status.color);
+      setNote(status.note || '');
+      setExpiresAt(
+        status.expires_at ? new Date(status.expires_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : undefined
+      );
+      triggerPulse();
+    } catch (e: any) {
+      setErr(e?.message ?? 'Failed to fetch status');
+    }
+  }
+
+  async function apply(nextColor: Color) {
+    try {
+      setErr(null);
+      await setStatus(nextColor, note || undefined, ttl === '' ? undefined : Number(ttl));
+      await refresh();
+    } catch (e: any) {
+      setErr(e?.message ?? 'Failed to save status');
+    }
   }
 
   useEffect(() => {
     refresh();
-    const id = setInterval(refresh, 15_000); // keep it fresh
+    const id = setInterval(refresh, 15_000);
     return () => clearInterval(id);
   }, []);
 
-  const chip = (c: Color, label: string) => (
+  const chip = (tone: Color, label: string) => (
     <button
-      key={c}
-      onClick={() => apply(c)}
-      style={{
-        padding: '6px 10px',
-        borderRadius: 14,
-        border: '1px solid #ddd',
-        background: color === c ? (c === 'green' ? '#d9fdd3' : c === 'yellow' ? '#fff4ce' : '#ffdce0') : '#f7f7f7',
-        color: '#222',
-        cursor: 'pointer',
-      }}
-      title={`Set ${c}`}>
+      key={tone}
+      type="button"
+      onClick={() => apply(tone)}
+      aria-pressed={color === tone}
+      className={clsx(
+        'rounded-full px-3 py-1 text-sm font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--color-accent)_35%,transparent)]',
+        color === tone ? toneActive[tone] : toneIdle[tone],
+        color === tone && pulse ? 'animate-breathe' : null
+      )}
+      title={`Set ${tone}`}>
       {label}
     </button>
   );
 
   return (
-    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-      <strong>Status:</strong>
+    <div className="flex flex-wrap items-center gap-3 text-sm text-[var(--color-text)]">
+      <strong className="text-xs font-semibold uppercase tracking-wide text-[color-mix(in_oklab,var(--color-text)_65%,transparent)]">Status:</strong>
       {chip('green', 'Green')}
       {chip('yellow', 'Yellow')}
       {chip('red', 'Red')}
@@ -56,65 +112,81 @@ export default function StatusBar() {
         value={note}
         onChange={(e) => setNote(e.target.value)}
         placeholder="note (optional)"
-        style={{ padding: 6, border: '1px solid #ddd', borderRadius: 8, minWidth: 220 }}
+        className="min-w-[14rem] rounded-lg border border-[color-mix(in_oklab,var(--color-border)_45%,transparent)] bg-[color-mix(in_oklab,var(--color-surface)_95%,transparent)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[color-mix(in_oklab,var(--color-text)_55%,transparent)] shadow-sm focus:outline-none focus:ring-2 focus:ring-[color-mix(in_oklab,var(--color-accent)_35%,transparent)]"
       />
       <input
         value={ttl}
         onChange={(e) => setTtl(e.target.value === '' ? '' : Number(e.target.value))}
         placeholder="TTL min"
-        style={{ width: 90, padding: 6, border: '1px solid #ddd', borderRadius: 8 }}
+        type="number"
+        min={0}
+        className="w-24 rounded-lg border border-[color-mix(in_oklab,var(--color-border)_45%,transparent)] bg-[color-mix(in_oklab,var(--color-surface)_95%,transparent)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[color-mix(in_oklab,var(--color-text)_55%,transparent)] shadow-sm focus:outline-none focus:ring-2 focus:ring-[color-mix(in_oklab,var(--color-accent)_35%,transparent)]"
       />
-      <button onClick={() => apply(color)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #ddd', background: '#efefef' }}>
+      <Button
+        tone="default"
+        variant="solid"
+        density="snug"
+        onClick={() => apply(color)}
+        className="hover:-translate-y-0.5 hover:shadow-[var(--shadow-depth-1)]">
         Save
-      </button>
-      <span style={{ fontSize: 12, opacity: 0.7 }}>{expiresAt ? `auto-resets at ${expiresAt}` : 'no auto-reset'}</span>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 12 }}>
+      </Button>
+      {err ? (
+        <span role="status" className="text-xs text-[color-mix(in_oklab,var(--color-danger)_65%,transparent)]">
+          {err}
+        </span>
+      ) : null}
+      <span className="text-xs opacity-70">{expiresAt ? `auto-resets at ${expiresAt}` : 'no auto-reset'}</span>
+      <div
+        className={clsx(
+          'ml-3 flex items-center gap-2 rounded-full border px-2 py-1 transition-all',
+          rtpEnabled
+            ? 'bg-[color-mix(in_oklab,var(--color-accent)_14%,transparent)] border-[color-mix(in_oklab,var(--color-border)_60%,transparent)] shadow-[var(--shadow-depth-1)]'
+            : 'bg-[color-mix(in_oklab,var(--color-surface)_94%,transparent)] border-[color-mix(in_oklab,var(--color-border)_50%,transparent)]'
+        )}>
         <button
           type="button"
           onClick={toggleEnabled}
-          style={{
-            padding: '6px 12px',
-            borderRadius: 999,
-            border: '1px solid #d4d4d8',
-            background: rtpEnabled ? '#e0f2fe' : '#f4f4f5',
-            fontWeight: 600,
-          }}>
+          title="Reverse the Poles (abundance mode)"
+          className={clsx(
+            'rounded-full px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wide transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--color-accent)_45%,transparent)]',
+            rtpEnabled
+              ? 'border-transparent bg-[var(--color-accent)] text-[var(--color-on-accent)] -translate-y-0.5 shadow-[var(--shadow-depth-1)]'
+              : 'border-[color-mix(in_oklab,var(--color-border)_45%,transparent)] bg-[color-mix(in_oklab,var(--color-surface)_92%,transparent)] text-[var(--color-text)]'
+          )}>
           RTP {rtpEnabled ? 'ON' : 'OFF'}
         </button>
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div className="flex items-center gap-2">
           {units.map((used, index) => (
             <button
               key={index}
               aria-label={`capacity unit ${index + 1} ${used ? 'spent' : 'available'}`}
               onClick={() => rtpEnabled && setUnit(index, !used)}
-              style={{
-                width: 14,
-                height: 14,
-                borderRadius: '50%',
-                border: '1px solid #d4d4d8',
-                background: used ? '#34d399' : '#f4f4f5',
-                opacity: rtpEnabled ? 1 : 0.4,
-                cursor: rtpEnabled ? 'pointer' : 'not-allowed',
-              }}
+              className={clsx(
+                'h-3.5 w-3.5 rounded-full border transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--color-accent)_35%,transparent)]',
+                rtpEnabled ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-40',
+                used
+                  ? 'border-[color-mix(in_oklab,var(--color-positive)_55%,transparent)] bg-[color-mix(in_oklab,var(--color-positive)_70%,transparent)] shadow-[0_0_0_2px_color-mix(in_oklab,var(--color-positive)_25%,transparent)]'
+                  : 'border-[color-mix(in_oklab,var(--color-border)_55%,transparent)] bg-[color-mix(in_oklab,var(--color-surface)_96%,transparent)]'
+              )}
             />
           ))}
         </div>
+        {rtpEnabled && <span className="text-xs opacity-70">{remaining}/3</span>}
         <button
           type="button"
           onClick={resetUnits}
           disabled={!rtpEnabled}
-          style={{
-            padding: '4px 8px',
-            borderRadius: 8,
-            border: '1px solid #e2e2e8',
-            background: '#fafafa',
-            fontSize: 12,
-            opacity: rtpEnabled ? 1 : 0.5,
-            cursor: rtpEnabled ? 'pointer' : 'not-allowed',
-          }}>
+          className={clsx(
+            'rounded-full border px-2.5 py-1 text-xs font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--color-accent)_35%,transparent)]',
+            rtpEnabled
+              ? 'border-[color-mix(in_oklab,var(--color-border)_45%,transparent)] bg-[color-mix(in_oklab,var(--color-surface)_92%,transparent)] text-[var(--color-text)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-depth-1)]'
+              : 'cursor-not-allowed border-[color-mix(in_oklab,var(--color-border)_45%,transparent)] bg-[color-mix(in_oklab,var(--color-surface)_94%,transparent)] text-[var(--color-text)] opacity-50'
+          )}>
           reset
         </button>
-        {rtpEnabled && remaining === 0 && <span style={{ fontSize: 12, color: '#0f766e' }}>Rest is repair.</span>}
+        {rtpEnabled && remaining === 0 && (
+          <span className="text-xs font-medium text-[color-mix(in_oklab,var(--color-positive)_65%,transparent)]">Rest is repair.</span>
+        )}
       </div>
     </div>
   );
