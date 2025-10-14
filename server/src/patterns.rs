@@ -177,6 +177,17 @@ fn bridge_table(kind: &str, intensity: f32) -> BridgeSuggestion {
             doorway: "start a 2‑minute timer",
             anchor: "Clarity lands, then rest.",
         },
+        "phantom_rival"
+        | "phantom-rival"
+        | "comparison_jealousy"
+        | "comparison-jealousy"
+        | "jealousy" => BridgeSuggestion {
+            pattern: "reality-then-ask",
+            hint: "In 3 / Out 6; list 3 facts vs 3 guesses; then ask, don’t accuse",
+            breath: "in3-out6 × 6",
+            doorway: "write 3 facts vs 3 guesses; one clear ask",
+            anchor: "Presence over phantom.",
+        },
         _ => BridgeSuggestion {
             pattern: "return-to-center",
             hint: "Stand up, shoulder roll, one true sentence",
@@ -406,6 +417,15 @@ mod tests {
         assert_eq!(b.pattern, "close-the-loop");
         assert!(b.hint.contains("2‑min") || b.hint.contains("2-min"));
         assert!(b.anchor.to_lowercase().contains("rest"));
+    }
+
+    #[test]
+    fn bridge_phantom_rival_kind() {
+        let b = super::bridge_table("phantom_rival", 0.5);
+        assert_eq!(b.pattern, "reality-then-ask");
+        assert!(b.hint.to_lowercase().contains("facts"));
+        assert!(b.hint.to_lowercase().contains("ask"));
+        assert!(b.anchor.to_lowercase().contains("phantom"));
     }
 
     #[test]
