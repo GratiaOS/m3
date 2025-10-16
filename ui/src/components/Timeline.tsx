@@ -210,10 +210,29 @@ function TimelineBadges({ item }: { item: TimelineItem }) {
 
 function badgesForItem(item: TimelineItem) {
   const badges: { key: string; icon: string; label: string }[] = [];
-  const metaSource = typeof item.meta === 'object' && item.meta ? (item.meta as { source?: unknown }).source : undefined;
-  const source = typeof metaSource === 'string' ? metaSource : undefined;
-  if (source === 'bridge') badges.push({ key: 'bridge', icon: '🧭', label: 'Bridge' });
-  if (source === 'purpose') badges.push({ key: 'purpose', icon: '🎯', label: 'Purpose' });
-  if (source === 'covenant') badges.push({ key: 'covenant', icon: '🤝', label: 'Covenant' });
+  const meta = (typeof item.meta === 'object' && item.meta ? (item.meta as Record<string, unknown>) : undefined) as
+    | (Record<string, unknown> & { source?: unknown; doorway?: unknown })
+    | undefined;
+
+  const source = typeof meta?.source === 'string' ? meta.source : undefined;
+  const doorway = typeof meta?.doorway === 'string' ? meta.doorway : undefined;
+
+  // Doorway badge (FamJam rooms)
+  if (doorway) {
+    const ROOM: Record<string, { emoji: string; label: string }> = {
+      car: { emoji: '🚗', label: 'Car' },
+      kitchen: { emoji: '🍳', label: 'Kitchen' },
+      firecircle: { emoji: '🔥', label: 'Firecircle' },
+      anywhere: { emoji: '✨', label: 'Anywhere' },
+    };
+    const r = ROOM[doorway] ?? { emoji: '🎶', label: doorway };
+    badges.push({ key: `doorway:${doorway}`, icon: r.emoji, label: r.label });
+  }
+
+  // Existing source badges
+  if (source === 'bridge') badges.push({ key: 'source:bridge', icon: '🧭', label: 'Bridge' });
+  if (source === 'purpose') badges.push({ key: 'source:purpose', icon: '🎯', label: 'Purpose' });
+  if (source === 'covenant') badges.push({ key: 'source:covenant', icon: '🤝', label: 'Covenant' });
+
   return badges;
 }
