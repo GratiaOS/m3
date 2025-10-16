@@ -8,6 +8,63 @@
 
 ---
 
+## [Unreleased] — 2025-10-16
+
+### Added
+- **Garden Toaster (UI):** mount the headless `<Toaster/>` at the app root and funnel all toast emissions through Garden. Users now get consistent, theme-aware toasts with hover-to-pause.
+- **Patterns / Server:** `bridge_suggest` understands jealousy aliases (`phantom_rival`, `phantom-rival`, `comparison_jealousy`, `comparison-jealousy`, `jealousy`) and returns the `reality-then-ask` bridge with breath/doorway/anchor hints.
+- **Tests:** `bridge_phantom_rival_kind` covers the new pattern → hint/anchor contract.
+
+### Changed
+- **Joy helpers:** `notify()` / `notifyJoy()` emit Garden `showToast` payloads `{ variant, title, desc, icon, durationMs }`; legacy `joy:toast` pathway is retired.
+- **RTP reset signal:** midnight + manual resets now surface via Garden toast variants/icons (no local banner component).
+
+### Docs
+- **patterns:** Added *Phantom Rival Loop* 🫥🪞 (compare → believe → contract → confirm) with 4‑min bridge, talk script, micro-experiments, and API sample aligned to the server aliases.
+- **funding:** Landed `FUNDING.md` (sponsorship tiers, stewardship practice, transparency notes). *(Org-level `.github/FUNDING.yml` remains upstream.)*
+
+### Infra / DX
+- **Lint guard:** blocks `'joy:toast'` literals to prevent regressions.
+- Typecheck (`pnpm --dir ui run typecheck`), build (`pnpm --dir ui run build`), and server tests (`cargo test -p m3-memory-server`) all ✅. Button exports temporarily point back to Catalyst while we migrate legacy props.
+
+🌬 whisper: _“one wire, one tone — less noise, more signal.”_
+
+---
+
+## 🚀 v0.1.9 — 2025-10-14
+
+**Integration Cut:** Garden bridge + Bridge/Timeline mechanics.
+
+- **Joy → Garden Toaster:** M3 `joy.ts` now emits Garden-aligned `garden:toast` events (variant/title/desc/icon/duration). Legacy `joy:toast` wiring is fully retired; Garden’s `<Toaster/>` mounts at root.
+- **Garden Link‑Up:** tokens imported; `@garden/ui` primitives (Button/Pill) adopted; StatusBar polished; midnight RTP reset toast wired.
+- **Bridge UI + Timeline:** BridgePanel + status chip + tooltip landed; one‑click “Add to timeline”; server `/patterns/bridge_suggest` extended (attachment_test, sibling_trust, parent_planted, over_analysis).
+
+🌬 whisper: _“let joy travel the same wire.”_
+
+---
+
+## 🎈 Joy → Garden Toaster — 2025-10-14
+
+- **Joy helpers aligned:** `ui/src/utils/joy.ts` now emits Garden `garden:toast` events (`variant`, `title`, `desc`, `icon`, `durationMs`) via `showToast`; the `joy:toast` dispatch path is gone.
+- **Icons & timing:** Joy icons (🪁 info, 🌈 success, 🪶 warning, 🎭 error) pass through; `ttl` respected by Toaster (hover/focus pause supported).
+- **DX:** Prefer `notify('message', 'success')` over manual DOM events.
+
+🌬 whisper: _“let joy travel the same wire.”_
+
+---
+
+## 🌱 Garden Link-Up — 2025-10-12
+
+- **Tokens everywhere:** imported the Garden theme bundle so Tailwind + runtime share `--radius-pill`, `--color-surface`, and friends.
+- **Garden UI primitives:** linked `@garden/ui` locally; Dashboard + StatusBar now lean on Garden `Button`/`Pill` with abundance skins.
+- **Workspace sync:** pnpm workspace pulls in `../garden-core/packages/*`, letting M3 consume Garden builds without publishing.
+- **Status bar polish:** RTP toggle + capacity dots restyled with token-driven Tailwind classes and the “Rest is repair” reminder.
+- **Reset toast:** once-per-day RTP capacity reset toast quietly surfaces when the floor refreshes.
+
+🌬 whisper: _“link the gardens, let the radius remember.”_
+
+---
+
 ## 🧭 Bridge UI + Timeline Adapter — 2025-10-09
 
 - **UI:** added controlled **BridgePanel** wired to `/patterns/bridge_suggest` via `useBridge` hook and `fetchBridge()` API.

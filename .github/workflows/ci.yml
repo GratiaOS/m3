@@ -26,9 +26,11 @@ jobs:
       CARGO_TARGET_DIR: target/${{ matrix.toolchain }}
     defaults:
       run:
-        working-directory: server
+        working-directory: m3/server
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: m3
 
       - name: Cache cargo
         uses: actions/cache@v4
@@ -37,7 +39,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target/${{ matrix.toolchain }}
-          key: ${{ runner.os }}-cargo-${{ matrix.toolchain }}-${{ hashFiles('server/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-${{ matrix.toolchain }}-${{ hashFiles('m3/server/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-${{ matrix.toolchain }}-
 
       - name: Install Rust ${{ matrix.toolchain }}
@@ -61,12 +63,12 @@ jobs:
         run: cargo test --workspace --all-features --no-fail-fast
 
       - name: Panic redirect script – smoke test
-        working-directory: .
+        working-directory: m3
         run: |
           set -euxo pipefail
           chmod +x ./panic.sh
           # Write logs into repo's server/exports so they persist in workspace
-          M3_EXPORTS_DIR="$GITHUB_WORKSPACE/server/exports" ./panic.sh
+          M3_EXPORTS_DIR="$GITHUB_WORKSPACE/m3/server/exports" ./panic.sh
           # Assert at least one panic log was created
           find server/exports/panic -type f -name '*.log' -print -quit | grep -q .
 
@@ -75,7 +77,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: server-panic-logs-${{ matrix.toolchain }}-attempt-${{ github.run_attempt }}
-          path: server/exports/panic/**/*.log
+          path: m3/server/exports/panic/**/*.log
           if-no-files-found: ignore
 
   ui:
@@ -88,10 +90,19 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          path: m3
+
+      - name: Checkout garden-core (workspace sibling)
+        uses: actions/checkout@v4
+        with:
+          repository: gratiaOS/garden-core
+          path: garden-core
+          fetch-depth: 1
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
+          version: 10.18.3
           run_install: false
 
       - name: Setup Node
@@ -99,7 +110,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: 'pnpm'
-          cache-dependency-path: pnpm-lock.yaml
+          cache-dependency-path: m3/pnpm-lock.yaml
 
       - name: Verify pnpm availability (and fallback via Corepack)
         run: |
@@ -108,26 +119,33 @@ jobs:
           pnpm -v || true
           # Fallback to Corepack in case the action didn't inject pnpm in PATH
           corepack enable
-          corepack prepare pnpm@9 --activate
+          corepack prepare pnpm@10.18.3 --activate
           which pnpm
           pnpm -v
 
       - name: Install workspace deps
-        run: pnpm install --frozen-lockfile
+        working-directory: m3
+        run: pnpm install --frozen-lockfile=false
 
       - name: Show versions
         run: |
           node -v
           pnpm -v
 
+      - name: Build Garden UI package
+        working-directory: m3
+        run: pnpm --filter @garden/ui build
+
       - name: Format (workspace)
+        working-directory: m3
         run: pnpm fmt
 
       - name: Lint (workspace)
+        working-directory: m3
         run: pnpm lint
 
       - name: Build UI
-        working-directory: ui
+        working-directory: m3/ui
         run: pnpm build
 
       - name: Upload UI dist
@@ -135,7 +153,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ui-dist-node-${{ matrix.node }}-attempt-${{ github.run_attempt }}
-          path: ui/dist
+          path: m3/ui/dist
           if-no-files-found: warn
 
   whisper:

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useBridge } from '@/hooks/useBridge';
+import { useReversePoles } from '@/state/reversePoles';
 import { Button, Select, Text } from '@/ui/catalyst';
 import type { BridgeKindAlias, BridgeSuggestion } from '@/types/patterns';
 
@@ -26,6 +27,7 @@ export default function BridgePanel({
   onAddToTimeline?: (entry: { kind: BridgeKindAlias; intensity: number; suggestion: BridgeSuggestion }) => void;
 }) {
   const { data, loading, error, refresh } = useBridge(kind, intensity);
+  const { enabled: reversePolesEnabled } = useReversePoles();
 
   const [addedTick, setAddedTick] = useState(0);
 
@@ -59,11 +61,25 @@ export default function BridgePanel({
     setAddedTick((n) => n + 1);
   }
 
+  const options = useMemo(() => {
+    if (!reversePolesEnabled) return OPTIONS;
+    const primary = OPTIONS.find((option) => option.value === 'attachment_test');
+    if (!primary) return OPTIONS;
+    const rest = OPTIONS.filter((option) => option.value !== 'attachment_test');
+    return [
+      { value: primary.value, label: 'Ask-Not-Test (language interrupt)' },
+      ...rest,
+    ];
+  }, [reversePolesEnabled]);
+
+  const askNotTestPrompt =
+    "ask-not-test: \"I will ask for reassurance; I won't test your love. Let's speak, not guess.\"";
+
   return (
     <div className="grid gap-5 ">
       <div className="flex flex-wrap items-center gap-4">
         <Select value={kind} onChange={(event) => onKind(event.target.value as BridgeKindAlias)} aria-label="Bridge pattern kind" className="w-56">
-          {OPTIONS.map((option) => (
+          {options.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>
@@ -89,6 +105,16 @@ export default function BridgePanel({
           {addedTick > 0 ? 'Added ✓' : 'Add to timeline'}
         </Button>
       </div>
+
+      {reversePolesEnabled && (
+        <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800 dark:border-sky-400/40 dark:bg-sky-900/40 dark:text-sky-100">
+          <p className="font-medium">ask-not-test / language-interrupt</p>
+          <p className="mt-1 whitespace-pre-wrap leading-relaxed">{askNotTestPrompt}</p>
+          <Button plain type="button" className="mt-2 text-xs font-semibold" onClick={() => copy(askNotTestPrompt)}>
+            Copy prompt
+          </Button>
+        </div>
+      )}
 
       {error && (
         <div className="rounded-xl border border-rose-500/60 bg-rose-100/70 px-4 py-3 text-sm text-rose-900 dark:border-rose-900/50 dark:bg-rose-900/40 dark:text-rose-100">

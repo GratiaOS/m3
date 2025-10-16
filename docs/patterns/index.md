@@ -22,6 +22,7 @@ This folder documents recurring patterns in the emotional field and social syste
 - [Attachment Testing Loop](attachment-testing-loop.md)
 - [Sibling Trust Loop](sibling-trust-loop.md)
 - [Parent-Planted Narrative Loop](parent-planted-narrative-loop.md)
+- [Phantom Rival Loop](phantom-rival-loop.md)
 - [Desire–Guilt–Judge Coil](desire-guilt-judge.md)
 
 ### 🛠 Productivity & Process

@@ -42,6 +42,7 @@ Reusable emotional/behavioral maps extracted from experience. Start with the ove
 - [Sibling Trust Loop](patterns/sibling-trust-loop.md)
 - [Parent-Planted Narrative Loop](patterns/parent-planted-narrative-loop.md)
 - [Over-Analysis Self-Perpetuating Loop](patterns/over-analysis-loop.md)
+- [Phantom Rival Loop](patterns/phantom-rival-loop.md)
 - [Timeline Module](patterns/timeline-module.md)
 - [Whisper Interface](patterns/whisper-interface.md)
 - [Universal Patterns](patterns/universal-patterns.md)

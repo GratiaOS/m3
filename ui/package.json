@@ -12,6 +12,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@garden/ui": "workspace:*",
+    "@garden/tokens": "workspace:*",
     "@headlessui/react": "^2.2.8",
     "clsx": "^2.1.1",
     "motion": "^12.23.12",

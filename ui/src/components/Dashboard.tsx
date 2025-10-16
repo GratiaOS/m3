@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { toast } from '@/components/Toaster';
+import { Button, Pill } from '@garden/ui';
+import { notifyJoy } from '@/utils/joy';
 import { getState, setState, TeamState, PillarStatus, getPanicLast, type PanicLast, getTells, type Tell, resolveEmotion } from '@/api';
-import { Heading, Subheading, Divider, Text, Strong, Input, Textarea, Badge, Button } from '@/ui/catalyst';
+import { Heading, Subheading, Divider, Text, Strong, Input, Textarea } from '@/ui/catalyst';
 
 const isDev = import.meta.env.DEV;
 
@@ -108,9 +109,9 @@ export default function Dashboard() {
       const details =
         `doorway: ${lastRedirect.doorway || '—'} | ` + `anchor: ${lastRedirect.anchor || '—'} | ` + `whisper: ${lastRedirect.whisper || '—'}`;
       await resolveEmotion('Raz', details);
-      toast({ level: 'success', title: 'Gratitude landed', body: 'Arc sealed in EmotionalOS.', icon: '💚' });
+      notifyJoy({ level: 'success', title: 'Gratitude landed', body: 'Arc sealed in EmotionalOS.', icon: '💚' });
     } catch (e) {
-      toast({ level: 'error', title: 'Failed to land gratitude', body: String(e), icon: '⚠️' });
+      notifyJoy({ level: 'error', title: 'Failed to land gratitude', body: String(e), icon: '⚠️' });
     } finally {
       setLanding(false);
     }
@@ -170,11 +171,11 @@ export default function Dashboard() {
       const next = await setState({ members: state.members, pillars: state.pillars, note: state.note });
       set(next);
       setSavedSnapshot(JSON.stringify({ members: next.members, pillars: next.pillars, note: next.note || '' }));
-      toast({ level: 'success', title: 'State saved', body: 'Saved just now', icon: '💾' });
+      notifyJoy({ level: 'success', title: 'State saved', body: 'Saved just now', icon: '💾' });
       setError(null);
     } catch (e) {
       setError('Failed to save state');
-      toast({ level: 'error', title: 'Save failed', body: String(e), icon: '⚠️' });
+      notifyJoy({ level: 'error', title: 'Save failed', body: String(e), icon: '⚠️' });
     } finally {
       setSaving(false);
     }
@@ -194,10 +195,20 @@ export default function Dashboard() {
           </div>
         )}
         <div className="flex gap-2">
-          <Button onClick={() => window.location.reload()} color="zinc" title="Retry fetching from API">
+          <Button
+            tone="default"
+            variant="solid"
+            density="snug"
+            onClick={() => window.location.reload()}
+            title="Retry fetching from API">
             Retry
           </Button>
-          <Button onClick={loadDemo} color="emerald" title="Load a temporary demo state so you can keep building UI">
+          <Button
+            tone="positive"
+            variant="solid"
+            density="snug"
+            onClick={loadDemo}
+            title="Load a temporary demo state so you can keep building UI">
             Load demo state
           </Button>
         </div>
@@ -245,14 +256,15 @@ export default function Dashboard() {
       </div>
       {lastRedirect && (
         <div className="flex items-center gap-2">
-          <Badge color="indigo" title={lastRedirect.ts}>
+          <Pill tone="accent" variant="soft" density="snug" title={lastRedirect.ts}>
             Last redirect: {lastRedirect.whisper || '—'} → {lastRedirect.doorway || '—'} ({timeAgo(lastRedirect.ts)})
-          </Badge>
+          </Pill>
           <Button
+            tone="accent"
+            variant="solid"
+            density="snug"
             onClick={landFromRedirect}
             disabled={landing}
-            color="zinc"
-            title="Insert a gratitude entry from the last redirect"
             aria-busy={landing}
             aria-live="polite">
             {landing ? 'Landing…' : 'Land gratitude'}
@@ -265,10 +277,10 @@ export default function Dashboard() {
           <Subheading>Recent actions</Subheading>
           <div className="flex flex-wrap gap-2">
             {tells.map((t) => (
-              <Badge key={t.id} color="zinc">
+              <Pill key={t.id} variant="subtle" density="snug">
                 <code>{t.node}</code> · {t.action}
                 <span className="ml-2 opacity-50">({timeAgo(t.created_at)})</span>
-              </Badge>
+              </Pill>
             ))}
           </div>
         </div>
@@ -276,12 +288,12 @@ export default function Dashboard() {
 
       <Divider />
       <div className="flex items-center gap-3" aria-label={`Decision: ${decision.label} – ${decision.detail}`}>
-        <Badge color={decision.label === 'GO' ? 'emerald' : decision.label === 'WAIT' ? 'amber' : 'rose'}>
+        <Pill tone={decision.label === 'GO' ? 'positive' : decision.label === 'WAIT' ? 'warning' : 'danger'} variant="solid" density="snug">
           <span aria-hidden="true" className="mr-1">
             {DECISION_ICON[decision.label as 'GO' | 'WAIT' | 'REST']}
           </span>
           {decision.label}
-        </Badge>
+        </Pill>
         <Strong>
           {decision.detail} · AVG {avg}% · pillars G/W/R {pillarScore.good}/{pillarScore.watch}/{pillarScore.rest}
         </Strong>
@@ -366,12 +378,20 @@ export default function Dashboard() {
           title="Add context for this state"
         />
         <div className="flex gap-2">
-          <Button onClick={save} disabled={saving || !isDirty} color="zinc" aria-busy={saving}>
+          <Button
+            tone="default"
+            variant="solid"
+            density="snug"
+            onClick={save}
+            disabled={saving || !isDirty}
+            aria-busy={saving}>
             {saving ? 'Saving…' : 'Save state'}
           </Button>
           <Button
+            tone="default"
+            variant="ghost"
+            density="snug"
             onClick={async () => set(await getState())}
-            plain
             disabled={!isDirty}
             title={isDirty ? 'Reload from API (will discard unsaved edits)' : 'No local changes – nothing to reload'}>
             Reload
