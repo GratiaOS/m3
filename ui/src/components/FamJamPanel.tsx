@@ -1,3 +1,20 @@
+// local persistence helper (simple, no SSR issues assumed here)
+function useStickyState<T>(key: string, initial: T) {
+  const [value, setValue] = React.useState<T>(() => {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? (JSON.parse(raw) as T) : initial;
+    } catch {
+      return initial;
+    }
+  });
+  React.useEffect(() => {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch {}
+  }, [key, value]);
+  return [value, setValue] as const;
+}
 import * as React from 'react';
 import { Button, Card, Pill } from '@garden/ui';
 import { notify } from '@/utils/joy';
@@ -12,15 +29,15 @@ const ACTORS: Record<Exclude<Actor, 'all'>, { label: string; emoji: string }> = 
 };
 
 const ROOMS = [
-  { id: 'all', label: 'All (shared field)', emoji: '✨' },
-  { id: 'me', label: 'Me', emoji: '🙂' },
-  { id: 'n', label: 'N', emoji: '🧒' },
-  { id: 's', label: 'S', emoji: '🌿' },
+  { id: 'car', label: 'Car', emoji: '🚗' },
+  { id: 'kitchen', label: 'Kitchen', emoji: '🍳' },
+  { id: 'firecircle', label: 'Firecircle', emoji: '🔥' },
+  { id: 'anywhere', label: 'Anywhere', emoji: '✨' },
 ] as const;
 
 export function FamJamPanel() {
-  const [actor, setActor] = React.useState<Actor>('me');
-  const [room, setRoom] = React.useState<(typeof ROOMS)[number]['id']>('all');
+  const [actor, setActor] = useStickyState<Actor>('famjam:actor', 'me');
+  const [room, setRoom] = useStickyState<(typeof ROOMS)[number]['id']>('famjam:room', 'anywhere');
   const [note, setNote] = React.useState('');
 
   const toastInfo = (msg: string) => notify(msg, 'info');
@@ -28,19 +45,51 @@ export function FamJamPanel() {
   const toastWarn = (msg: string) => notify(msg, 'warning');
 
   const actorLabel = actor === 'all' ? 'All' : `${ACTORS[actor as Exclude<Actor, 'all'>].emoji} ${ACTORS[actor as Exclude<Actor, 'all'>].label}`;
+  const roomLabel = React.useMemo(() => ROOMS.find((r) => r.id === room)?.label ?? String(room), [room]);
 
   function handleOpenJam() {
-    toastInfo(`Jam opened in “${room.toUpperCase()}” as ${actorLabel}`);
+    toastInfo(`Jam opened in “${roomLabel}” as ${actorLabel}`);
+    // bridge a lightweight timeline entry (open)
+    window.dispatchEvent(
+      new CustomEvent('timeline:add', {
+        detail: {
+          t: Date.now(),
+          source: 'bridge',
+          kind: 'famjam_open',
+          intensity: 0.2,
+          hint: `room:${room} as ${actorLabel}`,
+          anchor: actor === 'all' ? 'Shared field' : `Actor:${actor}`,
+          doorway: room,
+        },
+      })
+    );
   }
 
   function handlePingLove() {
-    toastSuccess(`Love ping sent to ${room === 'all' ? 'the shared field' : room.toUpperCase()}`);
+    toastSuccess(`Love ping sent to ${roomLabel}`);
   }
 
   function handleShareNote() {
-    if (!note.trim()) return toastWarn('Add a tiny note first');
-    // (v0: local toast; v1: POST to M3 bridge)
-    toastSuccess(`Shared: “${note.trim()}”`);
+    const trimmed = note.trim();
+    if (!trimmed) return toastWarn('Add a tiny note first');
+    // v0: local toast; v1: POST to M3 bridge
+    toastSuccess(`Shared: “${trimmed}”`);
+
+    // bridge to timeline so it shows up immediately
+    window.dispatchEvent(
+      new CustomEvent('timeline:add', {
+        detail: {
+          t: Date.now(),
+          source: 'bridge',
+          kind: 'famjam_note',
+          intensity: 0.4,
+          hint: trimmed,
+          anchor: actor === 'all' ? 'Shared field' : `Actor:${actor}`,
+          doorway: room,
+        },
+      })
+    );
+
     setNote('');
   }
 
@@ -117,6 +166,12 @@ export function FamJamPanel() {
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
+          onKeyDown={(e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+              e.preventDefault();
+              handleShareNote();
+            }
+          }}
           placeholder="One sentence is enough. What’s here now?"
           className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-elev)] p-3 text-sm outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
           rows={3}
@@ -131,14 +186,15 @@ export function FamJamPanel() {
         <Button variant="outline" tone="positive" onClick={handlePingLove} leadingIcon={<Heart aria-hidden size={18} />}>
           Ping Love
         </Button>
-        <Button variant="ghost" onClick={handleShareNote}>
+        <Button variant="ghost" onClick={handleShareNote} disabled={!note.trim()}>
           Share Note
         </Button>
       </div>
 
       {/* Footer hint */}
       <p className="mt-4 text-xs text-[var(--color-subtle)]">
-        Voice + timeline come next; for now this is a gentle surface to sync attention and send micro-blessings.
+        Voice + timeline come next; for now this is a gentle surface to sync attention and send micro-blessings. Press ⌘/Ctrl + Enter to share
+        quickly.
       </p>
     </Card>
   );

@@ -190,7 +190,8 @@ function formatClock(ts: string): string {
 
 export default Timeline;
 
-const badgeStyles = 'inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300';
+const badgeStyles =
+  'inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300';
 
 function TimelineBadges({ item }: { item: TimelineItem }) {
   const badges = badgesForItem(item);
