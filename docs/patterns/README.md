@@ -10,7 +10,7 @@ These endpoints provide simple text-based detection and suggestion logic that ca
 
 1. **Name it.**
 
-   - Skim `/docs/patterns/*.md` and pick the closest map (e.g., _Attachment Testing_, _Sibling Trust_, _Over‑Analysis_).
+   - Skim `/docs/patterns/*.md` and pick the closest map (e.g., _Attachment Testing_, _Sibling Trust_, _Phantom Rival_, _Over‑Analysis_).
    - If unsure, start with lanes from `GET /patterns/lanes` to orient (victim / aggressor / sovereign).
 
 2. **Locate the cycle step.**

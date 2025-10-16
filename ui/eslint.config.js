@@ -49,6 +49,10 @@ export default [
         "warn",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
+      "no-restricted-syntax": [
+        "error",
+        { selector: "Literal[value='joy:toast']", message: "Use 'garden:toast' only." },
+      ],
     },
   },
 

@@ -3,6 +3,7 @@ packages:
   - ui
   - packages/*
   - shared
+  - ../garden-core/packages/*
 
 onlyBuiltDependencies:
   - '@tailwindcss/oxide'

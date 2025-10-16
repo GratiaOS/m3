@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { fetchReply, createTell } from '@/api';
+import { useReversePoles } from '@/state/reversePoles';
 
 type Privacy = 'public' | 'private' | 'sealed';
 
@@ -14,7 +15,8 @@ const PRIVACY: Privacy[] = ['public', 'private', 'sealed'];
 export default function Composer({ onIngest, incognito = false }: Props) {
   const [text, setText] = useState('');
   const [tags, setTags] = useState<string[]>([]);
-  const [privacy, setPrivacy] = useState<Privacy>('public');
+  const { enabled: reversePolesEnabled } = useReversePoles();
+  const [privacy, setPrivacy] = useState<Privacy>(reversePolesEnabled ? 'sealed' : 'public');
   const [doors, setDoors] = useState<string[] | null>(null);
   const [nudge, setNudge] = useState<string | null>(null);
 
@@ -50,6 +52,15 @@ export default function Composer({ onIngest, incognito = false }: Props) {
   }
 
   const effectivePrivacy: Privacy = incognito ? 'sealed' : privacy;
+
+  useEffect(() => {
+    if (incognito) return;
+    if (reversePolesEnabled) {
+      setPrivacy('sealed');
+    } else {
+      setPrivacy((prev) => (prev === 'sealed' ? 'public' : prev));
+    }
+  }, [incognito, reversePolesEnabled]);
 
   return (
     <div style={{ display: 'grid', gap: 8 }}>

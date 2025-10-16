@@ -1,10 +1,24 @@
+@import '@garden/tokens/theme.css';
 @import 'tailwindcss';
+@import '@garden/ui/styles/base.css' layer(components);
+@import '@garden/ui/styles/toast.css' layer(components);
+
+@layer base {
+  html,
+  body,
+  #root {
+    @apply min-h-dvh;
+  }
+
+  body {
+    @apply bg-surface text-text;
+  }
+}
 
 /* --- M3 UI Polish — light/dark, tokens, and clean defaults --- */
 
 /* 1) Design tokens */
 :root {
-  --bg: #0b0c0f;
   --panel: #11131a;
   --muted: #9aa4b2;
   --text: #e6e8ec;
@@ -23,7 +37,6 @@
 
 @media (prefers-color-scheme: light) {
   :root {
-    --bg: #f8fafc;
     --panel: #ffffff;
     --muted: #5b6472;
     --text: #0b1220;
@@ -34,28 +47,6 @@
 }
 
 /* 2) Base reset-ish */
-* {
-  box-sizing: border-box;
-}
-html,
-body,
-#root {
-  height: 100%;
-}
-body {
-  margin: 0;
-  font: 14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji',
-    'Segoe UI Emoji';
-  color: var(--text);
-  background: radial-gradient(1200px 800px at 20% -10%, rgba(125, 211, 252, 0.1), transparent 60%),
-    radial-gradient(1000px 700px at 120% 20%, rgba(192, 132, 252, 0.1), transparent 60%), var(--bg);
-}
-
-h1,
-h2,
-h3 {
-  margin: 0 0 6px 0;
-}
 h1 {
   font-weight: 700;
   letter-spacing: -0.01em;
