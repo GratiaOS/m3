@@ -132,6 +132,10 @@ jobs:
           node -v
           pnpm -v
 
+      - name: Build Garden Icons package
+        working-directory: m3
+        run: pnpm --filter @garden/icons build
+
       - name: Build Garden UI package
         working-directory: m3
         run: pnpm --filter @garden/ui build
