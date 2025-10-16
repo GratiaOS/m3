@@ -102,6 +102,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
+          version: 10.18.3
           run_install: false
 
       - name: Setup Node
@@ -118,7 +119,7 @@ jobs:
           pnpm -v || true
           # Fallback to Corepack in case the action didn't inject pnpm in PATH
           corepack enable
-          corepack prepare pnpm@9 --activate
+          corepack prepare pnpm@10.18.3 --activate
           which pnpm
           pnpm -v
 
