@@ -8,6 +8,30 @@
 
 ---
 
+## [Unreleased] — 2025-10-16
+
+### Added
+- **Garden Toaster (UI):** mount the headless `<Toaster/>` at the app root and funnel all toast emissions through Garden. Users now get consistent, theme-aware toasts with hover-to-pause.
+- **Patterns / Server:** `bridge_suggest` understands jealousy aliases (`phantom_rival`, `phantom-rival`, `comparison_jealousy`, `comparison-jealousy`, `jealousy`) and returns the `reality-then-ask` bridge with breath/doorway/anchor hints.
+- **Tests:** `bridge_phantom_rival_kind` covers the new pattern → hint/anchor contract.
+
+### Changed
+- **Joy helpers:** `notify()` / `notifyJoy()` emit Garden `showToast` payloads `{ variant, title, desc, icon, durationMs }`; legacy `joy:toast` pathway is retired.
+- **RTP reset signal:** midnight + manual resets now surface via Garden toast variants/icons (no local banner component).
+
+### Docs
+- **patterns:** Added *Phantom Rival Loop* 🫥🪞 (compare → believe → contract → confirm) with 4‑min bridge, talk script, micro-experiments, and API sample aligned to the server aliases.
+- **funding:** Landed `FUNDING.md` (sponsorship tiers, stewardship practice, transparency notes). *(Org-level `.github/FUNDING.yml` remains upstream.)*
+
+### Infra / DX
+- **Lint guard:** blocks `'joy:toast'` literals to prevent regressions.
+- Build: `pnpm --dir ui run build` ✅; server: `cargo test -p server` ✅.  
+  Typecheck currently fails (`pnpm --dir ui run typecheck`) because several `<Button plain>` usages predate the Garden primitive API; tracked for a follow-up cleanup.
+
+🌬 whisper: _“one wire, one tone — less noise, more signal.”_
+
+---
+
 ## 🚀 v0.1.9 — 2025-10-14
 
 **Integration Cut:** Garden bridge + Bridge/Timeline mechanics.
