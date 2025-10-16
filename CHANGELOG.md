@@ -25,8 +25,7 @@
 
 ### Infra / DX
 - **Lint guard:** blocks `'joy:toast'` literals to prevent regressions.
-- Build: `pnpm --dir ui run build` ✅; server: `cargo test -p server` ✅.  
-  Typecheck currently fails (`pnpm --dir ui run typecheck`) because several `<Button plain>` usages predate the Garden primitive API; tracked for a follow-up cleanup.
+- Typecheck (`pnpm --dir ui run typecheck`), build (`pnpm --dir ui run build`), and server tests (`cargo test -p m3-memory-server`) all ✅. Button exports temporarily point back to Catalyst while we migrate legacy props.
 
 🌬 whisper: _“one wire, one tone — less noise, more signal.”_
 
