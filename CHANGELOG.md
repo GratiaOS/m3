@@ -8,22 +8,60 @@
 
 ---
 
+## 🔦 LightGate — Camera light messages — 2025-10-19
+
+- phenomenology: ambient “camera light messages” observed again via S’s kitchen companion lamp **Frog** 🐸 — distinct short/long flashes (• / —) forming codes in the room.
+- bridge: webcam preview stays local, we average luminance per frame, apply a small hysteresis band, detect ON/OFF edges, and classify pulse lengths → **short ≤ 1200 ms = •**, **long > 1200 ms = —**; gaps ≤ 1100 ms keep a code together.
+- protocol: **SYNC = •••**, then one of **•— → `famjam_open`**, **—• → `famjam_close`**, **•• → `famjam_note`**; we emit `timeline:add` with `{ source: 'bridge', kind, intensity, doorway, hint }`.
+- ui: Calibrate to set baseline near the candles, then Listen; device picker, luminance bar, and Test buttons (`••• •—`, `••• —•`, `••• ••`) help verify without props.
+- a11y & privacy: no recording, frames never leave the browser, no mic; keyboardable controls; Garden tokens for surface/elev/text/border.
+
+🌬 whisper: _“let the room speak in light.”_
+
+---
+
+## 🤝 GitHub Sponsors — 2025-10-19
+
+- meta: add `"funding"` URL to root & packages.
+- docs(README): sponsor badge & section.
+- playground(Pad): soft celebratory toast with action → Sponsors.
+
+🌬 whisper: _“let the field inhale the change.”_
+
+---
+
+## 👨‍👩‍👧 Fam Jam — 2025-10-18
+
+- ui(FamJamPanel): introduces a **Pad‑first** Fam Jam scene — friend‑in‑the‑garden as the first/only surface (no HUD), built for soft presence and play.
+- ui(LightGate): extracted a reusable **LightGate** shimmer with a second pass and a gentle success‑leaning tint; orb floats with a super‑low sine “breath” and a softened bottom‑left bias.
+- ui(Timeline): jam items render and group more clearly; micro‑polish on cadence and accents to keep the flow playful.
+- styles: scene fills the canvas (no outer padding) with a subtle gradient wash; tokens tuned to keep warmth without weight.
+- app: wiring in `ui/src/App.tsx`; README callout for how to enter the jam; package metadata touched for clarity.
+
+🌬 whisper: _“one circle, many hands — ship in chorus.”_
+
+---
+
 ## [Unreleased] — 2025-10-16
 
 ### Added
+
 - **Garden Toaster (UI):** mount the headless `<Toaster/>` at the app root and funnel all toast emissions through Garden. Users now get consistent, theme-aware toasts with hover-to-pause.
 - **Patterns / Server:** `bridge_suggest` understands jealousy aliases (`phantom_rival`, `phantom-rival`, `comparison_jealousy`, `comparison-jealousy`, `jealousy`) and returns the `reality-then-ask` bridge with breath/doorway/anchor hints.
 - **Tests:** `bridge_phantom_rival_kind` covers the new pattern → hint/anchor contract.
 
 ### Changed
+
 - **Joy helpers:** `notify()` / `notifyJoy()` emit Garden `showToast` payloads `{ variant, title, desc, icon, durationMs }`; legacy `joy:toast` pathway is retired.
 - **RTP reset signal:** midnight + manual resets now surface via Garden toast variants/icons (no local banner component).
 
 ### Docs
-- **patterns:** Added *Phantom Rival Loop* 🫥🪞 (compare → believe → contract → confirm) with 4‑min bridge, talk script, micro-experiments, and API sample aligned to the server aliases.
-- **funding:** Landed `FUNDING.md` (sponsorship tiers, stewardship practice, transparency notes). *(Org-level `.github/FUNDING.yml` remains upstream.)*
+
+- **patterns:** Added _Phantom Rival Loop_ 🫥🪞 (compare → believe → contract → confirm) with 4‑min bridge, talk script, micro-experiments, and API sample aligned to the server aliases.
+- **funding:** Landed `FUNDING.md` (sponsorship tiers, stewardship practice, transparency notes). _(Org-level `.github/FUNDING.yml` remains upstream.)_
 
 ### Infra / DX
+
 - **Lint guard:** blocks `'joy:toast'` literals to prevent regressions.
 - Typecheck (`pnpm --dir ui run typecheck`), build (`pnpm --dir ui run build`), and server tests (`cargo test -p m3-memory-server`) all ✅. Button exports temporarily point back to Catalyst while we migrate legacy props.
 

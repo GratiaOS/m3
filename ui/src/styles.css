@@ -1,7 +1,6 @@
 @import '@garden/tokens/theme.css';
 @import 'tailwindcss';
 @import '@garden/ui/styles/base.css' layer(components);
-@import '@garden/ui/styles/toast.css' layer(components);
 
 @layer base {
   html,

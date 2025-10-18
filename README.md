@@ -4,6 +4,7 @@
   <img src="docs/assets/mark/gratia-mark.png" alt="Gratia Mark" width="90" />
 </p>
 
+[![Sponsor GratiaOS](https://img.shields.io/badge/Sponsor-♥︎%20GratiaOS-ff69b4?logo=githubsponsors)](https://github.com/sponsors/GratiaOS)
 [![CI](https://github.com/GratiaOS/m3/actions/workflows/ci.yml/badge.svg)](https://github.com/GratiaOS/m3/actions/workflows/ci.yml)
 [![Server License](https://img.shields.io/badge/server-AGPL--3.0--only-blue.svg)](#license-matrix)
 [![UI License](https://img.shields.io/badge/ui-Apache%202.0-green.svg)](#license-matrix)
@@ -21,6 +22,11 @@ Designed for offline resilience, privacy, and joyful retrieval.
 > See [Glossary Shift](#-appendix-glossary-shift) for the full table.
 
 > 🤝 **Partnership Covenant**: See [covenant](#-partnership-covenant) for how M3 is grounded beyond code. (Love over transaction, mirrors over judgment.)
+
+## 💖 Sponsors
+
+If the Garden has helped you ship or smile, consider supporting its growth.  
+→ **https://github.com/sponsors/GratiaOS**
 
 ### ⏱️ Run in 60s (curl)
 

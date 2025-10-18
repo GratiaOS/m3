@@ -3,6 +3,7 @@ import { Button, Pill } from '@garden/ui';
 import { notifyJoy } from '@/utils/joy';
 import { getState, setState, TeamState, PillarStatus, getPanicLast, type PanicLast, getTells, type Tell, resolveEmotion } from '@/api';
 import { Heading, Subheading, Divider, Text, Strong, Input, Textarea } from '@/ui/catalyst';
+import { FamJamPanel } from './FamJamPanel';
 
 const isDev = import.meta.env.DEV;
 
@@ -195,20 +196,10 @@ export default function Dashboard() {
           </div>
         )}
         <div className="flex gap-2">
-          <Button
-            tone="default"
-            variant="solid"
-            density="snug"
-            onClick={() => window.location.reload()}
-            title="Retry fetching from API">
+          <Button tone="default" variant="solid" density="snug" onClick={() => window.location.reload()} title="Retry fetching from API">
             Retry
           </Button>
-          <Button
-            tone="positive"
-            variant="solid"
-            density="snug"
-            onClick={loadDemo}
-            title="Load a temporary demo state so you can keep building UI">
+          <Button tone="positive" variant="solid" density="snug" onClick={loadDemo} title="Load a temporary demo state so you can keep building UI">
             Load demo state
           </Button>
         </div>
@@ -259,14 +250,7 @@ export default function Dashboard() {
           <Pill tone="accent" variant="soft" density="snug" title={lastRedirect.ts}>
             Last redirect: {lastRedirect.whisper || '—'} → {lastRedirect.doorway || '—'} ({timeAgo(lastRedirect.ts)})
           </Pill>
-          <Button
-            tone="accent"
-            variant="solid"
-            density="snug"
-            onClick={landFromRedirect}
-            disabled={landing}
-            aria-busy={landing}
-            aria-live="polite">
+          <Button tone="accent" variant="solid" density="snug" onClick={landFromRedirect} disabled={landing} aria-busy={landing} aria-live="polite">
             {landing ? 'Landing…' : 'Land gratitude'}
           </Button>
         </div>
@@ -378,13 +362,7 @@ export default function Dashboard() {
           title="Add context for this state"
         />
         <div className="flex gap-2">
-          <Button
-            tone="default"
-            variant="solid"
-            density="snug"
-            onClick={save}
-            disabled={saving || !isDirty}
-            aria-busy={saving}>
+          <Button tone="default" variant="solid" density="snug" onClick={save} disabled={saving || !isDirty} aria-busy={saving}>
             {saving ? 'Saving…' : 'Save state'}
           </Button>
           <Button
@@ -398,6 +376,7 @@ export default function Dashboard() {
           </Button>
         </div>
       </div>
+      <FamJamPanel />
     </div>
   );
 }

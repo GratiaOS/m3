@@ -198,16 +198,51 @@ export function iconForSource(source?: string): string {
  */
 export function mapServerEventToTimelineItem(ev: ServerEvent): TimelineItem {
   const sealed = isSealed(ev);
-  const title = (ev.kind || ev.title || ev.source || 'note').toString();
+
+  // Default mapping
+  const fallbackTitle = (ev.kind || ev.title || ev.source || 'note').toString();
   const rawDetails = typeof ev.details === 'string' ? ev.details.trim() : '';
-  const subtitle = sealed ? '(sealed)' : rawDetails || undefined;
-  const icon = iconForSource(ev.source);
+  let subtitle = sealed ? '(sealed)' : rawDetails || undefined;
+  let icon = iconForSource(ev.source);
+  let title = fallbackTitle;
+
+  // FamJam-aware tweaks (bridge events emitted from FamJamPanel)
+  const kind = (ev.kind || '').toString();
+  const isFam = kind.startsWith('famjam_');
+  if (isFam) {
+    // doorway id and friendly emoji mapping (kept local to avoid coupling)
+    const doorway = (ev as any).doorway as string | undefined;
+    const ROOM_EMOJI: Record<string, string> = {
+      car: '🚗',
+      kitchen: '🍳',
+      firecircle: '🔥',
+      anywhere: '✨',
+    };
+
+    icon = ROOM_EMOJI[doorway ?? ''] ?? '🎶';
+
+    // Distinct glyphs for session lifecycle
+    if (kind === 'famjam_open') icon = '🪄';
+    else if (kind === 'famjam_close') icon = '🔚';
+
+    if (kind === 'famjam_note') title = 'fam jam';
+    else if (kind === 'famjam_open') title = 'fam jam (open)';
+    else if (kind === 'famjam_close') title = 'fam jam (close)';
+    else title = 'fam jam';
+
+    // Prefer the famjam hint as the visible subtitle when not sealed
+    const hint = (ev as any).hint as string | undefined;
+    if (!sealed && hint && hint.trim()) {
+      subtitle = hint.trim();
+    }
+  }
 
   const meta: Record<string, unknown> = {};
   if (ev.who) meta.who = ev.who;
   if (typeof ev.intensity === 'number') meta.intensity = ev.intensity;
   if (ev.archetype) meta.archetype = ev.archetype;
   if (ev.privacy) meta.privacy = ev.privacy;
+  if (isFam && (ev as any).doorway) meta.doorway = (ev as any).doorway;
   if (sealed) meta.sealed = true;
 
   return { id: ev.id, ts: ev.ts, title, subtitle, icon, meta };

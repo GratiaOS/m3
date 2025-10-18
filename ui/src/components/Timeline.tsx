@@ -1,4 +1,5 @@
 import React from 'react';
+import { Badge } from '@garden/ui';
 
 /**
  * Roadmap — Timeline polish & theming bridge
@@ -82,6 +83,7 @@ export function mapEmotionToTimelineItem(e: Emotion): TimelineItem {
     subtitle,
     icon: e.kind === 'gratitude' ? '💖' : '🫧',
     meta: {
+      source: 'emotion',
       who: e.who,
       intensity: e.intensity,
       archetype: e.archetype ?? undefined,
@@ -119,43 +121,107 @@ type TimelineProps = {
    * Optional empty-state slot. If not provided, a default friendly message is shown.
    */
   emptyState?: React.ReactNode;
+  /** Optional cap for number of badges shown per item. Extra badges are collapsed under +N. */
+  maxBadges?: number;
+  /** Show a tiny Fam Jam filter chip inside the component. */
+  showFamFilter?: boolean;
+  /** Start with the Fam filter ON. Default: false */
+  famFilterDefaultOn?: boolean;
 };
 
 /**
  * Renders a vertical timeline with dot connectors.
  * This is intentionally minimal (no virtualization, no fetch).
  */
-export const Timeline: React.FC<TimelineProps> = ({ items, compact = false, emptyState }) => {
+export const Timeline: React.FC<TimelineProps> = ({
+  items,
+  compact = false,
+  emptyState,
+  maxBadges,
+  showFamFilter = false,
+  famFilterDefaultOn = false,
+}) => {
   const density = compact ? 'py-2' : 'py-3';
   const spaceY = compact ? 'space-y-2' : 'space-y-3';
 
-  if (!items || items.length === 0) {
-    return <div className="text-sm text-zinc-500">{emptyState ?? 'Nothing here yet.'}</div>;
+  const [famOnly, setFamOnly] = React.useState<boolean>(() => {
+    try {
+      const raw = localStorage.getItem('timeline:famOnly');
+      return raw != null ? raw === '1' : famFilterDefaultOn;
+    } catch {
+      return famFilterDefaultOn;
+    }
+  });
+  const isFam = React.useCallback((it: TimelineItem) => {
+    const meta = (typeof it.meta === 'object' && it.meta ? (it.meta as Record<string, unknown>) : undefined) as
+      | (Record<string, unknown> & { doorway?: unknown })
+      | undefined;
+    return typeof meta?.doorway === 'string';
+  }, []);
+
+  const list = showFamFilter && famOnly ? items.filter(isFam) : items;
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('timeline:famOnly', famOnly ? '1' : '0');
+    } catch {}
+  }, [famOnly]);
+  const famCount = React.useMemo(() => {
+    try {
+      const totalFam = items.reduce((n, it) => n + (isFam(it) ? 1 : 0), 0);
+      return famOnly ? list.length : totalFam;
+    } catch {
+      return 0;
+    }
+  }, [items, isFam, famOnly, list]);
+
+  if (!list || list.length === 0) {
+    const msg = showFamFilter && famOnly ? 'No Fam Jam items yet.' : 'Nothing here yet.';
+    return <div className="text-sm text-subtle">{emptyState ?? msg}</div>;
   }
 
   return (
-    <ol className={`relative ${spaceY}`}>
-      {/* vertical line */}
-      <div className="absolute left-3 top-0 bottom-0 w-px bg-zinc-200" />
+    <>
+      {showFamFilter ? (
+        <div className="mb-2 flex items-center justify-end">
+          <button
+            type="button"
+            aria-pressed={famOnly}
+            onClick={() => setFamOnly((v) => !v)}
+            className={
+              famOnly
+                ? 'inline-flex items-center gap-1 rounded-full border border-border bg-fill-subtle px-2 py-0.5 text-2xs font-medium text-text'
+                : 'inline-flex items-center gap-1 rounded-full border border-transparent px-2 py-0.5 text-2xs font-medium text-subtle hover:border-border hover:bg-fill-subtle'
+            }>
+            <span aria-hidden>✨</span>
+            <span>{famOnly ? 'Fam only' : 'Filter: Fam Jam'}</span>
+            <span className="text-[10px] text-subtle">({famCount})</span>
+          </button>
+        </div>
+      ) : null}
+      <ol className={`relative ${spaceY}`}>
+        {/* vertical line */}
+        <div className="absolute left-3 top-0 bottom-0 w-px bg-border" />
 
-      {items.map((it) => (
-        <li key={it.id} className={`pl-8 ${density}`}>
-          {/* dot */}
-          <span aria-hidden className="absolute left-2 mt-1.5 h-2 w-2 rounded-full bg-zinc-300 ring-2 ring-white" />
-          <div className="flex items-start gap-2">
-            {it.icon ? <span className="shrink-0 mt-0.5">{it.icon}</span> : null}
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-zinc-900">{it.title}</span>
-                <span className="text-xs text-zinc-400">{formatClock(it.ts)}</span>
+        {list.map((it) => (
+          <li key={it.id} className={`pl-8 ${density}`}>
+            {/* dot */}
+            <span aria-hidden className="absolute left-2 mt-1.5 h-2 w-2 rounded-full bg-border ring-2 ring-elev" />
+            <div className="flex items-start gap-2">
+              {it.icon ? <span className="shrink-0 mt-0.5">{it.icon}</span> : null}
+              <div className="min-w-0">
+                <div className="flex items-center flex-wrap gap-2">
+                  <span className="text-sm font-medium text-text">{it.title}</span>
+                  <span className="text-xs text-subtle">{formatClock(it.ts)}</span>
+                  {compact ? <TimelineBadges item={it} inline max={maxBadges} /> : null}
+                </div>
+                {!compact ? <TimelineBadges item={it} max={maxBadges} /> : null}
+                {it.subtitle ? <p className="text-sm text-subtle break-words">{it.subtitle}</p> : null}
               </div>
-              <TimelineBadges item={it} />
-              {it.subtitle ? <p className="text-sm text-zinc-600 break-words">{it.subtitle}</p> : null}
             </div>
-          </div>
-        </li>
-      ))}
-    </ol>
+          </li>
+        ))}
+      </ol>
+    </>
   );
 };
 
@@ -163,13 +229,13 @@ export const Timeline: React.FC<TimelineProps> = ({ items, compact = false, empt
 export const TimelineSkeleton: React.FC<{ rows?: number }> = ({ rows = 4 }) => {
   return (
     <ol className="relative space-y-3 animate-pulse">
-      <div className="absolute left-3 top-0 bottom-0 w-px bg-zinc-200" />
+      <div className="absolute left-3 top-0 bottom-0 w-px bg-border" />
       {Array.from({ length: rows }).map((_, i) => (
         <li key={i} className="pl-8 py-3">
-          <span aria-hidden className="absolute left-1.5 mt-1 h-3 w-3 rounded-full bg-zinc-300 ring-2 ring-white" />
+          <span aria-hidden className="absolute left-1.5 mt-1 h-3 w-3 rounded-full bg-border ring-2 ring-elev" />
           <div className="space-y-2">
-            <div className="h-3 w-24 rounded bg-zinc-200" />
-            <div className="h-3 w-48 rounded bg-zinc-100" />
+            <div className="h-3 w-24 rounded bg-border" />
+            <div className="h-3 w-48 rounded bg-fill-subtle" />
           </div>
         </li>
       ))}
@@ -190,29 +256,68 @@ function formatClock(ts: string): string {
 
 export default Timeline;
 
-const badgeStyles = 'inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300';
-
-function TimelineBadges({ item }: { item: TimelineItem }) {
+function TimelineBadges({ item, inline = false, max }: { item: TimelineItem; inline?: boolean; max?: number }) {
   const badges = badgesForItem(item);
-  if (badges.length === 0) return null;
+  let visible = badges;
+  let overflow = 0;
+  if (typeof max === 'number' && max > 0 && badges.length > max) {
+    const keep = Math.max(1, max - 1); // keep room for the "+N" badge
+    visible = badges.slice(0, keep);
+    overflow = badges.length - visible.length;
+  }
+  const overflowList = badges
+    .slice(visible.length)
+    .map((b) => `${b.icon} ${b.label}`)
+    .join(' · ');
   return (
-    <div className="mt-1 flex flex-wrap gap-2">
-      {badges.map((badge) => (
-        <span key={badge.key} className={badgeStyles}>
-          <span aria-hidden>{badge.icon}</span>
+    <div className={inline ? 'flex flex-wrap gap-2' : 'mt-1 flex flex-wrap gap-2'}>
+      {visible.map((badge) => (
+        <Badge key={badge.key} variant="subtle" size="sm" leading={<span aria-hidden>{badge.icon}</span>}>
           {badge.label}
-        </span>
+        </Badge>
       ))}
+      {overflow > 0 ? (
+        <span className="relative group inline-flex" aria-label={`+${overflow} more`} role="button" tabIndex={0}>
+          <Badge variant="subtle" size="sm">
+            +{overflow}
+          </Badge>
+          {/* tooltip */}
+          <span
+            role="tooltip"
+            className="pointer-events-none absolute z-10 bottom-full left-1/2 -translate-x-1/2 mb-1 max-w-xs whitespace-pre rounded-md border border-border bg-elev px-2 py-1 text-2xs text-text shadow-md opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus:opacity-100">
+            {overflowList}
+          </span>
+        </span>
+      ) : null}
     </div>
   );
 }
 
 function badgesForItem(item: TimelineItem) {
   const badges: { key: string; icon: string; label: string }[] = [];
-  const metaSource = typeof item.meta === 'object' && item.meta ? (item.meta as { source?: unknown }).source : undefined;
-  const source = typeof metaSource === 'string' ? metaSource : undefined;
-  if (source === 'bridge') badges.push({ key: 'bridge', icon: '🧭', label: 'Bridge' });
-  if (source === 'purpose') badges.push({ key: 'purpose', icon: '🎯', label: 'Purpose' });
-  if (source === 'covenant') badges.push({ key: 'covenant', icon: '🤝', label: 'Covenant' });
+  const meta = (typeof item.meta === 'object' && item.meta ? (item.meta as Record<string, unknown>) : undefined) as
+    | (Record<string, unknown> & { source?: unknown; doorway?: unknown })
+    | undefined;
+
+  const source = typeof meta?.source === 'string' ? meta.source : undefined;
+  const doorway = typeof meta?.doorway === 'string' ? meta.doorway : undefined;
+
+  // Doorway badge (FamJam rooms)
+  if (doorway) {
+    const ROOM: Record<string, { emoji: string; label: string }> = {
+      car: { emoji: '🚗', label: 'Car' },
+      kitchen: { emoji: '🍳', label: 'Kitchen' },
+      firecircle: { emoji: '🔥', label: 'Firecircle' },
+      anywhere: { emoji: '✨', label: 'Anywhere' },
+    };
+    const r = ROOM[doorway] ?? { emoji: '🎶', label: doorway };
+    badges.push({ key: `doorway:${doorway}`, icon: r.emoji, label: r.label });
+  }
+
+  // Existing source badges
+  if (source === 'bridge') badges.push({ key: 'source:bridge', icon: '🧭', label: 'Bridge' });
+  if (source === 'purpose') badges.push({ key: 'source:purpose', icon: '🎯', label: 'Purpose' });
+  if (source === 'covenant') badges.push({ key: 'source:covenant', icon: '🤝', label: 'Covenant' });
+
   return badges;
 }

@@ -3,6 +3,7 @@ import { ingest, retrieve, snapshot, exportThread, exportCSV, unlock, setPassphr
 import { useProfile } from '@/state/profile';
 import Composer from '@/components/Composer';
 import Timeline, { mapEmotionToTimelineItem, sortNewest, dedupeById, type TimelineItem, type Emotion } from '@/components/Timeline';
+import { mapServerEventToTimelineItem, type ServerEvent } from '@/timeline/timeline';
 import MemoryDrawer from '@/components/MemoryDrawer';
 import EnergyPanel from '@/components/EnergyPanel';
 import Radar from '@/components/Radar';
@@ -11,10 +12,12 @@ import ReadinessBoard from '@/components/ReadinessBoard';
 import StatusBar from '@/components/StatusBar';
 import Dashboard from '@/components/Dashboard';
 import ThanksPanel from '@/components/ThanksPanel';
+import LightGate from '@/components/LightGate';
 import Modal from '@/components/Modal';
 import SignalHandover from '@/components/QuickActions/SignalHandover';
 import { PanicButton } from '@/components/PanicButton';
 import { Button } from '@/ui/catalyst';
+import { showToast } from '@garden/ui';
 import './styles.css';
 import BridgePanel from '@/components/BridgePanel';
 import type { BridgeKindAlias } from '@/types/patterns';
@@ -92,6 +95,19 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const id = window.setTimeout(() => {
+      showToast({
+        title: 'We’re on GitHub Sponsors! 🎉',
+        desc: 'Help the Garden grow — thank you for being here.',
+        icon: '🌱',
+        variant: 'positive',
+        onClick: () => window.open('https://github.com/sponsors/GratiaOS', '_blank', 'noopener,noreferrer'),
+      });
+    }, 800);
+    return () => window.clearTimeout(id);
+  }, []);
+
+  useEffect(() => {
     if (!pauseUntil) return;
     const tick = () => {
       const diff = pauseUntil - Date.now();
@@ -113,18 +129,22 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    function onTimelineAdd(ev: Event) {
-      const ce = ev as CustomEvent<any>;
+    function onTimelineAdd(evt: Event) {
+      const ce = evt as CustomEvent<any>;
       const e = (ce && 'detail' in ce ? ce.detail : undefined) as BridgeEventDetail | undefined;
       if (!e) return;
-      const item: TimelineItem = {
-        id: `bridge-${e.t}-${e.kind}`,
+
+      const ev: ServerEvent & { doorway?: string } = {
+        id: `bridge-${e.t}`,
         ts: new Date(e.t).toISOString(),
-        title: `Bridge: ${e.kind} · ${e.intensity.toFixed(2)}`,
-        subtitle: e.hint ?? '',
-        icon: '🧭',
-        meta: { source: e.source, breath: e.breath, doorway: e.doorway, anchor: e.anchor, tags: ['bridge', e.kind] },
-      };
+        source: 'bridge',
+        kind: e.kind,
+        details: e.hint ?? '',
+        intensity: e.intensity,
+        doorway: e.doorway,
+      } as any;
+
+      const item = mapServerEventToTimelineItem(ev) as unknown as TimelineItem;
       setEmotions((prev) => dedupeById(sortNewest([...prev, item])));
     }
     window.addEventListener('timeline:add', onTimelineAdd as EventListener);
@@ -136,6 +156,7 @@ export default function App() {
   const [hardIncog, setHardIncog] = useState(false); // hard: send x-incognito header -> server skips writes
   const [handoverOpen, setHandoverOpen] = useState(false);
   const [showBridge, setShowBridge] = useState(false);
+  const [showLightGate, setShowLightGate] = useState(false);
   const [bridgeHint, setBridgeHint] = useState<string | null>(null);
   const [chipPulse, setChipPulse] = useState(false);
   const [bridgeKind, setBridgeKind] = useState<BridgeKindAlias>('attachment_test');
@@ -354,7 +375,7 @@ export default function App() {
       <Dashboard />
 
       <ThanksPanel me={me} />
-      <Timeline items={emotions} />
+      <Timeline items={emotions} compact maxBadges={1} showFamFilter />
 
       <Composer onIngest={onIngest} incognito={incognito} />
 
@@ -418,6 +439,9 @@ export default function App() {
         <Button plain onClick={() => setHandoverOpen(true)}>
           handover
         </Button>
+        <Button plain onClick={() => setShowLightGate(true)}>
+          lightgate
+        </Button>
       </div>
 
       <div className={incognito ? 'blur-when-incognito' : ''}>
@@ -439,6 +463,9 @@ export default function App() {
           }}
           defaultTags={['handover_session']}
         />
+      </Modal>
+      <Modal open={showLightGate} onClose={() => setShowLightGate(false)} title="LightGate">
+        <LightGate defaultDoorway="fire" />
       </Modal>
       <Modal open={showBridge} onClose={() => setShowBridge(false)} title="Bridge Suggest">
         <BridgePanel

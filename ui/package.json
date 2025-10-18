@@ -2,6 +2,7 @@
   "name": "m3-ui",
   "private": true,
   "version": "0.1.8",
+  "funding": "https://github.com/sponsors/GratiaOS",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -18,7 +19,8 @@
     "clsx": "^2.1.1",
     "motion": "^12.23.12",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "@garden/icons": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
