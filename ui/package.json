@@ -2,6 +2,7 @@
   "name": "m3-ui",
   "private": true,
   "version": "0.1.8",
+  "funding": "https://github.com/sponsors/GratiaOS",
   "type": "module",
   "scripts": {
     "dev": "vite",

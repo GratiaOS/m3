@@ -220,7 +220,15 @@ export function mapServerEventToTimelineItem(ev: ServerEvent): TimelineItem {
     };
 
     icon = ROOM_EMOJI[doorway ?? ''] ?? '🎶';
-    title = kind === 'famjam_note' ? 'fam jam' : 'fam jam (open)';
+
+    // Distinct glyphs for session lifecycle
+    if (kind === 'famjam_open') icon = '🪄';
+    else if (kind === 'famjam_close') icon = '🔚';
+
+    if (kind === 'famjam_note') title = 'fam jam';
+    else if (kind === 'famjam_open') title = 'fam jam (open)';
+    else if (kind === 'famjam_close') title = 'fam jam (close)';
+    else title = 'fam jam';
 
     // Prefer the famjam hint as the visible subtitle when not sealed
     const hint = (ev as any).hint as string | undefined;

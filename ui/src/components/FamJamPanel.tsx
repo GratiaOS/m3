@@ -65,6 +65,23 @@ export function FamJamPanel() {
     );
   }
 
+  function handleCloseJam() {
+    toastWarn(`Jam closed in “${roomLabel}”`);
+    window.dispatchEvent(
+      new CustomEvent('timeline:add', {
+        detail: {
+          t: Date.now(),
+          source: 'bridge',
+          kind: 'famjam_close',
+          intensity: 0.2,
+          hint: `room:${room} as ${actorLabel}`,
+          anchor: actor === 'all' ? 'Shared field' : `Actor:${actor}`,
+          doorway: room,
+        },
+      })
+    );
+  }
+
   function handlePingLove() {
     toastSuccess(`Love ping sent to ${roomLabel}`);
   }
@@ -98,14 +115,14 @@ export function FamJamPanel() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold">Fam Jam</h2>
-          <p className="text-sm text-[var(--color-subtle)]">One field, three hearts — quick pulses and presence.</p>
+          <p className="text-sm text-subtle">One field, three hearts — quick pulses and presence.</p>
         </div>
         <Leaf aria-hidden className="text-[var(--color-accent)]" />
       </div>
 
       {/* Actor select */}
       <section className="mt-5 space-y-2">
-        <h3 className="text-sm font-medium text-[var(--color-subtle)]">I’m speaking as</h3>
+        <h3 className="text-sm font-medium text-subtle">I’m speaking as</h3>
         <div className="flex flex-wrap gap-2">
           {(['me', 'n', 's'] as const).map((id) => {
             const a = ACTORS[id];
@@ -140,7 +157,7 @@ export function FamJamPanel() {
 
       {/* Room select */}
       <section className="mt-5 space-y-2">
-        <h3 className="text-sm font-medium text-[var(--color-subtle)]">Jam room</h3>
+        <h3 className="text-sm font-medium text-subtle">Jam room</h3>
         <div className="flex flex-wrap gap-2">
           {ROOMS.map((r) => (
             <Pill
@@ -162,7 +179,7 @@ export function FamJamPanel() {
 
       {/* Note / pulse */}
       <section className="mt-5 space-y-2">
-        <h3 className="text-sm font-medium text-[var(--color-subtle)]">Tiny note (optional)</h3>
+        <h3 className="text-sm font-medium text-subtle">Tiny note (optional)</h3>
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
@@ -173,7 +190,7 @@ export function FamJamPanel() {
             }
           }}
           placeholder="One sentence is enough. What’s here now?"
-          className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-elev)] p-3 text-sm outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+          className="w-full rounded-lg border border-border bg-elev p-3 text-sm outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
           rows={3}
         />
       </section>
@@ -182,6 +199,9 @@ export function FamJamPanel() {
       <div className="mt-5 flex flex-wrap items-center gap-2">
         <Button tone="accent" onClick={handleOpenJam} leadingIcon={<Sparkles aria-hidden size={18} />}>
           Open Jam
+        </Button>
+        <Button variant="outline" tone="warning" onClick={handleCloseJam} leadingIcon={<span aria-hidden>🧯</span>}>
+          Close Jam
         </Button>
         <Button variant="outline" tone="positive" onClick={handlePingLove} leadingIcon={<Heart aria-hidden size={18} />}>
           Ping Love
@@ -192,7 +212,7 @@ export function FamJamPanel() {
       </div>
 
       {/* Footer hint */}
-      <p className="mt-4 text-xs text-[var(--color-subtle)]">
+      <p className="mt-4 text-xs text-subtle">
         Voice + timeline come next; for now this is a gentle surface to sync attention and send micro-blessings. Press ⌘/Ctrl + Enter to share
         quickly.
       </p>

@@ -1,72 +1,110 @@
-# Funding Strategy
+# Funding — a gentle story 🌱
 
----
-
-## 1. Intent
-
-Funding exists to nurture and sustain the flow of our work, not to incite fear or urgency. It is a gentle support system that enables creativity, care, and connection to flourish.  
 _“Offer only what you love. The field doesn't need more hustle — it needs wholeness.”_
 
-Our intention is to create a space where contributions are acts of love and alignment, not pressure or panic.
+Funding here is not urgency—it’s nurture. A steady breeze that lets us design, repair, and tend the work with care.
 
 ---
 
-## 2. Ways to Contribute
+## What we’re tending 🌿
 
-There are many meaningful ways to support this work, each valuable and welcome:
-
-- **Money:** Direct financial support through donations, sponsorships, or purchases.
-- **Time:** Volunteering hours to help with tasks, events, or community engagement.
-- **Skills:** Offering expertise in areas like design, coding, writing, or facilitation.
-- **Gifts:** Sharing resources, tools, or materials that enrich the project.
-- **Barter:** Exchanging services or goods in a mutually beneficial way.
-- **Grants:** Applying for or providing structured funding to sustain larger initiatives.
-- **Buffers:** Creating small reserves to cushion unpredictability and maintain stability.
-
-Each contribution weaves into the fabric of our shared journey.
+- 🌿 **Garden Core** — tokens, primitives, and patterns for living UIs.
+- 🧠 **M3** — a local‑first memory &amp; meaning engine (Rust server + React UI).
+- 🔥 **Firegate** — a sacred interface for memory, creation, and conversation.
 
 ---
 
-## 3. How We Use Funds
+## How support flows 💧
 
-Transparency guides our stewardship of resources. Funds are allocated thoughtfully to:
+There are many ways to water the garden—each valid, each welcome:
 
-- Maintain and improve infrastructure (hosting, tools, platforms).
-- Support open-source development and ongoing technical work.
-- Foster community care, including events, communication, and wellbeing.
-- Build small financial buffers to ensure resilience and continuity.
+- 💚 **Money** (sponsorships, one‑time gifts, purchases)
+- ⏳ **Time** (volunteering on docs, issues, or community care)
+- 🛠️ **Skills** (design, coding, writing, facilitation)
+- 🎁 **Gifts** (tools, resources, hardware)
+- 🤝 **Barter** (mutual exchange)
+- 📝 **Grants** (structured support for bigger arcs)
+- 🫧 **Buffers** (small reserves to soften the unknown)
 
-Every dollar is a seed planted to nourish the whole.
-
----
-
-## 4. Lightweight Flow
-
-Our approach centers on clarity and calm, focusing on the “One True Next” step each day. This flow helps us:
-
-- Identify the most meaningful next action without overwhelm.
-- Remove anxiety triggers by embracing simplicity and presence.
-- Honor the rhythm of contribution as it naturally arises.
-
-This lightweight flow invites steady progress grounded in intention.
+No pressure. Join when love and resources align. Cancel or change anytime.
 
 ---
 
-## 5. When Funded
+## Where the water goes 🪴
 
-Begin or deepen your engagement when love and resources align. Here’s a gentle guide to pacing:
+Sponsorship funds focused time for design, docs, and maintenance; keeps our **infra** healthy; and preserves a **calm** pace—no growth‑at‑all‑costs pressure.
 
-| Contribution Level         | Suggested Focus                                        |
-| -------------------------- | ------------------------------------------------------ |
-| Small (e.g., $5–$50/month) | Support ongoing community and infrastructure needs.    |
-| Moderate (e.g., $50–$200)  | Enable dedicated development and care initiatives.     |
-| Larger (e.g., $200+)       | Sustain broader projects and build meaningful buffers. |
+We allocate thoughtfully to:
 
-There is no rush or pressure — just an open invitation to participate as you are able.
+- 🔧 Hosting, CI, storage, and tools
+- 💻 Open‑source development &amp; ongoing technical work
+- 🫂 Community care (events, communication, wellbeing)
+- 🧘 Modest buffers for resilience and continuity
+
+Transparency: we publish a simple **monthly mirror**—what came in, what it nourished. 🪞 No paywalls, just shared momentum. 🪴
 
 ---
 
-## 6. Mirrors
+## Rhythm &amp; goal 🌬️
 
-Each step shipped, each contribution made, is a reflection of our collective journey. We celebrate these moments, regardless of scale or source, as milestones of care and commitment.  
-Together, we honor the flow and the love that sustains it.
+We work by the **One True Next**: the smallest 20–90s step that moves the story.  
+This keeps the room quiet and the focus clear.
+
+**Goal — “First Breath”** 🎯  
+**$333/month** covers CI, storage, and domains **+** one calm maker day/month to land docs &amp; tidy.  
+Thank you for watering the garden. 🌿
+
+If you like guidance on pacing:
+
+| Contribution            | Focus                                       |
+| ----------------------- | ------------------------------------------- |
+| **Small** ($5–$50/mo)   | Keep community &amp; infrastructure steady. |
+| **Moderate** ($50–$200) | Enable dedicated development &amp; care.    |
+| **Larger** ($200+)      | Sustain broader arcs and healthy buffers.   |
+
+---
+
+## Choose a tier (monthly or one‑time) 🌳
+
+- 🌱 **Seed — $7/mo**  
+  You water the roots. Your support keeps CI, hosting, and the little things calm.  
+  _Perks:_ gratitude, and your name on the Sponsors list (or 🌱 Anonymous Seed).
+
+- 🌿 **Sapling — $21/mo**  
+  You help a week breathe easier. This funds design time, docs, and tiny passes.  
+  _Perks:_ everything in Seed + a short quarterly field note (what bloomed, what’s next).
+
+- 🌳 **Grove — $77/mo**  
+  You create momentum. Grove covers focused maker hours for Garden &amp; M3.  
+  _Perks:_ Seed + Sapling + occasional early peeks at experiments (demos, docs) when available.
+
+- 🌲 **Forest — $210/mo**  
+  You give shade to many. Forest funds a chunk of dedicated build time and care.  
+  _Perks:_ all above + one optional “garden hour” per quarter (Q&amp;A / pairing / design jam).
+
+---
+
+## 60‑second activation (free, now) ⏱️
+
+Try this once—see if the room changes:
+
+1. **Breathe:** 🌬️ In 3 · Out 6 × 6 (jaw soft, shoulders drop).
+2. **Name the band:** 🎼 slow · flow · heavy.
+3. **One true next:** ✨ the smallest step you can actually do.
+4. **Thank one thing:** 🙏 out loud, even quietly.
+
+_If nothing else, keep this. It’s yours._
+
+---
+
+## Mirrors 🪞
+
+Each step shipped, each contribution made, is a reflection of our shared journey.  
+We celebrate these moments—as milestones of care and commitment.
+
+---
+
+> _whisper:_ “Attention is water; choose where it falls.”  
+> Thank you for watering the garden. 🌿
+
+**Sponsor:** 🤝 https://github.com/sponsors/GratiaOS
