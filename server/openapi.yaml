@@ -1,0 +1,517 @@
+openapi: 3.1.0
+info:
+  title: M3 Memory Server — Tiny API Map
+  version: 0.1.8
+  description: |
+    Minimal, hand‑rolled OpenAPI for the endpoints currently wired in `server/`.
+    Scope: cycles, emotions, and the Value Bridge (accounts + entries). Intended
+    for docs and lightweight client generation. This file is small by design —
+    extend as features stabilize.
+
+    Whisper: "label the pieces and the path reveals itself." 🌬️
+  contact:
+    name: GratiaOS
+    url: https://github.com/GratiaOS
+  license:
+    name: AGPL-3.0-only
+    url: https://www.gnu.org/licenses/agpl-3.0.html
+
+servers:
+  - url: http://127.0.0.1:3033
+    description: Local dev (default bind unless `M3_BIND` overrides)
+  - url: /
+    description: Relative (reverse‑proxy / container)
+
+security: []
+
+tags:
+  - name: cycles
+    description: Astral cycle snapshots and upcoming milestones (fast approximations).
+  - name: emotions
+    description: Emotion capture + bridges (A11y‑first, privacy‑aware).
+  - name: value
+    description: Value Bridge (accounts + entries in minor units).
+
+paths:
+  /cycles/current:
+    get:
+      tags: [cycles]
+      summary: Current cycle state
+      operationId: getCurrentCycles
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CycleState'
+              examples:
+                ok:
+                  value:
+                    lunar: full_moon
+                    solar: libra
+                    pleiadian: tone_7_reflection
+                    ts: '2025-10-20T10:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /cycles/upcoming:
+    get:
+      tags: [cycles]
+      summary: Next cycle milestones
+      operationId: getUpcomingCycles
+      parameters:
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CycleMilestone'
+              examples:
+                ok:
+                  value:
+                    - kind: lunar
+                      phase: first_quarter
+                      at: '2025-10-23T03:21:00Z'
+                    - kind: solar
+                      phase: scorpio
+                      at: '2025-10-23T10:05:00Z'
+                    - kind: pleiadian
+                      phase: tone_8_integrity
+                      at: '2025-10-21T00:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /emotions/add:
+    post:
+      tags: [emotions]
+      summary: Add an emotion sample
+      operationId: addEmotion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmotionIn'
+            examples:
+              sample:
+                value:
+                  who: Raz
+                  kind: panic
+                  intensity: 0.72
+                  note_id: null
+                  details: 'tax ping + breath; contained'
+                  sealed: false
+                  archetype: null
+                  privacy: private
+      responses:
+        '200':
+          description: Inserted emotion echo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmotionOut'
+              examples:
+                ok:
+                  value:
+                    id: 123
+                    ts: '2025-10-20T09:41:00Z'
+                    who: Raz
+                    kind: panic
+                    intensity: 0.72
+                    note_id: null
+                    details: 'tax ping + breath; contained'
+                    sealed: false
+                    archetype: null
+                    privacy: private
+                    band: heavy
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /emotions/recent:
+    get:
+      tags: [emotions]
+      summary: List the most recent emotions (latest first, limit 20)
+      operationId: listRecentEmotions
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EmotionOut'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /emotions/bridge:
+    post:
+      tags: [emotions]
+      summary: Suggest a breath/doorway/anchor for a given label + intensity
+      operationId: feelBridge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BridgeIn'
+            examples:
+              sample:
+                value:
+                  kind: anxiety
+                  intensity: 0.65
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BridgeOut'
+              examples:
+                ok:
+                  value:
+                    breath: 'box: in4-hold4-out6 × 4'
+                    doorway: 'sip water, feet on floor'
+                    anchor: 'Name 3 objects you see.'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /emotions/resolve:
+    post:
+      tags: [emotions]
+      summary: Land a resolution as gratitude (intensity = 1.0)
+      operationId: resolveEmotion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolveIn'
+            examples:
+              sample:
+                value:
+                  who: Raz
+                  note_id: null
+                  details: 'named loop; gratitude landed'
+                  sealed: false
+                  archetype: null
+                  privacy: private
+      responses:
+        '200':
+          description: Inserted gratitude echo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmotionOut'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /value/account:
+    post:
+      tags: [value]
+      summary: Create (or fetch) a value account by name
+      operationId: createValueAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValueAccountCreate'
+            examples:
+              sample:
+                value:
+                  name: 'cash:home'
+                  kind: wallet
+                  currency: EUR
+      responses:
+        '200':
+          description: Existing or newly-created account descriptor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValueAccountOut'
+              examples:
+                ok:
+                  value:
+                    id: 7
+                    name: 'cash:home'
+                    kind: wallet
+                    currency: EUR
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /value/balance:
+    get:
+      tags: [value]
+      summary: One‑line balance (minor + computed major units)
+      operationId: getAccountBalance
+      parameters:
+        - $ref: '#/components/parameters/AccountParam'
+        - $ref: '#/components/parameters/CurrencyParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalanceOut'
+              examples:
+                ok:
+                  value:
+                    account: 'cash:home'
+                    currency: EUR
+                    balance_minor: 12345
+                    balance_major: 123.45
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /value/entry:
+    post:
+      tags: [value]
+      summary: Insert a value entry (major units in request → minor units in storage)
+      operationId: addValueEntry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValueEntryCreate'
+            examples:
+              income:
+                value:
+                  account: 'cash:home'
+                  direction: in
+                  amount: 77.00
+                  currency: EUR
+                  memo: 'sponsor — Grove'
+                  tags: 'sponsor,github'
+              expense:
+                value:
+                  account: 'cash:home'
+                  direction: out
+                  amount: 12.34
+                  currency: EUR
+                  memo: 'coffee w/ fam'
+      responses:
+        '200':
+          description: Created (row id)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    format: int64
+                required: [id]
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /value/recent:
+    get:
+      tags: [value]
+      summary: List newest entries (optionally filtered by account)
+      operationId: listRecentValueEntries
+      parameters:
+        - $ref: '#/components/parameters/AccountParam'
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 500, default: 50 }
+          description: Max rows to return.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ValueEntryRow'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+components:
+  parameters:
+    AccountParam:
+      in: query
+      name: account
+      schema: { type: string }
+      description: Optional account name; omit for all accounts.
+    CurrencyParam:
+      in: query
+      name: currency
+      schema: { type: string, minLength: 3, maxLength: 3 }
+      description: Optional three‑letter currency (defaults to base currency).
+    LimitParam:
+      in: query
+      name: limit
+      schema: { type: integer, minimum: 1, maximum: 12, default: 3 }
+      description: Max number of milestones to return.
+
+  responses:
+    ValidationError:
+      description: Input failed validation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          examples:
+            badIntensity:
+              value:
+                code: UNPROCESSABLE_ENTITY
+                message: 'intensity must be within 0..1'
+                details:
+                  field: intensity
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+
+  schemas:
+    # ── cycles ────────────────────────────────────────────────────────────
+    CycleState:
+      type: object
+      properties:
+        lunar: { type: string, description: 'e.g., new_moon, full_moon' }
+        solar: { type: string, description: 'tropical sign, e.g., libra' }
+        pleiadian: { type: string, description: 'tone_n_label, e.g., tone_7_reflection' }
+        ts: { type: string, format: date-time }
+      required: [lunar, solar, pleiadian, ts]
+
+    CycleMilestone:
+      type: object
+      properties:
+        kind: { type: string, description: 'lunar | solar | pleiadian' }
+        phase: { type: string }
+        at: { type: string, format: date-time }
+      required: [kind, phase, at]
+
+    # ── emotions ─────────────────────────────────────────────────────────
+    EmotionIn:
+      type: object
+      properties:
+        who: { type: string }
+        kind: { type: string, description: 'e.g., impulsiveness | panic | joy' }
+        intensity: { type: number, minimum: 0, maximum: 1 }
+        note_id: { type: [integer, 'null'], format: int64 }
+        details: { type: [string, 'null'] }
+        sealed: { type: boolean, description: 'mirror tag' }
+        archetype: { type: [string, 'null'] }
+        privacy: { type: string, description: 'private | sealed | anonymized | public' }
+      required: [who, kind, intensity, sealed, privacy]
+
+    EmotionOut:
+      allOf:
+        - $ref: '#/components/schemas/EmotionIn'
+        - type: object
+          properties:
+            id: { type: integer, format: int64 }
+            ts: { type: string, format: date-time }
+            band: { type: string, description: 'computed band, e.g., slow | flow | heavy' }
+          required: [id, ts, band]
+
+    BridgeIn:
+      type: object
+      properties:
+        kind: { type: string, description: 'e.g., anxiety | anger | shame | gratitude' }
+        intensity: { type: number, minimum: 0, maximum: 1 }
+      required: [kind, intensity]
+
+    BridgeOut:
+      type: object
+      properties:
+        breath: { type: string }
+        doorway: { type: string }
+        anchor: { type: string }
+      required: [breath, doorway, anchor]
+
+    ResolveIn:
+      type: object
+      properties:
+        who: { type: string }
+        note_id: { type: [integer, 'null'], format: int64 }
+        details: { type: [string, 'null'] }
+        sealed: { type: [boolean, 'null'] }
+        archetype: { type: [string, 'null'] }
+        privacy: { type: [string, 'null'] }
+      required: [who]
+
+    # ── value bridge ─────────────────────────────────────────────────────
+    ValueAccountCreate:
+      type: object
+      properties:
+        name: { type: string }
+        kind: { type: [string, 'null'], description: "defaults to 'wallet'" }
+        currency: { type: [string, 'null'], description: '3‑letter code; defaults to base currency' }
+      required: [name]
+
+    ValueAccountOut:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string }
+        kind: { type: string }
+        currency: { type: string }
+      required: [id, name, kind, currency]
+
+    ValueEntryCreate:
+      type: object
+      properties:
+        account: { type: string, description: 'account name' }
+        account_kind: { type: [string, 'null'], description: "defaults to 'wallet'" }
+        ts: { type: [string, 'null'], format: date-time, description: 'RFC3339; omit for now()' }
+        direction: { type: string, enum: ['in', 'out'] }
+        amount: { type: number, description: 'major units (e.g., 12.34)' }
+        currency: { type: [string, 'null'], description: '3‑letter code; defaults to base currency' }
+        memo: { type: [string, 'null'] }
+        tags: { type: [string, 'null'], description: 'JSON or comma‑list' }
+        counterparty: { type: [string, 'null'] }
+        reference: { type: [string, 'null'] }
+      required: [account, direction, amount]
+
+    BalanceOut:
+      type: object
+      properties:
+        account: { type: [string, 'null'] }
+        currency: { type: string }
+        balance_minor: { type: integer, format: int64, description: 'signed minor units (in - out)' }
+        balance_major: { type: number, description: 'computed major units (e.g., 123.45)' }
+      required: [currency, balance_minor, balance_major]
+
+    ValueEntryRow:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        ts: { type: string, format: date-time }
+        account: { type: string }
+        direction: { type: string, enum: ['in', 'out'] }
+        amount_minor: { type: integer, format: int64 }
+        amount_major: { type: number, description: 'derived from minor and currency exponent' }
+        currency: { type: string }
+        memo: { type: [string, 'null'] }
+        tags: { type: [string, 'null'] }
+        counterparty: { type: [string, 'null'] }
+        reference: { type: [string, 'null'] }
+      required: [id, ts, account, direction, amount_minor, amount_major, currency]
+
+    # ── common ───────────────────────────────────────────────────────────
+    ApiError:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        details:
+          oneOf:
+            - type: string
+            - type: object
+            - type: array
+              items: {}
+            - type: 'null'
+      required: [code, message]

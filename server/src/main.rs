@@ -1,3 +1,34 @@
+//! # M3 server (Axum + SQLite)
+//!
+//! This binary hosts the "memory, emotions & value" API used by the dashboard & CLI.
+//!
+//! ## Why this file exists
+//! - Top‑level wiring: config, state, crypto helpers, router composition, and HTTP handlers.
+//! - The DB layer lives in `db.rs` (tokio‑rusqlite); route modules live under their own files.
+//!
+//! ## Data safety
+//! - "sealed" texts are encrypted at rest using XChaCha20‑Poly1305; keys are derived with Argon2.
+//! - Secrets live only in RAM (`AppState.key`); no plaintext passphrase is written to disk.
+//!
+//! ## Exports & logs
+//! - Export/log files are written under `<repo>/server/exports` (or `M3_EXPORTS_DIR`).
+//! - Panic compact logs: `exports/panic/YYYY-MM/panic-YYYY-MM-DD.log`.
+//! - Gratitude quick logs: `exports/thanks/…`.
+//!
+//! ## Concurrency & DB access
+//! - All DB I/O happens inside `tokio_rusqlite::Connection::call` closures.
+//! - Move owned/cloned values into the closure to avoid lifetime issues.
+//!
+//! ## Route overview (see inline map near the router assembly in `main()`)
+//! - /seal/* — passphrase handling for sealed fields
+//! - /ingest, /retrieve, /snapshot — message stream primitives
+//! - /export, /export_csv — thread exports
+//! - /import_openai — bulk importer from ChatGPT exports
+//! - /status*, /status/stream — readiness lights
+//! - /state/* — dashboard model
+//! - /reply, /replies/preview — lightweight reply engine
+//! - /panic, /panic/run, /panic/last — redirect oracle + audit
+//! - /emotions/*, /patterns/*, /energy/*, /rhythm/*, /tells/*, /timeline/*, /cycles/*, /value/* — nested routers
 mod config;
 mod webhook;
 // mod auth; // keep if you actually use guards later
@@ -18,6 +49,7 @@ mod replies;
 mod rhythm;
 mod tells;
 mod timeline;
+mod value;
 
 use bus::Bus;
 use chrono::Utc;
@@ -94,6 +126,26 @@ fn resolve_exports_dir() -> StdPathBuf {
     repo_root().join("server/exports")
 }
 
+/// Resolve a path from an ENV var relative to an anchor, with a default fallback.
+/// - If ENV is set to an absolute path → use it as-is
+/// - If ENV is set to a relative path → anchor.join(ENV)
+/// - If ENV is not set → return `default`
+///
+/// This mirrors `resolve_exports_dir()` semantics for nested trees.
+#[allow(dead_code)]
+fn resolve_under_env_or(default: StdPathBuf, env_key: &str, anchor: StdPathBuf) -> StdPathBuf {
+    if let Ok(val) = std::env::var(env_key) {
+        let p = StdPathBuf::from(val);
+        if p.is_absolute() {
+            p
+        } else {
+            anchor.join(p)
+        }
+    } else {
+        default
+    }
+}
+
 fn derive_key(pass: &str, salt: &[u8]) -> [u8; 32] {
     use argon2::password_hash::{PasswordHasher as _, SaltString};
     let salt = SaltString::encode_b64(salt).unwrap();
@@ -128,6 +180,7 @@ fn open_text(key: &[u8; 32], blob_b64: &str) -> Option<String> {
 }
 
 // --- panic logs base dir resolver (unified) ---
+/// Base directory for panic logs; unified with CLI so both land under the same `exports/panic`.
 fn panic_dir_base() -> StdPathBuf {
     resolve_exports_dir().join("panic")
 }
@@ -147,6 +200,14 @@ fn default_team_state() -> Value {
     })
 }
 
+/// Shared application state injected into all routes.
+///
+/// - `db`: tokio-rusqlite wrapper (see `db.rs`)
+/// - `bus`: in-memory pub/sub used by the SSE stream
+/// - `key`: optional XChaCha key derived from a passphrase; `None` ⇒ sealed reads return "(sealed)"
+/// - `config`: process configuration (env-driven)
+/// - `webhook`: best-effort event emitter
+/// - `reply_engine`: small reply generator used by `/reply` + preview
 #[derive(Clone)]
 struct AppState {
     db: Database,
@@ -159,6 +220,8 @@ struct AppState {
 }
 
 // --- helper: decrypt sealed text if key present ---
+/// Decrypts sealed text if a session key is present; otherwise returns the literal "(sealed)".
+/// Used by retrieval/export paths so the API never leaks plaintext without an explicitly set key.
 fn decrypt_if_needed(key_opt: &Option<[u8; 32]>, privacy: &str, text: String) -> String {
     if privacy == "sealed" {
         if let Some(k) = key_opt {
@@ -171,7 +234,8 @@ fn decrypt_if_needed(key_opt: &Option<[u8; 32]>, privacy: &str, text: String) ->
     }
 }
 
-// --- panic redirect: output shape (used by logger + handler) ---
+/// Response payload for panic redirect endpoints.
+/// Carries the chosen micro-protocol plus an optional oracle suggestion and a `logged` flag.
 #[derive(Serialize)]
 struct PanicOut {
     whisper: String,
@@ -183,7 +247,7 @@ struct PanicOut {
     logged: bool,
 }
 
-// --- panic redirect: input shape (optional fields + optional mode) ---
+/// Input payload for `/panic` (UI trigger). All fields optional; presets apply when `mode` is set.
 #[derive(Deserialize)]
 struct PanicIn {
     whisper: Option<String>,
@@ -228,6 +292,7 @@ fn pick<'a>(xs: &'a [&'a str], tick: i64) -> &'a str {
     }
 }
 
+/// Append a compact, single-line record used by the UI + CLI. Best-effort; errors are swallowed upstream.
 // Async compact logger used by the /panic route (UI).
 async fn log_panic_compact(
     whisper: &str,
@@ -316,7 +381,7 @@ fn exports_base_dir() -> PathBuf {
     resolve_exports_dir()
 }
 
-/// GET /panic/last — read the newest panic log line and parse fields
+/// Read the newest panic compact log and expose it as JSON (used by the UI "last run" button).
 async fn panic_last() -> Result<Json<PanicLast>, StatusCode> {
     use tokio::fs;
     use tokio::io::AsyncReadExt;
@@ -416,7 +481,7 @@ async fn panic_last() -> Result<Json<PanicLast>, StatusCode> {
     }))
 }
 
-/// Gratitude Ledger
+/// Body shape for `/thanks` (gratitude ledger). Minimal fields with optional `who`/`kind`/`details`.
 #[derive(serde::Deserialize)]
 struct GratitudeIn {
     subject: String,
@@ -532,6 +597,7 @@ async fn gratitude_fast(state: &AppState, who: Option<&str>, subject: &str, deta
     }
 }
 
+/// POST /thanks — insert a gratitude row and append a line into `exports/thanks/YYYY-MM/thanks-*.log`.
 async fn thanks_create(
     State(state): State<AppState>,
     Json(body): Json<GratitudeIn>,
@@ -606,6 +672,7 @@ async fn thanks_create(
     }))
 }
 
+/// GET /thanks — list recent gratitude rows; `?limit=` clamps to 200.
 async fn thanks_list(
     State(state): State<AppState>,
     Query(q): Query<ThanksQuery>,
@@ -643,6 +710,7 @@ async fn thanks_list(
     Ok(Json(rows))
 }
 
+/// POST /reply — thin adapter over `replies::ReplyEngine`; returns 204 when the engine yields nothing.
 async fn reply_handler(
     State(state): State<AppState>,
     Json(payload): Json<serde_json::Value>,
@@ -655,6 +723,8 @@ async fn reply_handler(
     }
 }
 
+/// Program entry: initialize logging, DB (schema + defaults), config, webhook and reply engine;
+/// assemble the Axum router and serve on `config.bind`. CORS is applied last so it covers nested routes.
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt()
@@ -709,6 +779,18 @@ async fn main() -> anyhow::Result<()> {
     }
 
     // ---- build router (stateless root; attach state at the end) ----
+    // ==== ROUTER OVERVIEW =======================================================
+    // Top-level endpoints (besides nested routers):
+    // POST /seal/set_passphrase, POST /seal/unlock,
+    // POST /ingest, POST /retrieve, POST /snapshot,
+    // POST /export, POST /export_csv, POST /import_openai,
+    // POST /status, GET /status, GET /status/stream,
+    // POST /status/get, POST /status/set,
+    // GET /state/get, POST /state/set,
+    // POST /reply, POST /replies/preview,
+    // POST /panic, POST /panic/run, GET /panic/last,
+    // POST /thanks, GET /thanks
+    // ============================================================================
     let app = Router::new()
         // --- passphrase / unlock ---
         .route(
@@ -1084,14 +1166,14 @@ async fn main() -> anyhow::Result<()> {
                         .await
                         .unwrap();
 
-                    let dir = PathBuf::from("./exports");
+                    let dir = exports_base_dir();
                     sfs::create_dir_all(&dir).ok();
                     let fname = format!(
                         "{}-thread-{}.md",
                         Utc::now().format("%Y-%m-%d_%H-%M"),
                         thread
                     );
-                    let path = dir.join(fname);
+                    let path = dir.join(&fname);
                     sfs::write(&path, out.0).unwrap();
                     Json(ExportResponse {
                         path: path.to_string_lossy().into(),
@@ -1160,14 +1242,14 @@ async fn main() -> anyhow::Result<()> {
                         .await
                         .unwrap();
 
-                    let dir = PathBuf::from("./exports");
+                    let dir = exports_base_dir();
                     sfs::create_dir_all(&dir).ok();
                     let fname = format!(
                         "{}-thread-{}.csv",
                         Utc::now().format("%Y-%m-%d_%H-%M"),
                         thread
                     );
-                    let path = dir.join(fname);
+                    let path = dir.join(&fname);
                     sfs::write(&path, csv).unwrap();
                     Json(ExportResponse {
                         path: path.to_string_lossy().into(),
@@ -1734,6 +1816,8 @@ async fn main() -> anyhow::Result<()> {
         .allow_headers(Any);
 
     // attach state after nesting emotions, patterns, energy, rhythm (apply CORS last so it covers nested routes)
+    // Nested routers mounted under prefixes (see their modules):
+    // /emotions, /patterns, /energy, /rhythm, /tells, /timeline, /cycles, /value
     let app = app
         .nest("/emotions", emotions::router())
         .nest("/patterns", patterns::router())
@@ -1742,6 +1826,7 @@ async fn main() -> anyhow::Result<()> {
         .nest("/tells", tells::router())
         .nest("/timeline", timeline::router())
         .nest("/cycles", cycles::router())
+        .nest("/value", value::router())
         .layer(cors)
         .with_state(state.clone());
 
@@ -1755,6 +1840,7 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
+/// Ensure a profile row exists for `name` and return its id. Hot-path safe (no races with UNIQUE constraint).
 // ensure a profile name exists, return id
 async fn ensure_profile(db: &Database, name: &str) -> i64 {
     let name = name.to_string();
@@ -1776,6 +1862,7 @@ async fn ensure_profile(db: &Database, name: &str) -> i64 {
     .unwrap()
 }
 
+/// Create/find a thread by title, adapting to older/newer schemas (checks `PRAGMA table_info(threads)`).
 // ensure a thread by title exists (returns id) — adapts to whatever columns exist
 async fn ensure_thread_by_title(db: &Database, title: &str) -> i64 {
     let title = title.to_string();
@@ -1845,6 +1932,8 @@ async fn ensure_thread_by_title(db: &Database, title: &str) -> i64 {
     .unwrap()
 }
 
+/// Import a ChatGPT `conversations.json` dump into the `messages` table.
+/// Deduplicates via an index on `(thread_id, ts, role)` and simple heuristics; skips empty/system-only threads.
 // returns count imported and a list of thread titles (only for threads that actually imported msgs)
 async fn import_openai_folder(
     db: &Database,
