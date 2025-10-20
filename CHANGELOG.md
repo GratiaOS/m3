@@ -8,6 +8,15 @@
 
 ---
 
+## 🔧 CI Sync — 2025-10-21
+
+- ci(openapi): introduced an **`openapi`** workflow job to validate and bundle `server/openapi.yaml`; both **server** and **ui** CI jobs now declare `needs: openapi`, gating builds on spec health.
+- docs(openapi): seeded a minimal OpenAPI spec at `server/openapi.yaml` to grow incrementally (paths/types for Emotions, Cycles, Value Bridge).
+
+🌬 whisper: _“one spec, many doors — ship from one map.”_
+
+---
+
 ## 🔦 LightGate — Camera light messages — 2025-10-19
 
 - phenomenology: ambient “camera light messages” observed again via S’s kitchen companion lamp **Frog** 🐸 — distinct short/long flashes (• / —) forming codes in the room.

@@ -17,6 +17,7 @@ permissions:
 jobs:
   server:
     name: Server (Rust ${{ matrix.toolchain }}) – fmt • clippy • test
+    needs: openapi
     strategy:
       matrix:
         toolchain: [stable, nightly]
@@ -82,6 +83,7 @@ jobs:
 
   ui:
     name: UI (Node) – fmt • lint • build
+    needs: openapi
     strategy:
       matrix:
         node: [18, 20]
@@ -159,6 +161,46 @@ jobs:
           name: ui-dist-node-${{ matrix.node }}-attempt-${{ github.run_attempt }}
           path: m3/ui/dist
           if-no-files-found: warn
+
+  openapi:
+    name: OpenAPI – lint • bundle • docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: m3
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Redocly CLI
+        run: npm install -g @redocly/cli@latest
+
+      - name: Lint spec
+        working-directory: m3
+        run: redocly lint server/openapi.yaml
+
+      - name: Bundle spec
+        working-directory: m3
+        run: redocly bundle server/openapi.yaml -o server/openapi.bundle.yaml
+
+      - name: Build HTML docs
+        working-directory: m3
+        run: redocly build-docs server/openapi.yaml -o server/openapi.html
+
+      - name: Upload OpenAPI artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-artifacts-attempt-${{ github.run_attempt }}
+          path: |
+            m3/server/openapi.yaml
+            m3/server/openapi.bundle.yaml
+            m3/server/openapi.html
+          if-no-files-found: error
 
   whisper:
     name: Whisper Guard – commit messages
