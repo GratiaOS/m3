@@ -248,6 +248,7 @@ pub struct SetStateRequest {
 
 /// Account metadata for the Value Bridge (headless, DB‑backed elsewhere).
 /// Names are human‑friendly; currency is ISO 4217.
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ValueAccount {
     /// Stable id (DB primary key).
@@ -263,6 +264,7 @@ pub struct ValueAccount {
 
 /// One movement of value (money) in minor units, joined to an account.
 /// Direction is "in" for income, "out" for expense.
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ValueEntry {
     pub id: i64,
@@ -290,6 +292,7 @@ pub struct ValueEntry {
 
 /// Create (or upsert) a value entry; server will create the account if needed.
 /// Amount is provided in major units and converted server‑side.
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ValueUpsertRequest {
     /// Account name; server may create if missing or map aliases.
@@ -309,12 +312,14 @@ pub struct ValueUpsertRequest {
 }
 
 /// New entry id after upsert.
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ValueUpsertResponse {
     pub id: i64,
 }
 
 /// Filtered listing of entries with simple paging and coarse filters.
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ValueListRequest {
     /// Optional account filter (by name).
@@ -333,6 +338,7 @@ pub struct ValueListRequest {
 }
 
 /// Paged result set with simple aggregates for the returned window.
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ValueListResponse {
     pub items: Vec<ValueEntry>,
@@ -344,6 +350,7 @@ pub struct ValueListResponse {
 }
 
 /// One‑line balance and flows for an account in a single currency.
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ValueBalanceResponse {
     pub account: String,
