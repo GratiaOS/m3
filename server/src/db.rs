@@ -49,7 +49,7 @@ pub struct Database(pub AsyncConnection);
 /// 3. Fallback: `../memory.db` when cwd ends with `/server`, else `./memory.db`
 ///
 /// (See also: `resolve_db_path()`.)
-
+///
 /// Resolve a stable SQLite file path for this instance (see rules above).
 fn resolve_db_path() -> PathBuf {
     if let Ok(p) = env::var("M3_DB_PATH") {
@@ -485,7 +485,7 @@ pub async fn list_recent_value_entries(
     limit: Option<i64>,
 ) -> anyhow::Result<Vec<ValueEntryRow>> {
     let account = account_name.map(|s| s.to_string());
-    let limit = limit.unwrap_or(50).max(1).min(500);
+    let limit = limit.unwrap_or(50).clamp(1, 500);
 
     let rows = db.0.call(move |c| {
         let base_sql = "\
