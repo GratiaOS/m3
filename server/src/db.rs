@@ -396,14 +396,33 @@ pub async fn insert_value_entry(db: &Database, p: ValueEntryParams<'_>) -> anyho
         if ts_value_is_sql {
             c.execute(
                 "INSERT INTO value_entries(account_id, ts, direction, amount_minor, currency, memo, tags, counterparty, reference, created_at, updated_at)
-                 VALUES(?1, datetime('now'), ?3, ?4, ?5, ?6, ?7, ?8, ?9, datetime('now'), datetime('now'))",
-                params![account_id, /* ts ignored */ direction, amount_minor, currency, memo, tags, counterparty, reference],
+                 VALUES(?1, datetime('now'), ?2, ?3, ?4, ?5, ?6, ?7, ?8, datetime('now'), datetime('now'))",
+                params![
+                    account_id,
+                    direction,
+                    amount_minor,
+                    currency,
+                    memo,
+                    tags,
+                    counterparty,
+                    reference
+                ],
             )?;
         } else {
             c.execute(
                 "INSERT INTO value_entries(account_id, ts, direction, amount_minor, currency, memo, tags, counterparty, reference, created_at, updated_at)
                  VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, datetime('now'), datetime('now'))",
-                params![account_id, ts_sql, direction, amount_minor, currency, memo, tags, counterparty, reference],
+                params![
+                    account_id,
+                    ts_sql,
+                    direction,
+                    amount_minor,
+                    currency,
+                    memo,
+                    tags,
+                    counterparty,
+                    reference
+                ],
             )?;
         }
         Ok(c.last_insert_rowid())
