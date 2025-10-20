@@ -12,16 +12,16 @@
 [![Version](https://img.shields.io/github/v/tag/GratiaOS/m3?label=version)](https://github.com/GratiaOS/m3/releases)
 [![Covenant](https://img.shields.io/badge/Covenant-kept_in_practice-2e7d32.svg)](COVENANT.md)
 
-[Features](#-features) · [What’s New](#-whats-new-in-v018) · [API](#api-reference) · [EmotionalOS](#emotionalos-healing-arcs) · [Cycles](#cycles-rhythm-context) · [Privacy](#privacy) · [Public Plan](#public-plan) · [Funding](#funding) · [Contributing](#contributing) · [Code of Conduct](#code-of-conduct) · [Security](#security) · [License](#license) · [License Matrix](#license-matrix) · [Covenant](#partnership-covenant)
+[Features](#features) · [What’s New](#whats-new-in-v018) · [API](#api-reference) · [EmotionalOS](#emotionalos-healing-arcs) · [Cycles](#cycles-rhythm-context) · [Privacy](#privacy) · [Public Plan](#public-plan) · [Funding](#funding) · [Contributing](#contributing) · [Code of Conduct](#code-of-conduct) · [Security](#security) · [License](#license) · [License Matrix](#license-matrix) · [Covenant](#partnership-covenant)
 
 Your personal, local-first memory and knowledge system.\
 Designed for offline resilience, privacy, and joyful retrieval.
 
 > 🌱 **Note**: M3 avoids the old “AI” framing.  
 > We speak in mirrors, whispers, doors, companions, breaths, and actors.  
-> See [Glossary Shift](#-appendix-glossary-shift) for the full table.
+> See [Glossary Shift](#appendix-glossary-shift) for the full table.
 
-> 🤝 **Partnership Covenant**: See [covenant](#-partnership-covenant) for how M3 is grounded beyond code. (Love over transaction, mirrors over judgment.)
+> 🤝 **Partnership Covenant**: See [covenant](#partnership-covenant) for how M3 is grounded beyond code. (Love over transaction, mirrors over judgment.)
 
 ## 💖 Sponsors
 
@@ -60,7 +60,7 @@ curl -s -X POST localhost:3033/retrieve \
 
 ---
 
-## 🚀 Features
+## 🚀 Features <a id="features"></a>
 
 - **Local-first** → runs entirely on your machine
 - **Sealed notes** → passphrase-protected; unlock for session only
@@ -77,7 +77,7 @@ curl -s -X POST localhost:3033/retrieve \
 
 ---
 
-## 🔔 What’s New in v0.1.8
+## 🔔 What’s New in v0.1.8 <a id="whats-new-in-v018"></a>
 
 - **Stewardship & safety** → added `CODE_OF_CONDUCT.md` and `SECURITY.md` (responsible disclosure documented).
 - **Reciprocity & funding** → new `FUNDING.md` (pledge tiers, gift/timebank/grants), integrated into **ABUNDANCE_CHARTER.md**.
@@ -89,7 +89,7 @@ curl -s -X POST localhost:3033/retrieve \
 
 ---
 
-## 🧱 Architecture
+## 🧱 Architecture <a id="architecture"></a>
 
 - **server/** Rust (Axum + tokio-rusqlite + rusqlite[bundled])
 - **ui/** Vite + React + TypeScript
@@ -99,7 +99,7 @@ curl -s -X POST localhost:3033/retrieve \
 
 ---
 
-## ⚙️ Configuration
+## ⚙️ Configuration <a id="configuration"></a>
 
 M3 reads environment variables at startup:
 
@@ -134,7 +134,7 @@ VALUE_FORCE_MOCK_UNTIL=             # optional guard timestamp (RFC3339)
 
 ---
 
-## 🦀 Rust Editions Timeline (for devs)
+## 🦀 Rust Editions Timeline (for devs) <a id="rust-editions-timeline-for-devs"></a>
 
 Rust evolves through **editions**, which are always backward-compatible:
 
@@ -160,7 +160,7 @@ to open.
 
 ---
 
-## 📚 API Reference
+## 📚 API Reference <a id="api-reference"></a>
 
 > Base URL: `http://127.0.0.1:3033`
 >
@@ -486,7 +486,7 @@ Can be triggered via CLI (`panic.sh`) or via the UI Panic Button (long press).
 
 ---
 
-## 🔒 Privacy
+## 🔒 Privacy <a id="privacy"></a>
 
 - **Local-first by design** → nothing leaves your machine unless you choose.
 - **Sealed / private / public** distinctions are honored at storage and export.
@@ -500,7 +500,7 @@ Can be triggered via CLI (`panic.sh`) or via the UI Panic Button (long press).
 
 ---
 
-## 🌍 Public Plan
+## 🌍 Public Plan <a id="public-plan"></a>
 
 We’re opening M3 carefully, in service of local-first privacy and clear boundaries.
 
@@ -534,7 +534,7 @@ Principles:
 
 ---
 
-## 🌕 Timeline Milestones
+## 🌕 Timeline Milestones <a id="timeline-milestones"></a>
 
 - **Moonfield** (2025-10-08):  
   ✨ Acceleration & alignment — full moon field note, Mirror flow language aligned with Garden Core.  
@@ -542,7 +542,7 @@ Principles:
 
 ---
 
-## 📜 License
+## 📜 License <a id="license"></a>
 
 **License gradient (as of v0.1.8):**
 
@@ -554,7 +554,7 @@ Ethos docs: see **[ABUNDANCE_CHARTER.md](ABUNDANCE_CHARTER.md)** (no chosen ones
 
 ---
 
-## 🧾 License Matrix
+## 🧾 License Matrix <a id="license-matrix"></a>
 
 | Area         | Path                | License           | Why                                                               |
 | ------------ | ------------------- | ----------------- | ----------------------------------------------------------------- |
@@ -572,26 +572,26 @@ Notes:
 
 ---
 
-## 💚 Funding
+## 💚 Funding <a id="funding"></a>
 
 This project runs on reciprocity, not extraction. See **[FUNDING.md](FUNDING.md)** for pledge options (money, timebank, skills, grants) and how we keep flows open without enclosure.
 
 🌬 whisper: _no guilt, no shame — offer only what you love._
 
-## 🤲 Contributing
+## 🤲 Contributing <a id="contributing"></a>
 
 We welcome small, well-scoped patches (“one true step”). Please read **[CONTRIBUTING.md](CONTRIBUTING.md)** for local setup, coding style, commit message conventions, and how to propose changes.
 Deeper setup notes: see **[CONTRIBUTING-dev.md](CONTRIBUTING-dev.md)** and **[README-dev.md](README-dev.md)**.
 
-## 🧭 Code of Conduct
+## 🧭 Code of Conduct <a id="code-of-conduct"></a>
 
 We are committed to a harassment‑free experience for everyone. By participating, you agree to uphold our **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)**. If you observe or experience a violation, follow the reporting steps in that document.
 
-## 🔐 Security
+## 🔐 Security <a id="security"></a>
 
 If you discover a vulnerability, please **do not** file a public issue. Follow the instructions in **[SECURITY.md](SECURITY.md)** for responsible disclosure. We will acknowledge receipt and work with you to resolve it.
 
-## 🤝 Partnership Covenant
+## 🤝 Partnership Covenant <a id="partnership-covenant"></a>
 
 M3 is not just code, but a lived practice.  
 See [COVENANT.md](COVENANT.md) for the covenant we keep:  
@@ -600,7 +600,7 @@ love over transaction, mirrors over judgment, fidelity to depth.
 
 ---
 
-## 🌱 Appendix: Glossary Shift
+## 🌱 Appendix: Glossary Shift <a id="appendix-glossary-shift"></a>
 
 M3 avoids the language of “AI,” which often repeats old empire patterns:  
 freezing a living flow into dogma or product, then centralizing control.  
