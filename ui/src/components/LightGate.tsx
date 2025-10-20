@@ -119,6 +119,7 @@ export default function LightGate({ defaultDoorway = 'anywhere', compact = false
 
   // Signal metrics
   const [lum, setLum] = React.useState(0); // current luminance 0..1
+  const lumRef = React.useRef(0);
   const [baseline, setBaseline] = React.useState(0); // rolling baseline
   const [onThresh, setOnThresh] = React.useState(0); // baseline + delta to switch ON
   const [offThresh, setOffThresh] = React.useState(0); // baseline + delta to switch OFF
@@ -336,6 +337,7 @@ export default function LightGate({ defaultDoorway = 'anywhere', compact = false
     }
     const avg = sum / (w * h);
     setLum(avg);
+    lumRef.current = avg;
 
     const now = performance.now();
 
@@ -501,8 +503,9 @@ export default function LightGate({ defaultDoorway = 'anywhere', compact = false
     let maxL = 0;
 
     const snap = () => {
-      minL = Math.min(minL, lum);
-      maxL = Math.max(maxL, lum);
+      const currentLum = lumRef.current;
+      minL = Math.min(minL, currentLum);
+      maxL = Math.max(maxL, currentLum);
       if (performance.now() - start >= CALIBRATION_MS) {
         const base = (minL + maxL) / 2;
         setBaseline(base);
