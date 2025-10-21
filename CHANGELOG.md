@@ -63,11 +63,13 @@
 
 - **Joy helpers:** `notify()` / `notifyJoy()` emit Garden `showToast` payloads `{ variant, title, desc, icon, durationMs }`; legacy `joy:toast` pathway is retired.
 - **RTP reset signal:** midnight + manual resets now surface via Garden toast variants/icons (no local banner component).
+- **Exports base:** default data root is now `<repo>/exports`; panic.sh, Docker, and server defaults follow the new path (legacy `server/exports` removed).
 
 ### Docs
 
 - **patterns:** Added _Phantom Rival Loop_ 🫥🪞 (compare → believe → contract → confirm) with 4‑min bridge, talk script, micro-experiments, and API sample aligned to the server aliases.
 - **funding:** Landed `FUNDING.md` (sponsorship tiers, stewardship practice, transparency notes). _(Org-level `.github/FUNDING.yml` remains upstream.)_
+- README, Quickstart, and `.env.example` now point to the unified `exports/` directory.
 
 ### Infra / DX
 

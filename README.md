@@ -109,7 +109,7 @@ M3_BEARER=supersecret               # optional bearer token for write routes
 M3_WEBHOOK_URL=https://example.com/webhook  # optional webhook endpoint
 M3_WEBHOOK_SECRET=whsec_123         # optional HMAC secret for webhook signing
 M3_DB_PATH=/custom/path/m3.db       # optional override for database location
-M3_EXPORTS_DIR=server/exports       # root folder for exports/logs (default: server/exports)
+M3_EXPORTS_DIR=exports              # root folder for exports/logs (default: ./exports)
 
 # Reply Engine (nudges)
 M3_REPLIES_WINDOW_MINUTES=20        # how long an activation window lasts (default: 20)
@@ -459,7 +459,7 @@ Example:
   "breath": "box:in4-hold2-out6-hold2 × 4",
   "doorway": "dim_lights (20%), step back 2m, sip water",
   "anchor": "Blend-in posture; sovereignty stays inside.",
-  "path": "server/exports/panic/2025-08/panic-2025-08-24.log"
+  "path": "exports/panic/2025-08/panic-2025-08-24.log"
 }
 ```
 
@@ -562,7 +562,7 @@ Ethos docs: see **[ABUNDANCE_CHARTER.md](ABUNDANCE_CHARTER.md)** (no chosen ones
 | UI           | `/ui`               | **Apache-2.0**    | Permissive for adoption; encourages contributions without fear.   |
 | Docs         | `/docs`             | **CC BY-SA 4.0**  | Knowledge should stay share‑alike and attributable.               |
 | Marks        | `/docs/assets/mark` | **CC BY-SA 4.0**  | Visual gestures follow docs terms; no proprietary brand lock‑in.  |
-| Exports/Logs | `server/exports`    | User-owned data   | Outputs are yours; license of repo doesn’t restrict your content. |
+| Exports/Logs | `exports`           | User-owned data   | Outputs are yours; license of repo doesn’t restrict your content. |
 
 Notes:
 

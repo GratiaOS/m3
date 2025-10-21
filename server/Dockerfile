@@ -29,9 +29,9 @@ RUN apt-get update \
 WORKDIR /app
 
 # exports: default location inside the container
-ENV M3_EXPORTS_DIR=/app/server/exports
+ENV M3_EXPORTS_DIR=/app/exports
 RUN mkdir -p "$M3_EXPORTS_DIR"
-VOLUME ["/app/server/exports"]
+VOLUME ["/app/exports"]
 
 # Copy binary from builder
 COPY --from=builder /build/target/release/m3-memory-server /usr/local/bin/m3-memory-server

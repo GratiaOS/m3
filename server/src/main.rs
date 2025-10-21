@@ -11,7 +11,7 @@
 //! - Secrets live only in RAM (`AppState.key`); no plaintext passphrase is written to disk.
 //!
 //! ## Exports & logs
-//! - Export/log files are written under `<repo>/server/exports` (or `M3_EXPORTS_DIR`).
+//! - Export/log files are written under `<repo>/exports` (or `M3_EXPORTS_DIR`).
 //! - Panic compact logs: `exports/panic/YYYY-MM/panic-YYYY-MM-DD.log`.
 //! - Gratitude quick logs: `exports/thanks/…`.
 //!
@@ -113,7 +113,7 @@ fn repo_root() -> StdPathBuf {
 /// Resolve the exports directory:
 /// - if `M3_EXPORTS_DIR` is absolute, use it as-is
 /// - if `M3_EXPORTS_DIR` is relative, resolve from **repo root**
-/// - otherwise, default to `<repo>/server/exports`
+/// - otherwise, default to `<repo>/exports`
 fn resolve_exports_dir() -> StdPathBuf {
     if let Ok(val) = std::env::var("M3_EXPORTS_DIR") {
         let p = StdPathBuf::from(val);
@@ -123,7 +123,7 @@ fn resolve_exports_dir() -> StdPathBuf {
             repo_root().join(p)
         };
     }
-    repo_root().join("server/exports")
+    repo_root().join("exports")
 }
 
 /// Resolve a path from an ENV var relative to an anchor, with a default fallback.
