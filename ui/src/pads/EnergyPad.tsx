@@ -3,6 +3,7 @@ import { Button, Card } from '@gratiaos/ui';
 import { usePadRegistry } from '@/hooks/usePadRegistry';
 import { useSceneTransition } from '@/hooks/useSceneTransition';
 import { IntegrationScene } from '@/scenes/IntegrationScene';
+import { setPresenceMood } from '@/presence/presence-kernel';
 
 export function EnergyPad() {
   const { register, unregister } = usePadRegistry();
@@ -21,7 +22,10 @@ export function EnergyPad() {
   useEffect(() => {
     if (scene !== 'integration') {
       change('integration');
+      setPresenceMood('presence');
+      return;
     }
+    setPresenceMood('presence');
   }, [scene, change]);
 
   return (

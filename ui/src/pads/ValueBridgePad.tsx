@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Button, Card } from '@gratiaos/ui';
 import { usePadRegistry } from '@/hooks/usePadRegistry';
 import { useSceneTransition } from '@/hooks/useSceneTransition';
+import { setPresenceMood } from '@/presence/presence-kernel';
 
 export function ValueBridgePad() {
   const { register, unregister } = usePadRegistry();
@@ -16,6 +17,12 @@ export function ValueBridgePad() {
     });
     return () => unregister('value-bridge');
   }, [register, unregister, scene, change]);
+
+  useEffect(() => {
+    if (scene === 'ledger') {
+      setPresenceMood('focused');
+    }
+  }, [scene]);
 
   return (
     <section className="flex flex-col gap-4" data-pad="value-bridge">

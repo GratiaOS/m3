@@ -7,6 +7,7 @@ const LABEL_MAP: Record<string, string> = {
   soft: 'Soft',
   focused: 'Focused',
   celebratory: 'Celebratory',
+  presence: 'Presence',
   positive: 'Positive',
   warning: 'Warning',
   danger: 'Danger',

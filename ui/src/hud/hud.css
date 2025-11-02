@@ -12,22 +12,29 @@
   pointer-events: none;
 }
 
+/* Phase mappings leverage Garden token palette */
+.phase-hud[data-phase='presence'] {
+  --hud-border: color-mix(in oklab, var(--color-positive) 55%, transparent);
+  background: color-mix(in oklab, var(--color-surface) 60%, color-mix(in oklab, var(--color-positive) 80%, transparent) 40%);
+  color: color-mix(in oklab, var(--color-text) 65%, var(--color-positive) 35%);
+}
+
 .phase-hud[data-phase='soft'] {
-  --hud-border: rgba(149, 180, 255, 0.45);
-  background: color-mix(in oklab, rgba(59, 130, 246, 0.28) 55%, rgba(15, 23, 42, 0.85) 45%);
-  color: #dbebff;
+  --hud-border: color-mix(in oklab, var(--color-border) 70%, transparent);
+  background: color-mix(in oklab, var(--color-surface) 80%, color-mix(in oklab, var(--color-border) 60%, transparent) 20%);
+  color: color-mix(in oklab, var(--color-text) 80%, white 20%);
 }
 
 .phase-hud[data-phase='focused'] {
-  --hud-border: rgba(253, 186, 116, 0.55);
-  background: color-mix(in oklab, rgba(234, 179, 8, 0.35) 60%, rgba(30, 41, 59, 0.85) 40%);
-  color: #fff6db;
+  --hud-border: color-mix(in oklab, var(--color-accent) 65%, transparent);
+  background: color-mix(in oklab, var(--color-surface) 55%, color-mix(in oklab, var(--color-accent) 85%, transparent) 45%);
+  color: color-mix(in oklab, var(--color-text) 60%, var(--color-accent) 40%);
 }
 
 .phase-hud[data-phase='celebratory'] {
-  --hud-border: rgba(244, 114, 182, 0.45);
-  background: color-mix(in oklab, rgba(236, 72, 153, 0.30) 65%, rgba(30, 64, 175, 0.75) 35%);
-  color: #ffe5f5;
+  --hud-border: color-mix(in oklab, var(--color-warning) 60%, transparent);
+  background: color-mix(in oklab, var(--color-surface) 58%, color-mix(in oklab, var(--color-warning) 80%, transparent) 42%);
+  color: color-mix(in oklab, var(--color-text) 62%, var(--color-warning) 38%);
 }
 
 .phase-hud__label {
