@@ -2,18 +2,19 @@ import { useEffect, useMemo, useState } from 'react';
 import type { PadMood } from '@gratiaos/pad-core';
 import { usePadRegistry } from '@/hooks/usePadRegistry';
 import { usePadRoute } from '@/pads/usePadRoute';
-import { phase$ } from '@/presence/presence-kernel';
+import { mood$ } from '@/presence/presence-kernel';
 
 const DEFAULT_PHASE: PadMood = 'soft';
 
 export function usePhaseBridge() {
   const { pads } = usePadRegistry();
   const route = usePadRoute();
-  const [phase, setPhase] = useState<PadMood>(phase$.current ?? DEFAULT_PHASE);
+  const [phase, setPhase] = useState<PadMood>((mood$.value as PadMood | undefined) ?? DEFAULT_PHASE);
 
   useEffect(() => {
-    const stop = phase$.subscribe(setPhase);
-    return stop;
+    return mood$.subscribe((next) => {
+      setPhase((next as PadMood) ?? DEFAULT_PHASE);
+    });
   }, []);
 
   const active = useMemo(() => {
