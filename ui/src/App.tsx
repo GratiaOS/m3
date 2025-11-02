@@ -12,12 +12,17 @@ import ReadinessBoard from '@/components/ReadinessBoard';
 import StatusBar from '@/components/StatusBar';
 import Dashboard from '@/components/Dashboard';
 import ThanksPanel from '@/components/ThanksPanel';
+import TownPad from '@/components/TownPad';
+import ValueBridgeBanner from '@/components/ValueBridgeBanner';
+import { PhaseHUD } from '@/hud/PhaseHUD';
+import { PadSceneDeck } from '@/pads/PadSceneDeck';
 import LightGate from '@/components/LightGate';
 import Modal from '@/components/Modal';
 import SignalHandover from '@/components/QuickActions/SignalHandover';
 import { PanicButton } from '@/components/PanicButton';
 import { Button } from '@/ui/catalyst';
-import { showToast } from '@garden/ui';
+import { showToast } from '@gratiaos/ui';
+import { navigateToPad } from '@/pads/navigation';
 import './styles.css';
 import BridgePanel from '@/components/BridgePanel';
 import type { BridgeKindAlias } from '@/types/patterns';
@@ -169,6 +174,7 @@ export default function App() {
   };
 
   const searchRef = useRef<HTMLInputElement | null>(null);
+  const shortcutRef = useRef<{ key: string; time: number } | null>(null);
 
   type RetrieveResponse = { chunks: RetrievedChunk[] };
 
@@ -221,6 +227,7 @@ export default function App() {
   // Keyboard shortcuts: i,u,l,r,/
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
+      const now = Date.now();
       if (e.key === 'Escape') {
         e.preventDefault();
         if (pauseUntil) {
@@ -240,6 +247,43 @@ export default function App() {
 
       const typingInField = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
       if (typingInField) return;
+
+      if (shortcutRef.current && now - shortcutRef.current.time > 1500) {
+        shortcutRef.current = null;
+      }
+
+      if (e.key === '?' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        showToast({
+          title: 'Keyboard shortcuts',
+          desc: 'g t · open Town Pad — Esc · blur — ⌘↩ · submit',
+          icon: '⌨️',
+          variant: 'neutral',
+        });
+        return;
+      }
+
+      const lower = e.key.toLowerCase();
+      if (!e.metaKey && !e.ctrlKey && !e.altKey) {
+        if (lower === 'g') {
+          shortcutRef.current = { key: 'g', time: now };
+          return;
+        }
+        if (shortcutRef.current?.key === 'g' && lower === 't') {
+          e.preventDefault();
+          const ok = navigateToPad('towns');
+          if (!ok) {
+            showToast({ title: 'Pad unavailable', desc: 'Town pad not registered.', icon: '🌬️', variant: 'warning' });
+          }
+          shortcutRef.current = null;
+          return;
+        }
+        if (shortcutRef.current) {
+          shortcutRef.current = null;
+        }
+      } else {
+        shortcutRef.current = null;
+      }
 
       if (e.key === 'i') setIncognito((v) => !v);
       else if (e.key === 'u') {
@@ -354,6 +398,8 @@ export default function App() {
           </span>
         </div>
       </div>
+      <PadSceneDeck />
+
       {reversePolesEnabled && (
         <div
           style={{
@@ -372,7 +418,12 @@ export default function App() {
         </div>
       )}
 
+      <ValueBridgeBanner />
+      <PhaseHUD />
+
       <Dashboard />
+
+      <TownPad me={me} />
 
       <ThanksPanel me={me} />
       <Timeline items={emotions} compact maxBadges={1} showFamFilter />
