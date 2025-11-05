@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { flow$, type FlowSnapshot, type PadManifest } from '@gratiaos/pad-core';
 import type { SceneId } from '@gratiaos/pad-core';
+import { phase$ } from '@gratiaos/presence-kernel';
+import { useSignal } from '../shared/useSignal';
+import { useMomentum } from './hooks/useMomentum';
 import '../../styles/pads.css';
 
 const EXIT_TIMEOUT_MS = 320;
@@ -24,6 +27,8 @@ function resolveComponent(manifest: PadManifest | null): PadComponent | null {
 export function PadSceneDeck() {
   const [snapshot, setSnapshot] = useState<FlowSnapshot>(() => flow$.value);
   const [stack, setStack] = useState<Array<{ key: string; phase: string; node: React.ReactNode }>>([]);
+  const phase = useSignal(phase$, (phase$.value as string) ?? 'presence');
+  const { dir, ms, ease } = useMomentum();
 
   useEffect(() => {
     const unsubscribe = flow$.subscribe((snap) => {
@@ -72,26 +77,36 @@ export function PadSceneDeck() {
 
   if (stack.length === 0) {
     return (
-      <section className="pad-deck" aria-label="Pad scene">
+      <section className="pad-deck" aria-label="Pad scene" data-phase={phase}>
         <p className="pad-shelf__empty">No pads registered yet.</p>
       </section>
     );
   }
 
-  const phase = snapshot.phase;
   const beat = snapshot.t;
   const tempo = TEMPO_MAP[phase] ?? 110;
   const sceneDurationMs = Math.round((60000 / tempo) * 2);
   const sceneStyle = {
     ['--beat' as any]: beat,
     ['--scene-ms' as any]: `${sceneDurationMs}ms`,
+    ['--momentum-ms' as any]: `${ms}ms`,
+    ['--momentum-ease' as any]: ease,
   };
 
+  const momentumClass = dir !== 'none' ? ` is-momenting dir-${dir}` : '';
+
   return (
-    <section className={`pad-deck phase-${phase}`} style={sceneStyle} aria-live="polite">
-      {stack.map((entry) => (
-        <React.Fragment key={entry.key}>{entry.node}</React.Fragment>
-      ))}
+    <section
+      className={`pad-deck phase-${phase}${momentumClass}`}
+      style={sceneStyle}
+      data-phase={phase}
+      aria-live="polite"
+    >
+      <div className="pad-track">
+        {stack.map((entry) => (
+          <React.Fragment key={entry.key}>{entry.node}</React.Fragment>
+        ))}
+      </div>
     </section>
   );
 }
