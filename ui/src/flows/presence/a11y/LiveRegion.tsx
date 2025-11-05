@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { getAnnounceEnabled } from './announcePreference';
 
 // Imperative emitter reference set when the LiveRegion mounts.
 let emit: ((msg: string) => void) | null = null;
@@ -39,5 +40,7 @@ export function LiveRegion() {
 
 /** Imperatively announce a short, self-contained message. */
 export function announce(msg: string) {
+  // Respect user preference (persisted). Default is enabled.
+  if (!getAnnounceEnabled()) return;
   if (emit) emit(msg);
 }
