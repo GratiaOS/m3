@@ -114,14 +114,9 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: m3/pnpm-lock.yaml
 
-      - name: Verify pnpm availability (and fallback via Corepack)
+      - name: Verify pnpm availability
         run: |
           set -euxo pipefail
-          which pnpm || true
-          pnpm -v || true
-          # Fallback to Corepack in case the action didn't inject pnpm in PATH
-          corepack enable
-          corepack prepare pnpm@10.18.3 --activate
           which pnpm
           pnpm -v
 
