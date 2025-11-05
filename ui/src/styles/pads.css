@@ -165,9 +165,63 @@
   transform: translateX(0);
 }
 
+
+:root {
+  --bloom-ms: 220ms;
+  --bloom-in-start: 0.985;
+  --bloom-overshoot: 1.008;
+  --bloom-pulse: 1.004;
+}
+
+:root[data-phase='focused'] {
+  --bloom-ms: 160ms;
+  --bloom-in-start: 0.992;
+  --bloom-overshoot: 1.004;
+  --bloom-pulse: 1.002;
+}
+
+:root[data-phase='presence'] {
+  --bloom-ms: 260ms;
+  --bloom-in-start: 0.98;
+  --bloom-overshoot: 1.01;
+  --bloom-pulse: 1.006;
+}
+
+:root[data-phase='celebratory'] {
+  --bloom-ms: 200ms;
+  --bloom-in-start: 0.987;
+  --bloom-overshoot: 1.009;
+  --bloom-pulse: 1.005;
+}
+
+:root[data-phase='soft'] {
+  --bloom-ms: 220ms;
+  --bloom-in-start: 0.986;
+  --bloom-overshoot: 1.008;
+  --bloom-pulse: 1.004;
+}
+
+@keyframes bloom-in {
+  0% {
+    opacity: 0;
+    filter: blur(6px);
+    transform: scale(var(--bloom-in-start));
+  }
+  60% {
+    opacity: 1;
+    filter: blur(0.5px);
+    transform: scale(var(--bloom-overshoot));
+  }
+  100% {
+    opacity: 1;
+    filter: none;
+    transform: scale(1);
+  }
+}
+
 .pad-scene {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
   transition:
     opacity var(--scene-ms, 220ms) ease,
     transform var(--scene-ms, 220ms) ease;
@@ -178,8 +232,46 @@
 
 .pad-scene.exiting {
   opacity: 0;
-  transform: translateY(6px);
+  transform: translateY(6px) scale(1);
   pointer-events: none;
+}
+
+.pad-scene-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: inherit;
+  will-change: transform, filter, opacity;
+}
+
+.pad-scene.current .pad-scene-inner.entering {
+  animation: bloom-in var(--bloom-ms) cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+:root.is-pulsing .pad-scene.current .pad-scene-inner {
+  transform: scale(var(--bloom-pulse));
+  transition: transform calc(var(--bloom-ms) * 0.5) ease-out;
+}
+
+:root.is-pulsing .pad-scene.current [data-bloom] {
+  transform: scale(1.003);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-accent) 10%, transparent);
+  transition:
+    transform calc(var(--bloom-ms) * 0.5) ease,
+    box-shadow calc(var(--bloom-ms) * 0.5) ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pad-scene.current .pad-scene-inner.entering {
+    animation: none;
+  }
+  :root.is-pulsing .pad-track,
+  :root.is-pulsing .pad-scene.current .pad-scene-inner,
+  :root.is-pulsing .pad-scene.current [data-bloom] {
+    transform: none !important;
+    box-shadow: none !important;
+    transition: none !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

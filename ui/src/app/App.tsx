@@ -6,6 +6,7 @@ import { SystemFooter } from './SystemFooter';
 import { useHaloPulse } from '../flows/presence/halos/useHaloPulse';
 import { useCaretHalo } from '../flows/presence/halos/useCaretHalo';
 import '../flows/presence/halos/presence-halos.css';
+import '../flows/presence/placeholders/placeholders.css';
 
 // M3 App — orchestrates Presence, Pads, and System layers.
 // Each component breathes through the shared kernel (phase$, pulse$, peers$).

@@ -4,6 +4,7 @@ import type { SceneId } from '@gratiaos/pad-core';
 import { phase$ } from '@gratiaos/presence-kernel';
 import { useSignal } from '../shared/useSignal';
 import { useMomentum } from './hooks/useMomentum';
+import { useSceneBloom } from './hooks/useSceneBloom';
 import '../../styles/pads.css';
 
 const EXIT_TIMEOUT_MS = 320;
@@ -29,6 +30,7 @@ export function PadSceneDeck() {
   const [stack, setStack] = useState<Array<{ key: string; phase: string; node: React.ReactNode }>>([]);
   const phase = useSignal(phase$, (phase$.value as string) ?? 'presence');
   const { dir, ms, ease } = useMomentum();
+  const bloomRef = useSceneBloom<HTMLDivElement>();
 
   useEffect(() => {
     const unsubscribe = flow$.subscribe((snap) => {
@@ -46,11 +48,7 @@ export function PadSceneDeck() {
         return;
       }
 
-      const nextNode = (
-        <div className={`pad-scene phase-${snap.phase}`}>
-          <PadComponent sceneId={sceneId} phase={snap.phase} me="preview" />
-        </div>
-      );
+      const nextNode = <PadComponent sceneId={sceneId} phase={snap.phase} me="preview" />;
 
       setStack((current) => {
         if (current[0]?.key === key) return current;
@@ -59,9 +57,7 @@ export function PadSceneDeck() {
 
         const exiting = {
           ...current[0],
-          node: (
-            <div className={`pad-scene exiting phase-${current[0].phase}`}>{current[0].node}</div>
-          ),
+          node: current[0].node,
         };
 
         return [nextEntry, exiting];
@@ -103,9 +99,24 @@ export function PadSceneDeck() {
       aria-live="polite"
     >
       <div className="pad-track">
-        {stack.map((entry) => (
-          <React.Fragment key={entry.key}>{entry.node}</React.Fragment>
-        ))}
+        {stack.map((entry, index) => {
+          const isCurrent = index === 0;
+          if (isCurrent) {
+            return (
+              <div key={entry.key} className={`pad-scene current phase-${entry.phase}`}>
+                <div ref={bloomRef} className="pad-scene-inner">
+                  {entry.node}
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div key={entry.key} className={`pad-scene exiting phase-${entry.phase}`}>
+              <div className="pad-scene-inner">{entry.node}</div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );
