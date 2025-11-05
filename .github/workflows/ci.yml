@@ -136,11 +136,19 @@ jobs:
 
       - name: Build Garden Icons package
         working-directory: m3
-        run: pnpm --filter @garden/icons build
+        run: pnpm --filter @gratiaos/icons build
 
       - name: Build Garden UI package
         working-directory: m3
-        run: pnpm --filter @garden/ui build
+        run: pnpm --filter @gratiaos/ui build
+
+      - name: Build Garden pad-core
+        working-directory: m3
+        run: pnpm --filter @gratiaos/pad-core build
+
+      - name: Build Garden core signals
+        working-directory: m3
+        run: pnpm --filter @gratiaos/presence-kernel build || true
 
       - name: Format (workspace)
         working-directory: m3
