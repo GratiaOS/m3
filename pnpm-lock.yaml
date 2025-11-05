@@ -84,19 +84,19 @@ importers:
   ui:
     dependencies:
       '@gratiaos/icons':
-        specifier: workspace:*
+        specifier: link:../../garden-core/packages/icons
         version: link:../../garden-core/packages/icons
       '@gratiaos/pad-core':
-        specifier: workspace:*
+        specifier: link:../../garden-core/packages/pad-core
         version: link:../../garden-core/packages/pad-core
       '@gratiaos/presence-kernel':
-        specifier: workspace:*
+        specifier: link:../../garden-core/packages/presence-kernel
         version: link:../../garden-core/packages/presence-kernel
       '@gratiaos/tokens':
-        specifier: workspace:*
+        specifier: link:../../garden-core/packages/tokens
         version: link:../../garden-core/packages/tokens
       '@gratiaos/ui':
-        specifier: workspace:*
+        specifier: link:../../garden-core/packages/ui
         version: link:../../garden-core/packages/ui
       '@headlessui/react':
         specifier: ^2.2.8

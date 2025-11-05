@@ -13,16 +13,16 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@gratiaos/ui": "workspace:*",
-    "@gratiaos/tokens": "workspace:*",
-    "@gratiaos/pad-core": "workspace:*",
-    "@gratiaos/presence-kernel": "workspace:*",
+    "@gratiaos/ui": "link:../../garden-core/packages/ui",
+    "@gratiaos/tokens": "link:../../garden-core/packages/tokens",
+    "@gratiaos/pad-core": "link:../../garden-core/packages/pad-core",
+    "@gratiaos/presence-kernel": "link:../../garden-core/packages/presence-kernel",
     "@headlessui/react": "^2.2.8",
     "clsx": "^2.1.1",
     "motion": "^12.23.12",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "@gratiaos/icons": "workspace:*"
+    "@gratiaos/icons": "link:../../garden-core/packages/icons"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
