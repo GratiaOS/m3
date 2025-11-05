@@ -75,6 +75,14 @@
   gap: 0.6rem;
 }
 
+.value-bridge .value-field-group {
+  display: flex;
+}
+
+.value-bridge .field {
+  margin-top: 0.2rem;
+}
+
 .value-bridge label {
   font-size: 0.7rem;
   letter-spacing: 0.18em;

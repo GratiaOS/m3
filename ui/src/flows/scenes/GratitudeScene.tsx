@@ -1,6 +1,7 @@
 import React from 'react';
-import { Button, Card, Field } from '@gratiaos/ui';
+import { Button, Card } from '@gratiaos/ui';
 import { useSceneLifecycle } from '@/flows/pads/hooks/useSceneLifecycle';
+import { Field as FloatingField } from '../presence/placeholders/Field';
 
 type SceneProps = {
   onNext?: () => void;
@@ -15,17 +16,7 @@ export function GratitudeScene({ onNext }: SceneProps) {
         <h2 className="text-xl font-semibold text-text">Gratitude</h2>
         <p className="text-sm text-subtle">Seal one line of thanks. Presence carries the resonance.</p>
       </header>
-      <Field label="Thank you for">
-        {(ariaProps) => (
-          <textarea
-            {...ariaProps}
-            rows={3}
-            className="input-base w-full halo"
-            data-halo
-            placeholder="The whisper that grounded me…"
-          />
-        )}
-      </Field>
+      <FloatingField id="gratitude-entry" label="Gratitude" hint="Thank you for…" as="textarea" rows={3} />
       <div className="flex items-center justify-end gap-2">
         <Button variant="outline" onClick={onNext}>
           boundary →

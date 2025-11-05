@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Field } from '../presence/placeholders/Field';
 import '../../styles/system.css';
 
 const DEFAULT_RECEIVED = 'vision';
@@ -29,26 +30,24 @@ export function ValueBridge() {
           {received}
         </div>
       </div>
-      <div className="row">
-        <label htmlFor="value-felt">Felt as</label>
-        <input
+      <div className="value-field-group">
+        <Field
           id="value-felt"
-          placeholder="warm horizon, blue hush…"
+          label="Felt as"
+          hint="warm horizon, blue hush…"
           value={felt}
           onChange={(event) => setFelt(event.target.value)}
-          className="halo"
-          data-halo
+          autoComplete="off"
         />
       </div>
-      <div className="row">
-        <label htmlFor="value-given">Give back</label>
-        <input
+      <div className="value-field-group">
+        <Field
           id="value-given"
-          placeholder="energy, attention, warmth…"
+          label="Give back"
+          hint="energy, attention, warmth…"
           value={given}
           onChange={(event) => setGiven(event.target.value)}
-          className="halo"
-          data-halo
+          autoComplete="off"
         />
       </div>
       <button type="button" className="seal" onClick={seal} aria-label="Seal value cycle">
