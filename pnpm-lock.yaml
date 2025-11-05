@@ -35,6 +35,9 @@ importers:
 
   ../garden-core/packages/pad-core:
     devDependencies:
+      '@gratiaos/presence-kernel':
+        specifier: workspace:*
+        version: link:../presence-kernel
       '@types/react':
         specifier: ^19.2.2
         version: 19.2.2
@@ -48,7 +51,14 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  ../garden-core/packages/presence-kernel: {}
+  ../garden-core/packages/presence-kernel:
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.2
+        version: 19.2.2
+      react:
+        specifier: ^19.2.0
+        version: 19.2.0
 
   ../garden-core/packages/tokens:
     devDependencies:
