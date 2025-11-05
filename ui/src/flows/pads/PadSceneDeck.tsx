@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { flow$, padRegistry$, type FlowSnapshot, type PadManifest } from '@gratiaos/pad-core';
 import type { SceneId } from '@gratiaos/pad-core';
 import { phase$ } from '@gratiaos/presence-kernel';
 import { useSignal } from '../shared/useSignal';
 import { useMomentum } from './hooks/useMomentum';
 import { useSceneBloom } from './hooks/useSceneBloom';
+import { useFocusHandoff } from './hooks/useFocusHandoff';
 import '../../styles/pads.css';
 
 const EXIT_TIMEOUT_MS = 320;
@@ -17,7 +18,7 @@ const TEMPO_MAP: Record<string, number> = {
   soft: 108,
 };
 
-type PadComponent = React.ComponentType<any>;
+type PadComponent = React.ComponentType<Record<string, unknown>>;
 
 function resolveComponent(manifest: PadManifest | null): PadComponent | null {
   if (!manifest) return null;
@@ -30,7 +31,19 @@ export function PadSceneDeck() {
   const [stack, setStack] = useState<Array<{ key: string; phase: string; node: React.ReactNode }>>([]);
   const phase = useSignal(phase$, (phase$.value as string) ?? 'presence');
   const { dir, ms, ease } = useMomentum();
+  // Bloom animation ref callback
   const bloomRef = useSceneBloom<HTMLDivElement>();
+  // Current scene root ref (used for focus handoff queries)
+  const currentRef = useRef<HTMLElement | null>(null);
+
+  // Chain bloom ref + store current scene element for focus logic
+  const setCurrentRef = (el: HTMLElement | null) => {
+    currentRef.current = el;
+    bloomRef(el as HTMLDivElement | null);
+  };
+
+  // Polite focus handoff when pad changes
+  useFocusHandoff(currentRef);
   const pads = useSignal(padRegistry$, padRegistry$.value ?? []);
 
   useEffect(() => {
@@ -75,9 +88,7 @@ export function PadSceneDeck() {
   if (stack.length === 0) {
     return (
       <section className="pad-deck" aria-label="Pad scene" data-phase={phase}>
-        <p className="pad-shelf__empty">
-          {pads.length === 0 ? 'Pads warming up…' : 'Select a pad from the shelf to begin.'}
-        </p>
+        <p className="pad-shelf__empty">{pads.length === 0 ? 'Pads warming up…' : 'Select a pad from the shelf to begin.'}</p>
       </section>
     );
   }
@@ -85,29 +96,24 @@ export function PadSceneDeck() {
   const beat = snapshot.t;
   const tempo = TEMPO_MAP[phase] ?? 110;
   const sceneDurationMs = Math.round((60000 / tempo) * 2);
-  const sceneStyle = {
-    ['--beat' as any]: beat,
-    ['--scene-ms' as any]: `${sceneDurationMs}ms`,
-    ['--momentum-ms' as any]: `${ms}ms`,
-    ['--momentum-ease' as any]: ease,
+  const sceneStyle: Record<string, string | number> = {
+    '--beat': beat,
+    '--scene-ms': `${sceneDurationMs}ms`,
+    '--momentum-ms': `${ms}ms`,
+    '--momentum-ease': ease,
   };
 
   const momentumClass = dir !== 'none' ? ` is-momenting dir-${dir}` : '';
 
   return (
-    <section
-      className={`pad-deck phase-${phase}${momentumClass}`}
-      style={sceneStyle}
-      data-phase={phase}
-      aria-live="polite"
-    >
+    <section className={`pad-deck phase-${phase}${momentumClass}`} style={sceneStyle} data-phase={phase} aria-live="polite">
       <div className="pad-track">
         {stack.map((entry, index) => {
           const isCurrent = index === 0;
           if (isCurrent) {
             return (
               <div key={entry.key} className={`pad-scene current phase-${entry.phase}`}>
-                <div ref={bloomRef} className="pad-scene-inner">
+                <div ref={setCurrentRef} className="pad-scene-inner">
                   {entry.node}
                 </div>
               </div>
