@@ -86,7 +86,7 @@ jobs:
     needs: openapi
     strategy:
       matrix:
-        node: [18, 20]
+        node: ['22.12.0']
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

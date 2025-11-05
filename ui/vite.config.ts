@@ -26,7 +26,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
       '@components': path.resolve(__dirname, './src/components'),
       '@assets': path.resolve(__dirname, './src/assets'),
-      '@gratiaos/presence-kernel': path.resolve(__dirname, '../../garden-core/packages/presence-kernel/src/index.ts'),
+      '@gratiaos/presence-kernel': path.resolve(__dirname, '../../garden-core/packages/presence-kernel'),
     },
   },
 });
