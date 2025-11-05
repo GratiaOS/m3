@@ -6,6 +6,7 @@ import { SystemFooter } from './SystemFooter';
 import { useHaloPulse } from '../flows/presence/halos/useHaloPulse';
 import { useCaretHalo } from '../flows/presence/halos/useCaretHalo';
 import TrailLayer from '../flows/presence/trail/TrailLayer';
+import { LiveRegion } from '../flows/presence/a11y/LiveRegion';
 import '../flows/presence/halos/presence-halos.css';
 import '../flows/presence/placeholders/placeholders.css';
 import '../flows/presence/trail/trail.css';
@@ -24,6 +25,8 @@ export default function App() {
       {/* 🌿 Active Pad & Scene flow */}
       <PadSceneDeck />
       <TrailLayer />
+      {/* Single polite live region for a11y announcements */}
+      <LiveRegion />
     </Layout>
   );
 }
