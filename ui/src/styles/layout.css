@@ -1,6 +1,6 @@
 .garden-layout {
   display: grid;
-  grid-template-columns: 72px 1fr 280px;
+  grid-template-columns: 248px 1fr 280px;
   grid-template-rows: 1fr auto;
   min-height: 100vh;
   background: var(--color-surface);

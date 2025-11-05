@@ -81,14 +81,29 @@ export function useMomentum() {
     }, ms);
   }, [activeId, pads, ms]);
 
+  const armRef = useRef<() => void>(() => {});
+
   useEffect(() => {
-    const unsubscribe = pulse$.subscribe(() => {
-      /* Beat awareness hook – decorative */
+    let arming = false;
+    const sub = pulse$.subscribe(() => {
+      arming = false;
     });
+    armRef.current = () => {
+      if (arming) return;
+      arming = true;
+      window.setTimeout(() => {
+        arming = false;
+      }, 60);
+    };
     return () => {
-      if (typeof unsubscribe === 'function') unsubscribe();
+      if (typeof sub === 'function') sub();
     };
   }, []);
 
-  return { dir, ms, ease: MOMENTUM_EASE };
+  return {
+    dir,
+    ms,
+    ease: MOMENTUM_EASE,
+    armToBeat: () => armRef.current?.(),
+  };
 }

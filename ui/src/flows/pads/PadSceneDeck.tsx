@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { flow$, type FlowSnapshot, type PadManifest } from '@gratiaos/pad-core';
+import { flow$, padRegistry$, type FlowSnapshot, type PadManifest } from '@gratiaos/pad-core';
 import type { SceneId } from '@gratiaos/pad-core';
 import { phase$ } from '@gratiaos/presence-kernel';
 import { useSignal } from '../shared/useSignal';
@@ -31,6 +31,7 @@ export function PadSceneDeck() {
   const phase = useSignal(phase$, (phase$.value as string) ?? 'presence');
   const { dir, ms, ease } = useMomentum();
   const bloomRef = useSceneBloom<HTMLDivElement>();
+  const pads = useSignal(padRegistry$, padRegistry$.value ?? []);
 
   useEffect(() => {
     const unsubscribe = flow$.subscribe((snap) => {
@@ -74,7 +75,9 @@ export function PadSceneDeck() {
   if (stack.length === 0) {
     return (
       <section className="pad-deck" aria-label="Pad scene" data-phase={phase}>
-        <p className="pad-shelf__empty">No pads registered yet.</p>
+        <p className="pad-shelf__empty">
+          {pads.length === 0 ? 'Pads warming up…' : 'Select a pad from the shelf to begin.'}
+        </p>
       </section>
     );
   }

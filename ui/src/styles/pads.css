@@ -54,6 +54,20 @@
   box-shadow: var(--pad-shadow);
 }
 
+.pad-shelf.is-dragging {
+  cursor: grabbing;
+}
+
+.pad-shelf.is-dragging .pad-seed.is-active {
+  transform: translateX(calc(2px + var(--drag-dx, 0px)));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pad-shelf.is-dragging .pad-seed.is-active {
+    transform: translateX(2px);
+  }
+}
+
 .pad-seed .seed-dot {
   display: grid;
   place-items: center;

@@ -72,12 +72,14 @@ export function usePadRoute(): PadRoute | null {
     const syncFromHash = () => {
       const { pad, scene } = readHash();
       if (pad !== null && pad !== activePadId$.value) {
+        activePadId$.set(pad);
         setActivePadId(pad);
       }
       if (scene !== null && scene !== scene$.value) {
         announceSceneEnter(scene);
       }
       if (!pad && activePadId$.value) {
+        activePadId$.set(null);
         setActivePadId(null);
       }
       if (!scene && scene$.value) {
@@ -116,6 +118,8 @@ export function clearPadRoute(padId?: PadId | string) {
   if (!current) return;
   if (padId && padId !== current) return;
   dispatchPadClose({ id: current, reason: 'route' });
+  activePadId$.set(null);
   setActivePadId(null);
+  announceSceneEnter(null);
   writeHash({ pad: null, scene: null });
 }
