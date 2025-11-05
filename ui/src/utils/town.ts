@@ -52,14 +52,41 @@ export function deriveKind(raw: RawTownEntry): TownKind {
 
 export function parseSpeaker(raw: string | null | undefined): TownSpeaker {
   const value = (raw ?? '').trim();
-  if (!value) {
-    return { species: 'unknown', name: '—', raw: '—' };
+  if (!value) return { species: 'unknown', name: '—', raw: '—' };
+
+  // Use first ':' only; allow names to contain additional ':' gracefully.
+  const idx = value.indexOf(':');
+  if (idx === -1) {
+    return { species: 'unknown', name: value, raw: value };
   }
-  const [prefix, rest] = value.split(':', 2);
-  if (rest) {
-    return { species: prefix || 'unknown', name: rest || '—', raw: value };
+
+  const species = value.slice(0, idx).trim() || 'unknown';
+  const name = value.slice(idx + 1).trim() || '—';
+  return { species, name, raw: value };
+}
+
+function hashString(str: string): number {
+  // djb2 hash (small, deterministic)
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) {
+    h = (h * 33) ^ str.charCodeAt(i);
   }
-  return { species: 'unknown', name: value, raw: value };
+  // force unsigned 32-bit
+  return h >>> 0;
+}
+
+function deriveNumericId(raw: RawTownEntry, town: string, ts: string): number {
+  const candidate = (raw as any)?.id;
+  if (typeof candidate === 'number' && Number.isFinite(candidate)) return candidate;
+  if (typeof candidate === 'string') {
+    // Accept pure digit strings
+    if (/^\d+$/.test(candidate)) return Number(candidate);
+  }
+  const timePart = Date.parse(ts);
+  const safeTime = Number.isFinite(timePart) ? timePart : Date.now();
+  const townHash = hashString(town);
+  // Combine time (ms) lower 32 bits with hash; avoid collisions across rapid inserts.
+  return (safeTime & 0xffffffff) ^ townHash;
 }
 
 export function toBulletinItem(raw: RawTownEntry, fallbackTown: string): TownBulletinItem {
@@ -70,7 +97,7 @@ export function toBulletinItem(raw: RawTownEntry, fallbackTown: string): TownBul
   const town = raw?.town ?? fallbackTown;
 
   return {
-    id: Number(raw?.id ?? `${town}-${ts}`),
+    id: deriveNumericId(raw, town, ts),
     town,
     ts,
     kind,
@@ -86,9 +113,9 @@ export function flattenBulletinPayload(payload: TownBulletinPayload | undefined,
   const list: RawTownEntry[] = Array.isArray(payload)
     ? (payload as RawTownEntry[])
     : Array.isArray((payload as { items?: RawTownEntry[] }).items)
-    ? ((payload as { items?: RawTownEntry[] }).items ?? [])
+    ? (payload as { items?: RawTownEntry[] }).items ?? []
     : Array.isArray((payload as { bulletin?: RawTownEntry[] }).bulletin)
-    ? ((payload as { bulletin?: RawTownEntry[] }).bulletin ?? [])
+    ? (payload as { bulletin?: RawTownEntry[] }).bulletin ?? []
     : [];
 
   return list.map((entry) => toBulletinItem(entry, fallbackTown));
