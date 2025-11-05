@@ -16,7 +16,7 @@ export function GratitudeScene({ onNext }: SceneProps) {
         <h2 className="text-xl font-semibold text-text">Gratitude</h2>
         <p className="text-sm text-subtle">Seal one line of thanks. Presence carries the resonance.</p>
       </header>
-      <FloatingField id="gratitude-entry" label="Gratitude" hint="Thank you for…" as="textarea" rows={3} />
+      <FloatingField id="gratitude-entry" label="Gratitude" hint="Thank you for…" as="textarea" rows={3} tint="none" />
       <div className="flex items-center justify-end gap-2">
         <Button variant="outline" onClick={onNext}>
           boundary →

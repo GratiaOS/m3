@@ -38,6 +38,7 @@ export function ValueBridge() {
           value={felt}
           onChange={(event) => setFelt(event.target.value)}
           autoComplete="off"
+          tint="ask"
         />
       </div>
       <div className="value-field-group">
@@ -48,6 +49,7 @@ export function ValueBridge() {
           value={given}
           onChange={(event) => setGiven(event.target.value)}
           autoComplete="off"
+          tint="true"
         />
       </div>
       <button type="button" className="seal" onClick={seal} aria-label="Seal value cycle">

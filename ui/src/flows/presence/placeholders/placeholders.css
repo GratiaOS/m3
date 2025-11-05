@@ -70,3 +70,36 @@
     transform: none;
   }
 }
+
+/* --- Tints --------------------------------------------------------------- */
+
+.field[data-tint='ask'] .field-input {
+  border-color: color-mix(in oklab, oklch(78% 0.14 70) 55%, transparent);
+}
+
+.field[data-tint='ask'] .field-label {
+  color: color-mix(in oklab, oklch(72% 0.12 70) 60%, var(--color-text) 40%);
+}
+
+.field[data-tint='ask'] .field-hint {
+  color: color-mix(in oklab, oklch(74% 0.14 70) 50%, transparent);
+}
+
+.field[data-tint='true'] .field-input {
+  border-color: color-mix(in oklab, oklch(72% 0.12 190) 58%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, oklch(78% 0.09 200) 24%, transparent);
+}
+
+.field[data-tint='true'] .field-label {
+  color: color-mix(in oklab, oklch(70% 0.1 200) 65%, var(--color-text) 35%);
+}
+
+.field[data-tint='true'] .field-hint {
+  opacity: 0.25;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field[data-tint='true'] .field-input {
+    box-shadow: none;
+  }
+}

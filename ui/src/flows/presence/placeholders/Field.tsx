@@ -9,6 +9,7 @@ type BaseProps = {
   className?: string;
   inputClassName?: string;
   as?: 'input' | 'textarea';
+  tint?: 'none' | 'ask' | 'true';
 };
 
 type InputProps = BaseProps &
@@ -22,7 +23,7 @@ type FieldProps = InputProps | TextareaProps;
 type FieldElement = HTMLInputElement | HTMLTextAreaElement;
 
 export const Field = React.forwardRef<FieldElement, FieldProps>((props, forwardedRef) => {
-  const { id, label, hint, className, inputClassName, as = 'input', ...rest } = props as FieldProps;
+  const { id, label, hint, className, inputClassName, as = 'input', tint = 'none', ...rest } = props as FieldProps;
 
   const containerClass = ['field', className].filter(Boolean).join(' ');
   const controlClass = ['field-input', 'halo', inputClassName].filter(Boolean).join(' ');
@@ -30,7 +31,7 @@ export const Field = React.forwardRef<FieldElement, FieldProps>((props, forwarde
   if (as === 'textarea') {
     const textareaProps = rest as TextareaHTMLAttributes<HTMLTextAreaElement>;
     return (
-      <div className={containerClass}>
+      <div className={containerClass} data-tint={tint}>
         <textarea
           id={id}
           ref={forwardedRef as React.ForwardedRef<HTMLTextAreaElement>}
@@ -54,10 +55,10 @@ export const Field = React.forwardRef<FieldElement, FieldProps>((props, forwarde
   const inputProps = rest as InputHTMLAttributes<HTMLInputElement>;
 
   return (
-    <div className={containerClass}>
-      <input
-        id={id}
-        ref={forwardedRef as React.ForwardedRef<HTMLInputElement>}
+      <div className={containerClass} data-tint={tint}>
+        <input
+          id={id}
+          ref={forwardedRef as React.ForwardedRef<HTMLInputElement>}
         placeholder=" "
         data-halo
         className={controlClass}
