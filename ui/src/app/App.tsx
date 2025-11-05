@@ -5,8 +5,10 @@ import { PadSceneDeck } from '../flows/pads/PadSceneDeck';
 import { SystemFooter } from './SystemFooter';
 import { useHaloPulse } from '../flows/presence/halos/useHaloPulse';
 import { useCaretHalo } from '../flows/presence/halos/useCaretHalo';
+import TrailLayer from '../flows/presence/trail/TrailLayer';
 import '../flows/presence/halos/presence-halos.css';
 import '../flows/presence/placeholders/placeholders.css';
+import '../flows/presence/trail/trail.css';
 
 // M3 App — orchestrates Presence, Pads, and System layers.
 // Each component breathes through the shared kernel (phase$, pulse$, peers$).
@@ -21,6 +23,7 @@ export default function App() {
 
       {/* 🌿 Active Pad & Scene flow */}
       <PadSceneDeck />
+      <TrailLayer />
     </Layout>
   );
 }
