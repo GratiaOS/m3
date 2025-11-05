@@ -103,10 +103,12 @@ export function PadShelf() {
             id={`pad-seed-${entry.id}`}
             role="option"
             type="button"
-            className={`pad-seed tone-${entry.tone} ${isActive ? 'is-active' : ''}`}
+            className={`pad-seed halo tone-${entry.tone} ${isActive ? 'is-active' : ''}`}
             aria-selected={isActive}
             aria-label={`${entry.label} pad`}
             data-pad-id={entry.id}
+            data-halo
+            data-halo-active={isActive ? '' : undefined}
             tabIndex={isActive ? 0 : -1}
             onClick={() => activate(entry, 'rail')}
           >

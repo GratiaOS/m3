@@ -11,16 +11,20 @@ export function SystemPanel() {
       <div className="system-toggle" role="group" aria-label="Select system tool">
         <button
           type="button"
-          className={`system-pill ${active === 'value' ? 'active' : ''}`}
+          className={`system-pill halo ${active === 'value' ? 'active' : ''}`}
           aria-pressed={active === 'value'}
+          data-halo
+          data-halo-active={active === 'value' ? '' : undefined}
           onClick={() => setActive(active === 'value' ? null : 'value')}>
           <span aria-hidden>💸</span>
           <span className="sr-only">Value Bridge</span>
         </button>
         <button
           type="button"
-          className={`system-pill ${active === 'energy' ? 'active' : ''}`}
+          className={`system-pill halo ${active === 'energy' ? 'active' : ''}`}
           aria-pressed={active === 'energy'}
+          data-halo
+          data-halo-active={active === 'energy' ? '' : undefined}
           onClick={() => setActive(active === 'energy' ? null : 'energy')}>
           <span aria-hidden>⚡</span>
           <span className="sr-only">Energy Coach</span>

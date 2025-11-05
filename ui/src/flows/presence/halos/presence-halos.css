@@ -1,0 +1,92 @@
+:root {
+  --halo-ms: 180ms;
+  --halo-color: color-mix(in oklab, var(--color-accent) 28%, transparent);
+  --halo-outline: var(--color-border-strong, currentColor);
+}
+
+:root[data-phase='presence'] {
+  --halo-ms: 220ms;
+  --halo-color: color-mix(in oklab, var(--color-presence-9, var(--color-accent)) 30%, transparent);
+}
+
+:root[data-phase='focused'] {
+  --halo-ms: 140ms;
+  --halo-color: color-mix(in oklab, var(--color-focused-9, var(--color-accent)) 28%, transparent);
+}
+
+:root[data-phase='celebratory'] {
+  --halo-ms: 160ms;
+  --halo-color: color-mix(in oklab, var(--color-celebratory-9, var(--color-accent)) 26%, transparent);
+}
+
+:root[data-phase='soft'] {
+  --halo-ms: 200ms;
+  --halo-color: color-mix(in oklab, var(--color-soft-9, var(--color-accent)) 22%, transparent);
+}
+
+.halo,
+[data-halo] {
+  position: relative;
+  isolation: isolate;
+}
+
+.halo::after,
+[data-halo]::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 12px;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.98);
+  box-shadow: 0 0 0 0 var(--halo-color);
+  transition:
+    opacity var(--halo-ms) ease,
+    transform var(--halo-ms) ease,
+    box-shadow var(--halo-ms) ease;
+}
+
+.halo:where(:focus-visible, :hover, [aria-current='true'], [aria-selected='true'])::after,
+[data-halo][data-halo-active]::after {
+  opacity: 0.18;
+  transform: scale(1);
+  box-shadow: 0 0 0 6px var(--halo-color);
+}
+
+:root.is-pulsing .halo:where(:focus-visible, :hover, [aria-current='true'], [aria-selected='true'])::after,
+:root.is-pulsing [data-halo][data-halo-active]::after {
+  opacity: 0.28;
+  box-shadow: 0 0 0 8px var(--halo-color);
+}
+
+.pad-seed.halo::after {
+  border-radius: 9999px;
+  inset: -4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .halo::after,
+  [data-halo]::after {
+    transition: none;
+    transform: none;
+    box-shadow: none;
+    opacity: 0;
+    outline: 2px solid var(--halo-outline);
+    outline-offset: 3px;
+  }
+
+  .halo:where(:focus-visible, :hover, [aria-current='true'], [aria-selected='true'])::after,
+  [data-halo][data-halo-active]::after {
+    opacity: 1;
+  }
+}
+
+@media (forced-colors: active) {
+  .halo::after,
+  [data-halo]::after {
+    outline: 2px solid SelectedItem;
+    outline-offset: 3px;
+    box-shadow: none !important;
+    opacity: 1;
+  }
+}
