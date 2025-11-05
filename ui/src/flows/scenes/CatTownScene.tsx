@@ -17,11 +17,13 @@ export function CatTownScene({ onNext }: SceneProps) {
       </header>
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(140px,0.5fr)]">
         <Field label="Voice handle" description="format: species:name">
-          {(ariaProps) => <input {...ariaProps} className="input-base" placeholder="cat:sunbeam" />}
+          {(ariaProps) => (
+            <input {...ariaProps} className="input-base halo" data-halo placeholder="cat:sunbeam" />
+          )}
         </Field>
         <Field label="Mood">
           {(ariaProps) => (
-            <select {...ariaProps} className="input-base">
+            <select {...ariaProps} className="input-base halo" data-halo>
               <option value="soft">Soft</option>
               <option value="focused">Focused</option>
               <option value="celebratory">Celebrate</option>
@@ -31,7 +33,13 @@ export function CatTownScene({ onNext }: SceneProps) {
       </div>
       <Field label="Whisper">
         {(ariaProps) => (
-          <textarea {...ariaProps} className="input-base w-full" rows={2} placeholder="“Sunbeam shifts to the couch at 14:00.”" />
+          <textarea
+            {...ariaProps}
+            className="input-base w-full halo"
+            data-halo
+            rows={2}
+            placeholder="“Sunbeam shifts to the couch at 14:00.”"
+          />
         )}
       </Field>
       <footer className="flex items-center justify-end gap-2">

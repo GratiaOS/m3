@@ -59,6 +59,23 @@
   box-shadow: 0 0 0 8px var(--halo-color);
 }
 
+.halo[data-caret-active]::after,
+[data-halo][data-caret-active]::after {
+  opacity: 0.22;
+  box-shadow: 0 0 0 7px var(--halo-color);
+}
+
+:root.is-pulsing .halo[data-caret-active]::after,
+:root.is-pulsing [data-halo][data-caret-active]::after {
+  opacity: 0.34;
+  box-shadow: 0 0 0 9px var(--halo-color);
+}
+
+textarea.halo::after,
+textarea[data-halo]::after {
+  border-radius: 10px;
+}
+
 .pad-seed.halo::after {
   border-radius: 9999px;
   inset: -4px;

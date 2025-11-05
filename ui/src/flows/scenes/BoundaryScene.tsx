@@ -20,7 +20,8 @@ export function BoundaryScene({ onNext }: SceneProps) {
           <textarea
             {...ariaProps}
             rows={4}
-            className="input-base w-full"
+            className="input-base w-full halo"
+            data-halo
             placeholder="“My rest window is 22:00–07:00. Please honor it.”"
           />
         )}

@@ -196,7 +196,8 @@ const TownPad: React.FC<TownPadProps> = ({ me }) => {
                   }}
                   placeholder="“Sunbeam shifts to the couch at 14:00.”"
                   rows={4}
-                  className="input-base w-full"
+                  className="input-base w-full halo"
+                  data-halo
                 />
               )}
             </Field>
@@ -224,7 +225,8 @@ const TownPad: React.FC<TownPadProps> = ({ me }) => {
                   value={town}
                   onChange={(e) => setTown(e.target.value)}
                   placeholder="CatTown"
-                  className="w-full input-base"
+                  className="w-full input-base halo"
+                  data-halo
                   type="text"
                 />
               )}
@@ -233,12 +235,13 @@ const TownPad: React.FC<TownPadProps> = ({ me }) => {
             <div className="grid gap-2">
               <Field label="Voice" description={`Stored as ${voicePreview}`}>
                 {(aria) => (
-                  <input
+                <input
                     {...aria}
                     value={voiceName}
                     onChange={(e) => setVoiceName(e.target.value)}
                     placeholder={voiceSpecies === 'cat' ? 'felix' : voiceSpecies === 'human' ? 'raz' : 'bridge'}
-                    className="w-full input-base"
+                    className="w-full input-base halo"
+                    data-halo
                     type="text"
                   />
                 )}

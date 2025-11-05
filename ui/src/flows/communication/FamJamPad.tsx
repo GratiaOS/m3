@@ -191,7 +191,8 @@ const FamJamPad: React.FC = () => {
             }
           }}
           placeholder="One sentence is enough. What’s here now?"
-          className="w-full rounded-lg border border-border bg-elev p-3 text-sm outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+          className="w-full rounded-lg border border-border bg-elev p-3 text-sm outline-none focus:ring-2 focus:ring-[var(--color-accent)] halo"
+          data-halo
           rows={3}
         />
       </section>

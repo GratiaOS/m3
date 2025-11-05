@@ -16,7 +16,15 @@ export function GratitudeScene({ onNext }: SceneProps) {
         <p className="text-sm text-subtle">Seal one line of thanks. Presence carries the resonance.</p>
       </header>
       <Field label="Thank you for">
-        {(ariaProps) => <textarea {...ariaProps} rows={3} className="input-base w-full" placeholder="The whisper that grounded me…" />}
+        {(ariaProps) => (
+          <textarea
+            {...ariaProps}
+            rows={3}
+            className="input-base w-full halo"
+            data-halo
+            placeholder="The whisper that grounded me…"
+          />
+        )}
       </Field>
       <div className="flex items-center justify-end gap-2">
         <Button variant="outline" onClick={onNext}>

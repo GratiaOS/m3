@@ -36,6 +36,8 @@ export function ValueBridge() {
           placeholder="warm horizon, blue hush…"
           value={felt}
           onChange={(event) => setFelt(event.target.value)}
+          className="halo"
+          data-halo
         />
       </div>
       <div className="row">
@@ -45,6 +47,8 @@ export function ValueBridge() {
           placeholder="energy, attention, warmth…"
           value={given}
           onChange={(event) => setGiven(event.target.value)}
+          className="halo"
+          data-halo
         />
       </div>
       <button type="button" className="seal" onClick={seal} aria-label="Seal value cycle">

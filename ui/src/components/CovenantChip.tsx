@@ -54,14 +54,14 @@ export default function CovenantChip({ onAddToTimeline }: Props) {
 
           <label style={{ fontSize: 12 }}>Pillars (edit to taste)</label>
           <label style={{ fontSize: 12 }}>Care</label>
-          <textarea rows={2} value={care} onChange={(e) => setCare(e.target.value)} />
+          <textarea rows={2} value={care} onChange={(e) => setCare(e.target.value)} className="halo" data-halo />
           <label style={{ fontSize: 12 }}>Consent</label>
-          <textarea rows={2} value={consent} onChange={(e) => setConsent(e.target.value)} />
+          <textarea rows={2} value={consent} onChange={(e) => setConsent(e.target.value)} className="halo" data-halo />
           <label style={{ fontSize: 12 }}>Repair</label>
-          <textarea rows={2} value={repair} onChange={(e) => setRepair(e.target.value)} />
+          <textarea rows={2} value={repair} onChange={(e) => setRepair(e.target.value)} className="halo" data-halo />
 
           <label style={{ fontSize: 12 }}>Today's small promise (optional)</label>
-          <input value={promise} onChange={(e) => setPromise(e.target.value)} placeholder="≤10 min action" />
+          <input value={promise} onChange={(e) => setPromise(e.target.value)} placeholder="≤10 min action" className="halo" data-halo />
 
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <Button onClick={addToTimeline}>Add to timeline</Button>

@@ -64,7 +64,7 @@ export default function Composer({ onIngest, incognito = false }: Props) {
 
   return (
     <div style={{ display: 'grid', gap: 8 }}>
-      <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="type and tag..." rows={3} />
+      <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="type and tag..." rows={3} className="halo" data-halo />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
         {TAGS.map((t) => (
           <button
