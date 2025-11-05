@@ -15,13 +15,17 @@ const presenceKernel = new SharedPresenceKernel();
 const SELF_ID = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `m3-${Math.random().toString(36).slice(2)}`;
 let suppressSignalBroadcast = false;
 
+presenceKernel.upsertPeer(SELF_ID);
+
 mood$.subscribe((mood) => {
   if (suppressSignalBroadcast) return;
+  presenceKernel.upsertPeer(SELF_ID);
   signalBus.emit('phase:update', { phase: mood, from: SELF_ID });
 });
 
 signalBus.on('phase:update', ({ phase, from }) => {
   if (!phase || from === SELF_ID) return;
+  if (from) presenceKernel.upsertPeer(from as string);
   suppressSignalBroadcast = true;
   try {
     presenceKernel.setMood(phase as Mood);

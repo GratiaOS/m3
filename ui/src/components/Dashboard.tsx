@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Button, Pill } from '@garden/ui';
+import { Button, Pill } from '@gratiaos/ui';
 import { notifyJoy } from '@/utils/joy';
 import { getState, setState, TeamState, PillarStatus, getPanicLast, type PanicLast, getTells, type Tell, resolveEmotion } from '@/api';
 import { Heading, Subheading, Divider, Text, Strong, Input, Textarea } from '@/ui/catalyst';
-import { FamJamPanel } from './FamJamPanel';
+import FamJamPad from '@/flows/communication/FamJamPad';
+import { useProfile } from '@/state/profile';
 
 const isDev = import.meta.env.DEV;
 
@@ -31,6 +32,7 @@ export default function Dashboard() {
   const [landing, setLanding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
+  const { me } = useProfile();
 
   useEffect(() => {
     (async () => {
@@ -271,6 +273,7 @@ export default function Dashboard() {
       )}
 
       <Divider />
+      <Divider />
       <div className="flex items-center gap-3" aria-label={`Decision: ${decision.label} – ${decision.detail}`}>
         <Pill tone={decision.label === 'GO' ? 'positive' : decision.label === 'WAIT' ? 'warning' : 'danger'} variant="solid" density="snug">
           <span aria-hidden="true" className="mr-1">
@@ -376,7 +379,7 @@ export default function Dashboard() {
           </Button>
         </div>
       </div>
-      <FamJamPanel />
+      <FamJamPad />
     </div>
   );
 }

@@ -1,10 +1,45 @@
+/**
+ * ──────────────────────────────────────────────────────────────────────────────
+ * api.ts — Typed client for the M3 Memory Server
+ * ──────────────────────────────────────────────────────────────────────────────
+ * Purpose
+ *   One small, typed front‑door for all UI → server HTTP calls.
+ *
+ * Principles
+ *   • Keep wire types minimal and strictly mirror server fields.
+ *   • Prefer the generic `request<T>()` helper so headers/BASE/auth are consistent.
+ *   • Errors: non‑2xx responses throw with the server text body as the Error message.
+ *   • Be resilient to partial backends: some helpers include graceful fallbacks.
+ *
+ * Sections
+ *   - Tells, Thanks
+ *   - Retrieval & Ingest
+ *   - Replies (small LLM‑like endpoint)
+ *   - Emotions / Timeline (with fallback)
+ *   - Panic flow
+ *   - Status (team + member lights) + SSE stream
+ *   - Towns (“Pad” news/bulletin) + CatTown conveniences
+ *
+ * Notes
+ *   • BASE is read from `VITE_API_BASE` at build time; defaults to localhost.
+ *   • Auth: looks for a bearer token under `localStorage['m3_token']`. If you
+ *     embed this module outside the browser (e.g., SSR/Electron main), gate
+ *     access to `localStorage` or inject a token via headers when calling `request`.
+ *   • When adding new endpoints, keep JSDoc examples close to the helpers.
+ */
 import type { BridgeSuggestion, BridgeKindAlias } from '@/types/patterns';
 import { normalizeBridgeKind } from '@/types/patterns';
+// Base URL for the server. Override with VITE_API_BASE in `.env` or CI.
 export const BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:3033';
+// Optional bearer read once at module init. UI can update storage and refresh.
 const BEARER = localStorage.getItem('m3_token') || '';
 
 type HeadersMap = Record<string, string | undefined>;
 
+/**
+ * Remove undefined header values before issuing fetch.
+ * Ensures we don't accidentally send `"Authorization": "Bearer undefined"`.
+ */
 function cleanHeaders(h: HeadersMap): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [k, v] of Object.entries(h)) {
@@ -13,6 +48,7 @@ function cleanHeaders(h: HeadersMap): Record<string, string> {
   return out;
 }
 
+// ── Status types (shared with Member Light endpoints) ─────────────────────────
 export type LightStatus = 'green' | 'yellow' | 'red';
 export type LightColor = LightStatus;
 
@@ -105,6 +141,7 @@ export type TimelineItem = {
   meta?: Record<string, unknown>;
 };
 
+// Normalize an Emotion row into a generic timeline item for UI rendering.
 function mapEmotionToTimelineItem(e: EmotionOut): TimelineItem {
   const sealed = e.sealed === true || e.privacy === 'sealed';
   const subtitle = sealed ? '(sealed)' : (e.details ?? '').trim() || '(no details)';
@@ -124,6 +161,12 @@ function mapEmotionToTimelineItem(e: EmotionOut): TimelineItem {
   };
 }
 
+/**
+ * Fetch unified timeline items.
+ * Primary: GET /timeline/recent (if the server exposes it).
+ * Fallback: build a list from /emotions/recent (sorted, deduped).
+ * This allows the UI to keep working while the backend evolves.
+ */
 export async function getTimeline(limit = 20): Promise<TimelineItem[]> {
   try {
     const res = await fetch(`${BASE}/timeline/recent?limit=${limit}`, {
@@ -218,6 +261,7 @@ export async function getThanks(limit = 10): Promise<ThanksOut[]> {
 }
 
 async function postJSON<T>(path: string, body: Record<string, unknown>, extraHeaders: HeadersMap = {}): Promise<T> {
+  // Small helper for simple POST JSON endpoints (used by legacy helpers below).
   const baseHeaders: HeadersMap = {
     'Content-Type': 'application/json',
     Authorization: BEARER ? `Bearer ${BEARER}` : undefined,
@@ -229,7 +273,10 @@ async function postJSON<T>(path: string, body: Record<string, unknown>, extraHea
   return r.json();
 }
 
-// Generic request wrapper (GET/POST/etc.)
+/**
+ * Generic JSON request with consistent headers and error surface.
+ * Throws Error(text) on non‑2xx so callers can show the server message verbatim.
+ */
 export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = cleanHeaders({
     'Content-Type': 'application/json',
@@ -257,6 +304,10 @@ export function ingest(payload: IngestPayload, extraHeaders: HeadersMap = {}) {
   return postJSON('/ingest', payload, extraHeaders);
 }
 
+/**
+ * RAG‑style retrieval endpoint.
+ * Returns `{ chunks }` even if the server responds with a bare array for legacy clients.
+ */
 export async function retrieve(body: {
   query: string;
   limit?: number;
@@ -373,6 +424,13 @@ export async function getStatusSnapshot(): Promise<{ name: string; status: Light
   return r.json();
 }
 
+/**
+ * Subscribe to status updates via Server‑Sent Events.
+ * Usage:
+ *   const stop = streamStatus(setUpdates);
+ *   // later…
+ *   stop();
+ */
 export function streamStatus(onUpdate: (updates: { name: string; status: LightStatus }[]) => void) {
   const es = new EventSource(`${BASE}/status/stream`);
   es.onmessage = (e) => {
@@ -446,4 +504,84 @@ export async function fetchBridge(kind: BridgeKindAlias, intensity: number = 0.6
   search.set('kind', normalizeBridgeKind(kind));
   if (Number.isFinite(intensity)) search.set('intensity', intensity.toString());
   return request<BridgeSuggestion>(`/patterns/bridge_suggest?${search.toString()}`, { method: 'GET' });
+}
+
+// --- Towns (Pad) -----------------------------------------------------------
+
+/**
+ * POST /towns/news payload.
+ * `importance`: 0..3 where 0=info, 1=note, 2=signal, 3=urgent.
+ * Examples:
+ *   { town: "CatTown", subject: "Breakfast delivered", via: "Manolita" }
+ *   { town: "CatTown", subject: "Sunbeam shifts to couch at 14:00", via: "Felix", importance: 1 }
+ */
+export type TownNewsIn = {
+  town: string; // e.g., "CatTown"
+  headline: string; // e.g., "Sunbeam shifts to couch at 14:00"
+  who?: string;
+  note?: string;
+  created_at?: string;
+};
+
+/**
+ * Server response shape for a single bulletin row.
+ */
+export type TownNewsOut = {
+  id: number;
+  town: string;
+  headline: string;
+  who?: string | null;
+  note?: string | null;
+  created_at: string;
+};
+
+export type TownBulletinPayload =
+  | TownNewsOut[]
+  | { items?: TownNewsOut[] }
+  | { bulletin?: TownNewsOut[] };
+
+/**
+ * Post a news item into a town bulletin.
+ * Mirrors POST /towns/news.
+ */
+export async function postTownNews(input: TownNewsIn): Promise<TownNewsOut> {
+  return request<TownNewsOut>('/towns/news', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+}
+
+/**
+ * Fetch recent bulletin items for an optional town.
+ * Mirrors GET /towns/bulletin?town=CatTown&limit=20
+ */
+export async function getTownBulletin(params: { town?: string; limit?: number } = {}): Promise<TownBulletinPayload> {
+  const search = new URLSearchParams();
+  if (params.town) search.set('town', params.town);
+  if (Number.isFinite(params.limit as number)) search.set('limit', String(params.limit));
+  const qs = search.toString();
+  const path = qs ? `/towns/bulletin?${qs}` : '/towns/bulletin';
+  return request<TownBulletinPayload>(path, { method: 'GET' });
+}
+
+// --- CatTown convenience ----------------------------------------------------
+
+// Default town used throughout the UI.
+export const DEFAULT_TOWN = 'CatTown';
+
+// Convenience wrapper that targets CatTown unless overridden.
+export function postCatTownNews(input: Omit<TownNewsIn, 'town'> & { town?: string }): Promise<TownNewsOut> {
+  return postTownNews({
+    town: input.town ?? DEFAULT_TOWN,
+    headline: input.headline,
+    who: input.who,
+    note: input.note,
+    created_at: input.created_at,
+  });
+}
+
+// Fetch newest CatTown items (limit optional, default server‑side).
+export function getCatTownBulletin(limit?: number): Promise<TownBulletinPayload> {
+  return getTownBulletin({ town: DEFAULT_TOWN, limit });
 }

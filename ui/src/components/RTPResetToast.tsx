@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { showToast } from '@garden/ui';
+import { showToast } from '@gratiaos/ui';
 
 /**
  * RTPResetToast — UX bridge for capacity resets

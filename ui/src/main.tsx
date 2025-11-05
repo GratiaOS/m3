@@ -1,15 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import '@/flows/pads/pad-registry';
 import { ProfileProvider } from '@/state/profile';
 import { ReversePolesProvider } from '@/state/reversePoles';
 import App from '@/App';
-import PadHost from '@/pads/PadHost';
+import PadHost from '@/flows/pads/PadHost';
 import { useProfile } from '@/state/profile';
-import { usePadRoute } from '@/pads/usePadRoute';
-import { PadRegistryProvider } from '@/hooks/usePadRegistry';
+import { usePadRoute } from '@/flows/pads/hooks/usePadRoute';
 import { Toaster } from '@gratiaos/ui';
-import '@gratiaos/ui/styles/toast.css';
-import '@gratiaos/tokens';
+import { Heartbeat, ConstellationHUD } from '@gratiaos/presence-kernel';
 import './styles.css';
 
 const RootApp: React.FC = () => {
@@ -21,6 +20,8 @@ const RootApp: React.FC = () => {
       <>
         <PadHost padId={route.id} me={me} />
         <Toaster position="bottom-center" />
+        <Heartbeat />
+        <ConstellationHUD />
       </>
     );
   }
@@ -35,12 +36,10 @@ const RootApp: React.FC = () => {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <PadRegistryProvider>
-      <ReversePolesProvider>
-        <ProfileProvider>
-          <RootApp />
-        </ProfileProvider>
-      </ReversePolesProvider>
-    </PadRegistryProvider>
+    <ReversePolesProvider>
+      <ProfileProvider>
+        <RootApp />
+      </ProfileProvider>
+    </ReversePolesProvider>
   </React.StrictMode>
 );

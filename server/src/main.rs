@@ -28,7 +28,7 @@
 //! - /state/* — dashboard model
 //! - /reply, /replies/preview — lightweight reply engine
 //! - /panic, /panic/run, /panic/last — redirect oracle + audit
-//! - /emotions/*, /patterns/*, /energy/*, /rhythm/*, /tells/*, /timeline/*, /cycles/*, /value/* — nested routers
+//! - /emotions/*, /patterns/*, /energy/*, /rhythm/*, /tells/*, /timeline/*, /cycles/*, /value/*, /towns/* — nested routers
 mod config;
 mod webhook;
 // mod auth; // keep if you actually use guards later
@@ -49,7 +49,8 @@ mod replies;
 mod rhythm;
 mod tells;
 mod timeline;
-mod value;
+mod towns;
+mod value; // community bulletin board (news feed): /towns/*
 
 use bus::Bus;
 use chrono::Utc;
@@ -1817,7 +1818,7 @@ async fn main() -> anyhow::Result<()> {
 
     // attach state after nesting emotions, patterns, energy, rhythm (apply CORS last so it covers nested routes)
     // Nested routers mounted under prefixes (see their modules):
-    // /emotions, /patterns, /energy, /rhythm, /tells, /timeline, /cycles, /value
+    // /emotions, /patterns, /energy, /rhythm, /tells, /timeline, /cycles, /value, /towns
     let app = app
         .nest("/emotions", emotions::router())
         .nest("/patterns", patterns::router())
@@ -1827,6 +1828,7 @@ async fn main() -> anyhow::Result<()> {
         .nest("/timeline", timeline::router())
         .nest("/cycles", cycles::router())
         .nest("/value", value::router())
+        .nest("/towns", towns::router())
         .layer(cors)
         .with_state(state.clone());
 
