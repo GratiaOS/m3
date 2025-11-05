@@ -337,8 +337,10 @@ pub struct ValueEntryParams<'a> {
 /// Returns: the new row id.
 ///
 /// ### Example
-/// ```no_run
-/// use m3_memory_server::db::{insert_value_entry, Database, ValueEntryParams};
+/// ```ignore
+/// // (Doc example only; crate exposes this module only to the binary. For external reuse,
+/// // consider adding a `lib.rs` that `pub mod db;`.)
+/// // use crate::db::{insert_value_entry, Database, ValueEntryParams};
 ///
 /// # async fn example(db: &Database) -> Result<(), Box<dyn std::error::Error>> {
 /// let _rowid = insert_value_entry(

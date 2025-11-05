@@ -11,7 +11,7 @@
 //! - Secrets live only in RAM (`AppState.key`); no plaintext passphrase is written to disk.
 //!
 //! ## Exports & logs
-//! - Export/log files are written under `<repo>/exports` (or `M3_EXPORTS_DIR`).
+//! - Export/log files are written under `$REPO_ROOT/exports` (or `M3_EXPORTS_DIR`).
 //! - Panic compact logs: `exports/panic/YYYY-MM/panic-YYYY-MM-DD.log`.
 //! - Gratitude quick logs: `exports/thanks/…`.
 //!

@@ -31,8 +31,7 @@ export function LiveRegion() {
       aria-live="polite"
       aria-atomic="true"
       // Visually hidden but present for assistive tech.
-      style={{ position: 'absolute', left: -9999, height: 1, width: 1, overflow: 'hidden' }}
-    >
+      style={{ position: 'absolute', left: -9999, height: 1, width: 1, overflow: 'hidden' }}>
       {msg}
     </div>
   );

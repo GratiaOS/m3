@@ -29,6 +29,8 @@ function getFirstFocusable(root: HTMLElement): HTMLElement | null {
  */
 export function useFocusHandoff(sceneRef: RefLike) {
   const lastSpoken = useRef<string>('');
+  const lastFocusTs = useRef<number>(0);
+  const COOLDOWN_MS = 150; // prevent thrash when rapidly switching pads/scenes
 
   useEffect(() => {
     let first = true; // skip initial mount noise
@@ -47,6 +49,12 @@ export function useFocusHandoff(sceneRef: RefLike) {
       if (first) {
         // First valid pad presence after mount; don't focus/announce.
         first = false;
+        return;
+      }
+
+      // Cooldown: skip if we focused very recently (rapid switching / hotkey scrub)
+      const now = performance.now();
+      if (now - lastFocusTs.current < COOLDOWN_MS) {
         return;
       }
 
@@ -73,17 +81,20 @@ export function useFocusHandoff(sceneRef: RefLike) {
             /* swallow */
           }
 
-            // Halo burst (skip glow on reduced-motion)
+          // Halo burst (skip glow on reduced-motion)
           if (!reduced) {
             target.setAttribute('data-halo-burst', '');
             setTimeout(() => target.removeAttribute('data-halo-burst'), 240);
           }
 
-          // Build polite announcement message.
-          const padName = currentManifest?.title || 'Pad';
-          const sceneName = resolveSceneName(currentManifest, currentScene) || 'Scene';
-          const ctl = accessibleName(target);
-          const msg = `${padName} • ${sceneName} — Focused: ${ctl}.`;
+          lastFocusTs.current = performance.now();
+
+          // Build polite announcement message (sanitized & clamped).
+          const padName = sanitizeFragment(currentManifest?.title || 'Pad');
+          const sceneName = sanitizeFragment(resolveSceneName(currentManifest, currentScene) || 'Scene');
+          const ctl = sanitizeFragment(accessibleName(target));
+          let msg = `${padName} • ${sceneName} — Focused: ${ctl}.`;
+          msg = clampLength(normalizeWhitespace(msg), 160);
           if (msg !== lastSpoken.current) {
             lastSpoken.current = msg;
             announce(msg);
@@ -136,5 +147,20 @@ function accessibleName(el: HTMLElement): string {
   const title = el.getAttribute('title');
   if (title) return title.trim();
   const text = (el.textContent || '').trim();
-  return text.slice(0, 60) || 'control';
+  return clampLength(normalizeWhitespace(text), 60) || 'control';
+}
+
+// ── Sanitizers ───────────────────────────────────────────────────────────
+function normalizeWhitespace(s: string): string {
+  return s.replace(/\s+/g, ' ').trim();
+}
+
+function clampLength(s: string, max: number): string {
+  return s.length > max ? s.slice(0, max - 1).trimEnd() + '…' : s;
+}
+
+function sanitizeFragment(s: string): string {
+  // Remove trailing punctuation spam (e.g., "!!!" → "!")
+  const trimmed = normalizeWhitespace(s).replace(/([!?.,]){2,}$/g, (m) => m[0]);
+  return clampLength(trimmed, 48);
 }

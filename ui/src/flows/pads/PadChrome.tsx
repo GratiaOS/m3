@@ -10,6 +10,7 @@ interface PadChromeProps {
 
 const PadChrome: React.FC<PadChromeProps> = ({ pad, children }) => {
   const [mood] = usePadMood('soft');
+  // (optional) keyboard hint for opening pad; currently unused — expose as data attr when present
   const keyboardHint = pad.meta?.keyboard?.open;
   const titleId = `pad-title-${pad.id}`;
 
@@ -20,6 +21,7 @@ const PadChrome: React.FC<PadChromeProps> = ({ pad, children }) => {
       data-field="presence"
       data-pad-id={pad.id}
       data-pad-mood={mood}
+      {...(keyboardHint ? { 'data-hotkey-open': keyboardHint } : {})}
       aria-labelledby={titleId}
       role="region">
       <div className="mx-auto max-w-5xl">

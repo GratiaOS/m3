@@ -82,11 +82,12 @@ jobs:
           if-no-files-found: ignore
 
   ui:
-    name: UI (Node) – fmt • lint • build
+    name: UI (Node ${{ matrix.node }}) – fmt • lint • build
     needs: openapi
     strategy:
       matrix:
-        node: ['22.12.0']
+        # Test against active LTS majors + current to ensure broad compatibility.
+        node: [18, 20, 22]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

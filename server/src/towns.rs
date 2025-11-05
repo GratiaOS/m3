@@ -172,9 +172,16 @@ async fn get_bulletin(
 
             let mut args: Vec<String> = Vec::new();
             if let Some(town) = town_filter.as_ref() {
-                sql.push_str(" AND pre_activation LIKE ?1");
-                // crude but effective JSON substring match
-                args.push(format!("%\"town\":\"{}\"%", town.replace('\"', "\\\"")));
+                // Escape LIKE wildcards (% and _) and quotes; use backslash as ESCAPE char.
+                // This prevents unintended broad matches when town contains % or _.
+                sql.push_str(" AND pre_activation LIKE ?1 ESCAPE '\\\\'");
+                let escaped = town
+                    .replace('\\', "\\\\")
+                    .replace('%', "\\%")
+                    .replace('_', "\\_")
+                    .replace('\"', "\\\"");
+                // JSON substring pattern: %"town":"<escaped>"%
+                args.push(format!("%\"town\":\"{}\"%", escaped));
             }
             sql.push_str(" ORDER BY created_at DESC LIMIT ?X");
             sql = sql.replace("?X", &limit.to_string());
