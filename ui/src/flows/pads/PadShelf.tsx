@@ -50,6 +50,8 @@ export function PadShelf() {
   const [dragging, setDragging] = useState(false);
   const draggingRef = useRef(false);
   const drag = useRef({ x: 0, y: 0, t: 0, dx: 0, dy: 0 });
+  const lastBurstRef = useRef<string | null>(null);
+  const initialBurstSkippedRef = useRef(false);
 
   const focusIndex = useMemo(() => {
     const idx = items.findIndex((item) => item.id === activeId);
@@ -71,16 +73,25 @@ export function PadShelf() {
     [items, focusIndex, activate],
   );
 
+  const burstPad = useCallback(
+    (padId: string) => {
+      haloBurstForSeed(listRef, padId);
+      lastBurstRef.current = padId;
+    },
+    [listRef],
+  );
+
   const slideTo = useCallback(
     (delta: number) => {
       if (!items.length || delta === 0) return;
       const nextIndex = (focusIndex + delta + items.length) % items.length;
       const next = items[nextIndex]!;
+      if (next.id === activeId) return;
       armToBeat();
       activate(next, 'rail');
-      haloBurstForSeed(listRef, next.id);
+      burstPad(next.id);
     },
-    [activate, armToBeat, focusIndex, items],
+    [activate, activeId, armToBeat, burstPad, focusIndex, items],
   );
 
   useEffect(() => {
@@ -106,8 +117,54 @@ export function PadShelf() {
     el?.focus();
   }, [activeId]);
 
+  const previousActiveIdRef = useRef<string | null>(activePadId$.value ?? null);
+
+  useEffect(() => {
+    let initialEmission = true;
+    const unsubscribe = activePadId$.subscribe((id) => {
+      if (initialEmission) {
+        initialEmission = false;
+        previousActiveIdRef.current = id ?? null;
+        return;
+      }
+      if (id === previousActiveIdRef.current) {
+        return;
+      }
+      if (!id) {
+        previousActiveIdRef.current = null;
+        lastBurstRef.current = null;
+        return;
+      }
+      const previous = previousActiveIdRef.current;
+      previousActiveIdRef.current = id;
+      if (previous === null && !initialBurstSkippedRef.current) {
+        initialBurstSkippedRef.current = true;
+        lastBurstRef.current = id;
+        return;
+      }
+      if (lastBurstRef.current === id) {
+        lastBurstRef.current = null;
+        return;
+      }
+      burstPad(id);
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, [burstPad]);
+
   const onKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (event) => {
     if (draggingRef.current) return;
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      if (!items.length) return;
+      const next = items[focusIndex]!;
+      if (next.id === activeId) return;
+      armToBeat();
+      activate(next, 'hotkey');
+      burstPad(next.id);
+      return;
+    }
     if (event.key === 'ArrowDown' || event.key === 'j') {
       event.preventDefault();
       moveFocus(1);
@@ -264,7 +321,12 @@ export function PadShelf() {
             data-halo
             data-halo-active={isActive ? '' : undefined}
             tabIndex={isActive ? 0 : -1}
-            onClick={() => activate(entry, 'rail')}
+            onClick={() => {
+              if (isActive) return;
+              armToBeat();
+              activate(entry, 'rail');
+              burstPad(entry.id);
+            }}
           >
             <span className="seed-dot" aria-hidden="true">
               {entry.icon}
