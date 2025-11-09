@@ -6,7 +6,7 @@ import { DecodeScene } from '@/flows/scenes/DecodeScene';
 import { setPresenceMood } from '@/presence/presence-kernel';
 import { useSignalSelector } from '@/lib/useSignal';
 import { consent$, depth$, hints$, setConsent, setDepth, type Depth, markMemoryHintSeen } from '@/flows/relational/relationalAlignment';
-import { matchCycleDepth, matchJumpDecode, matchToggleMemory, isMac } from '@/lib/hotkeys';
+import { matchesChord, isMac } from '@/lib/hotkeys';
 
 type MemoryPadProps = {
   sceneId?: string | null;
@@ -17,7 +17,7 @@ export function MemoryPad({ sceneId }: MemoryPadProps) {
   const consentOn = useSignalSelector(consent$, (value) => value);
   const depth = useSignalSelector(depth$, (value) => value);
   const memoryHintSeen = useSignalSelector(hints$, (value) => value.memoryHintSeen);
-  const hintShortcut = isMac() ? '⌃⌥ + M' : 'Alt + M';
+  const hintShortcut = isMac ? '⌃⌥ + M' : 'Alt + M';
 
   useEffect(() => {
     if (scene === 'gratitude') {
@@ -40,17 +40,17 @@ export function MemoryPad({ sceneId }: MemoryPadProps) {
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (matchToggleMemory(event)) {
+      if (matchesChord(event, 'memoryToggle')) {
         event.preventDefault();
         toggleConsent();
         return;
       }
-      if (matchCycleDepth(event)) {
+      if (matchesChord(event, 'depthCycle')) {
         event.preventDefault();
         cycleDepth();
         return;
       }
-      if (matchJumpDecode(event)) {
+      if (matchesChord(event, 'decodeJump')) {
         event.preventDefault();
         const targetHash = '#pad=memory&scene=decode';
         if (window.location.hash !== targetHash) {
@@ -136,7 +136,7 @@ export function MemoryPad({ sceneId }: MemoryPadProps) {
           {!consentOn && !memoryHintSeen && (
             <div className="memory-hint" role="note" aria-live="polite">
               <span>Turn on Memory to remember this after refresh.</span>
-              <kbd>{isMac() ? '⌃⌥ + M' : 'Alt + M'}</kbd>
+              <kbd>{hintShortcut}</kbd>
               <button type="button" className="memory-hint__dismiss" onClick={markMemoryHintSeen}>
                 Got it
               </button>

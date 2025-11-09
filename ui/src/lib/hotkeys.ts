@@ -1,12 +1,10 @@
-const isNavigatorMac = () => {
+const detectMac = () => {
   if (typeof navigator === 'undefined') return false;
   const platform = navigator.platform || navigator.userAgent;
-  return /Mac|iPhone|iPad|iPod/.test(platform);
+  return /Mac|iPhone|iPad|iPod/i.test(platform);
 };
 
-const mac = isNavigatorMac();
-
-export const isMac = () => mac;
+export const isMac = detectMac();
 
 export const inEditable = (target: EventTarget | null) => {
   const el = target as HTMLElement | null;
@@ -14,38 +12,44 @@ export const inEditable = (target: EventTarget | null) => {
   return Boolean(el.closest('input, textarea, [contenteditable=""], [contenteditable="true"]'));
 };
 
-export const matchToggleMemory = (event: KeyboardEvent) => {
-  if (inEditable(event.target)) return false;
-  if (mac) {
-    return (
-      event.key.toLowerCase() === 'm' &&
-      !event.metaKey &&
-      !event.shiftKey &&
-      (event.ctrlKey || event.altKey) &&
-      event.altKey
-    );
-  }
-  return event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey && event.key.toLowerCase() === 'm';
+export type ChordId = 'memoryToggle' | 'depthCycle' | 'decodeJump';
+
+type Matcher = (event: KeyboardEvent) => boolean;
+
+const key = (k: string) => (event: KeyboardEvent) => event.key.toLowerCase() === k;
+const alt = (event: KeyboardEvent) => event.altKey;
+const ctrl = (event: KeyboardEvent) => event.ctrlKey;
+const shift = (event: KeyboardEvent) => event.shiftKey;
+
+const withMods = (
+  ...mods: Array<(event: KeyboardEvent) => boolean>
+) =>
+(event: KeyboardEvent) =>
+  mods.every((mod) => mod(event));
+
+const withCombo = (...mods: Array<(event: KeyboardEvent) => boolean>) => (k: string): Matcher => {
+  const checkMods = withMods(...mods);
+  return (event) => checkMods(event) && key(k)(event);
 };
 
-export const matchCycleDepth = (event: KeyboardEvent) => {
-  if (inEditable(event.target)) return false;
-  if (mac) {
-    return (
-      event.key.toLowerCase() === 'd' &&
-      !event.metaKey &&
-      !event.shiftKey &&
-      (event.ctrlKey || event.altKey) &&
-      event.altKey
-    );
-  }
-  return event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey && event.key.toLowerCase() === 'd';
+const or = (...matchers: Matcher[]) => (event: KeyboardEvent) => matchers.some((matcher) => matcher(event));
+
+const chords: Record<ChordId, { mac: Matcher; win: Matcher }> = {
+  memoryToggle: {
+    mac: or(withCombo(alt)('m'), withCombo(ctrl, alt)('m')),
+    win: withCombo(alt)('m'),
+  },
+  depthCycle: {
+    mac: or(withCombo(alt)('d'), withCombo(ctrl, alt)('d')),
+    win: withCombo(alt)('d'),
+  },
+  decodeJump: {
+    mac: withCombo(ctrl, alt, shift)('d'),
+    win: withCombo(alt, shift)('d'),
+  },
 };
 
-export const matchJumpDecode = (event: KeyboardEvent) => {
+export function matchesChord(event: KeyboardEvent, chord: ChordId): boolean {
   if (inEditable(event.target)) return false;
-  if (mac) {
-    return event.ctrlKey && event.altKey && event.shiftKey && !event.metaKey && event.key.toLowerCase() === 'd';
-  }
-  return event.altKey && event.shiftKey && !event.ctrlKey && !event.metaKey && event.key.toLowerCase() === 'd';
-};
+  return (isMac ? chords[chord].mac : chords[chord].win)(event);
+}

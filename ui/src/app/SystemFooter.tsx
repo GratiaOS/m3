@@ -12,7 +12,7 @@ import {
 import { useSignalSelector, useSignalManySelector, shallowEqual } from '@/lib/useSignal';
 import { authority$, mood$ } from '@gratiaos/presence-kernel';
 import { consent$, depth$ } from '@/flows/relational/relationalAlignment';
-import { matchJumpDecode } from '@/lib/hotkeys';
+import { matchesChord } from '@/lib/hotkeys';
 
 const selectFooter = (vals: readonly unknown[]) => ({
   authority: vals[0] as string,
@@ -65,7 +65,7 @@ export function SystemFooter() {
     };
 
     const handleKey = (event: KeyboardEvent) => {
-      if (matchJumpDecode(event)) {
+      if (matchesChord(event, 'decodeJump')) {
         const targetHash = '#pad=memory&scene=decode';
         if (window.location.hash !== targetHash) {
           window.location.hash = targetHash;
