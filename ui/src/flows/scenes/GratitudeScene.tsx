@@ -6,6 +6,7 @@ import { triggerEmber } from '@/flows/feedback/ember';
 import { useProfile } from '@/state/profile';
 import { mood$ } from '@gratiaos/presence-kernel';
 import { useSignalSelector } from '@/lib/useSignal';
+import { markMemoryHintSeen } from '@/flows/relational/relationalAlignment';
 
 export function GratitudeScene() {
   useSceneLifecycle('gratitude');
@@ -33,6 +34,7 @@ export function GratitudeScene() {
         resonance: currentMood,
       });
       clear();
+      markMemoryHintSeen();
     } finally {
       setIsSealing(false);
     }

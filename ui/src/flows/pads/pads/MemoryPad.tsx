@@ -5,7 +5,8 @@ import { BoundaryScene } from '@/flows/scenes/BoundaryScene';
 import { DecodeScene } from '@/flows/scenes/DecodeScene';
 import { setPresenceMood } from '@/presence/presence-kernel';
 import { useSignalSelector } from '@/lib/useSignal';
-import { consent$, depth$, setConsent, setDepth, type Depth } from '@/flows/relational/relationalAlignment';
+import { consent$, depth$, hints$, setConsent, setDepth, type Depth, markMemoryHintSeen } from '@/flows/relational/relationalAlignment';
+import { matchCycleDepth, matchJumpDecode, matchToggleMemory, isMac } from '@/lib/hotkeys';
 
 type MemoryPadProps = {
   sceneId?: string | null;
@@ -15,6 +16,8 @@ export function MemoryPad({ sceneId }: MemoryPadProps) {
   const { scene, change } = useSceneTransition('gratitude', sceneId);
   const consentOn = useSignalSelector(consent$, (value) => value);
   const depth = useSignalSelector(depth$, (value) => value);
+  const memoryHintSeen = useSignalSelector(hints$, (value) => value.memoryHintSeen);
+  const hintShortcut = isMac() ? '⌃⌥ + M' : 'Alt + M';
 
   useEffect(() => {
     if (scene === 'gratitude') {
@@ -25,12 +28,6 @@ export function MemoryPad({ sceneId }: MemoryPadProps) {
       setPresenceMood('focused');
     }
   }, [scene]);
-
-  useEffect(() => {
-    if (depth === 'soft' && scene === 'decode') {
-      change('boundary');
-    }
-  }, [depth, scene, change]);
 
   const toggleConsent = useCallback(() => {
     setConsent(!consentOn);
@@ -43,21 +40,42 @@ export function MemoryPad({ sceneId }: MemoryPadProps) {
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (!event.altKey || event.metaKey || event.ctrlKey || event.shiftKey) return;
-      const target = event.target as HTMLElement | null;
-      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
-      const key = event.key.toLowerCase();
-      if (key === 'm') {
+      if (matchToggleMemory(event)) {
         event.preventDefault();
         toggleConsent();
-      } else if (key === 'd') {
+        return;
+      }
+      if (matchCycleDepth(event)) {
         event.preventDefault();
         cycleDepth();
+        return;
+      }
+      if (matchJumpDecode(event)) {
+        event.preventDefault();
+        const targetHash = '#pad=memory&scene=decode';
+        if (window.location.hash !== targetHash) {
+          window.location.hash = targetHash;
+        } else {
+          const hashEvent =
+            typeof HashChangeEvent === 'function' ? new HashChangeEvent('hashchange') : new Event('hashchange');
+          window.dispatchEvent(hashEvent);
+        }
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [toggleConsent, cycleDepth]);
+
+  useEffect(() => {
+    if (memoryHintSeen) return;
+    const onHintDismiss = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        markMemoryHintSeen();
+      }
+    };
+    window.addEventListener('keydown', onHintDismiss);
+    return () => window.removeEventListener('keydown', onHintDismiss);
+  }, [memoryHintSeen]);
 
   const handleNav = (targetScene: 'gratitude' | 'boundary' | 'decode') => {
     if (targetScene === 'decode' && depth !== 'deep') return;
@@ -113,7 +131,20 @@ export function MemoryPad({ sceneId }: MemoryPadProps) {
         )}
       </nav>
 
-      {scene === 'gratitude' && <GratitudeScene />}
+      {scene === 'gratitude' && (
+        <>
+          {!consentOn && !memoryHintSeen && (
+            <div className="memory-hint" role="note" aria-live="polite">
+              <span>Flip Memory to keep this after refresh.</span>
+              <kbd>{navigator.platform?.includes('Mac') ? '⌃⌥ + M' : 'Alt + M'}</kbd>
+              <button type="button" className="memory-hint__dismiss" onClick={markMemoryHintSeen}>
+                Got it
+              </button>
+            </div>
+          )}
+          <GratitudeScene />
+        </>
+      )}
       {scene === 'boundary' && (
         <BoundaryScene onBack={() => change('gratitude')} onNext={depth === 'deep' ? () => change('decode') : undefined} />
       )}

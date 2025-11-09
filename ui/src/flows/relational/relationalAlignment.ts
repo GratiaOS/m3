@@ -20,6 +20,7 @@ const makeSignal = <T,>(initial: T) => {
 };
 
 const STORAGE_KEY = 'rel.align.v1';
+const HINTS_KEY = 'rel.align.hints.v1';
 
 export type Depth = 'soft' | 'deep';
 type PersistedState = { consent: boolean; depth: Depth };
@@ -56,9 +57,23 @@ const persist = (state: PersistedState) => {
 };
 
 const initial = load();
+const loadHints = () => {
+  const win = safeWindow();
+  if (!win) return { memoryHintSeen: false };
+  try {
+    const raw = win.localStorage.getItem(HINTS_KEY);
+    if (!raw) return { memoryHintSeen: false };
+    const parsed = JSON.parse(raw) as { memoryHintSeen?: boolean };
+    return { memoryHintSeen: Boolean(parsed.memoryHintSeen) };
+  } catch {
+    return { memoryHintSeen: false };
+  }
+};
 
 export const consent$ = makeSignal<boolean>(initial.consent);
 export const depth$ = makeSignal<Depth>(initial.depth);
+export const hints$ = makeSignal<{ memoryHintSeen: boolean }>(loadHints());
+export const hints$ = makeSignal<{ memoryHintSeen: boolean }>(loadHints());
 
 const syncHtml = () => {
   const doc = safeDocument();
@@ -90,6 +105,20 @@ export function setDepth(next: Depth) {
   }
 }
 
+export function markMemoryHintSeen() {
+  if (hints$.value.memoryHintSeen) return;
+  hints$.set({ memoryHintSeen: true });
+  const win = safeWindow();
+  if (win) {
+    try {
+      win.localStorage.setItem(HINTS_KEY, JSON.stringify(hints$.value));
+    } catch {
+      /* ignore */
+    }
+    win.dispatchEvent(new CustomEvent('relational:hints', { detail: hints$.value }));
+  }
+}
+
 const win = safeWindow();
 if (win) {
   win.addEventListener('storage', (event) => {
@@ -103,6 +132,17 @@ if (win) {
         depth$.set(next.depth);
       }
       syncHtml();
+    } catch {
+      /* ignore */
+    }
+  });
+  win.addEventListener('storage', (event) => {
+    if (event.key !== HINTS_KEY || !event.newValue) return;
+    try {
+      const next = JSON.parse(event.newValue) as { memoryHintSeen?: boolean };
+      if (typeof next.memoryHintSeen === 'boolean' && next.memoryHintSeen !== hints$.value.memoryHintSeen) {
+        hints$.set({ memoryHintSeen: next.memoryHintSeen });
+      }
     } catch {
       /* ignore */
     }

@@ -258,6 +258,41 @@
   background: color-mix(in oklab, var(--tone-accent) 20%, transparent);
 }
 
+.memory-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--pad-elev) 90%, transparent);
+  color: color-mix(in oklab, var(--pad-text) 75%, transparent);
+  font-size: 0.8rem;
+}
+
+.memory-hint kbd {
+  font: inherit;
+  border: 1px solid color-mix(in oklab, var(--pad-border) 70%, transparent);
+  border-radius: 4px;
+  padding: 0 0.35rem;
+}
+
+.memory-hint__dismiss {
+  margin-left: auto;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid color-mix(in oklab, var(--pad-border) 65%, transparent);
+  background: transparent;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .memory-hint {
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
