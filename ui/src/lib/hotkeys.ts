@@ -17,7 +17,13 @@ export const inEditable = (target: EventTarget | null) => {
 export const matchToggleMemory = (event: KeyboardEvent) => {
   if (inEditable(event.target)) return false;
   if (mac) {
-    return event.ctrlKey && event.altKey && !event.metaKey && !event.shiftKey && event.key.toLowerCase() === 'm';
+    return (
+      event.key.toLowerCase() === 'm' &&
+      !event.metaKey &&
+      !event.shiftKey &&
+      (event.ctrlKey || event.altKey) &&
+      event.altKey
+    );
   }
   return event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey && event.key.toLowerCase() === 'm';
 };
@@ -25,7 +31,13 @@ export const matchToggleMemory = (event: KeyboardEvent) => {
 export const matchCycleDepth = (event: KeyboardEvent) => {
   if (inEditable(event.target)) return false;
   if (mac) {
-    return event.ctrlKey && event.altKey && !event.metaKey && !event.shiftKey && event.key.toLowerCase() === 'd';
+    return (
+      event.key.toLowerCase() === 'd' &&
+      !event.metaKey &&
+      !event.shiftKey &&
+      (event.ctrlKey || event.altKey) &&
+      event.altKey
+    );
   }
   return event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey && event.key.toLowerCase() === 'd';
 };

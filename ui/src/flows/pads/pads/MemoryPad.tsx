@@ -135,8 +135,8 @@ export function MemoryPad({ sceneId }: MemoryPadProps) {
         <>
           {!consentOn && !memoryHintSeen && (
             <div className="memory-hint" role="note" aria-live="polite">
-              <span>Flip Memory to keep this after refresh.</span>
-              <kbd>{navigator.platform?.includes('Mac') ? '⌃⌥ + M' : 'Alt + M'}</kbd>
+              <span>Turn on Memory to remember this after refresh.</span>
+              <kbd>{isMac() ? '⌃⌥ + M' : 'Alt + M'}</kbd>
               <button type="button" className="memory-hint__dismiss" onClick={markMemoryHintSeen}>
                 Got it
               </button>
