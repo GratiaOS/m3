@@ -16,5 +16,10 @@
   margin-left: 0.5rem;
   font-size: 0.75rem;
   letter-spacing: 0.02em;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+html[data-kbm='on'] [data-chord]::after {
   opacity: 0.6;
 }

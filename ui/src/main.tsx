@@ -18,6 +18,21 @@ console.log('🌬️ Presence Kernel Authority:', kernelAuthority);
 import { mountSrAnnouncer } from './lib/srAnnouncer';
 mountSrAnnouncer();
 
+window.addEventListener(
+  'keydown',
+  () => {
+    document.documentElement.dataset.kbm = 'on';
+  },
+  { passive: true }
+);
+window.addEventListener(
+  'pointerdown',
+  () => {
+    document.documentElement.dataset.kbm = 'off';
+  },
+  { passive: true }
+);
+
 const html = document.documentElement;
 html.dataset.authority = getAuthority();
 html.dataset.mood = moodSignal.value;
