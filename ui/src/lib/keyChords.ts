@@ -1,8 +1,8 @@
-export type ChordAction = 'toggleMemory' | 'cycleDepth' | 'jumpDecode';
+export type ChordAction = 'memoryToggle' | 'depthCycle' | 'decodeJump';
 
 const CHORD_MAP: Record<ChordAction, { mac: string; other: string }> = {
-  toggleMemory: { mac: '⌥M / ⌃⌥M', other: 'Alt+M' },
-  cycleDepth: { mac: '⌥D / ⌃⌥D', other: 'Alt+D' },
+  memoryToggle: { mac: '⌥M / ⌃⌥M', other: 'Alt+M' },
+  depthCycle: { mac: '⌥D / ⌃⌥D', other: 'Alt+D' },
   jumpDecode: { mac: '⌃⌥⇧D', other: 'Alt+Shift+D' },
 };
 

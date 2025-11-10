@@ -8,6 +8,7 @@ import { useSignalSelector } from '@/lib/useSignal';
 import { consent$, depth$, hints$, setConsent, setDepth, type Depth, markMemoryHintSeen } from '@/flows/relational/relationalAlignment';
 import { matchesChord, isMac } from '@/lib/hotkeys';
 import { chordLabel } from '@/lib/keyChords';
+import { chordAttr, chordTitle } from '@/lib/chordUi';
 
 type MemoryPadProps = {
   sceneId?: string | null;
@@ -18,7 +19,7 @@ export function MemoryPad({ sceneId }: MemoryPadProps) {
   const consentOn = useSignalSelector(consent$, (value) => value);
   const depth = useSignalSelector(depth$, (value) => value);
   const memoryHintSeen = useSignalSelector(hints$, (value) => value.memoryHintSeen);
-  const hintShortcut = chordLabel('toggleMemory');
+  const hintShortcut = chordLabel('memoryToggle');
 
   useEffect(() => {
     if (scene === 'gratitude') {
@@ -96,7 +97,8 @@ export function MemoryPad({ sceneId }: MemoryPadProps) {
             role="switch"
             aria-checked={consentOn}
             onClick={toggleConsent}
-            title="Toggle memory consent (Alt+M)">
+            {...chordAttr('memoryToggle')}
+            title={chordTitle('memoryToggle', 'Toggle Memory')}>
             {consentOn ? 'Memory: On' : 'Memory: Off'}
           </button>
           <div className="depth-toggle" role="radiogroup" aria-label="Depth">
@@ -104,14 +106,16 @@ export function MemoryPad({ sceneId }: MemoryPadProps) {
               type="button"
               aria-pressed={depth === 'soft'}
               onClick={() => setDepth('soft')}
-              title="Soft depth (Alt+D)">
+              {...chordAttr('depthCycle')}
+              title={chordTitle('depthCycle', 'Set depth to Soft')}>
               Soft
             </button>
             <button
               type="button"
               aria-pressed={depth === 'deep'}
               onClick={() => setDepth('deep')}
-              title="Deep depth (Alt+D)">
+              {...chordAttr('depthCycle')}
+              title={chordTitle('depthCycle', 'Set depth to Deep')}>
               Deep
             </button>
           </div>
