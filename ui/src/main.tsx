@@ -10,9 +10,13 @@ import { useProfile } from '@/state/profile';
 import { usePadRoute } from '@/flows/pads/hooks/usePadRoute';
 import { Toaster } from '@gratiaos/ui';
 import { Heartbeat, ConstellationHUD, kernelAuthority, authority$, mood$, getAuthority, mood$ as moodSignal } from '@gratiaos/presence-kernel';
+import './styles/accessibility.css';
 import './styles.css';
 
 console.log('🌬️ Presence Kernel Authority:', kernelAuthority);
+
+import { mountSrAnnouncer } from './lib/srAnnouncer';
+mountSrAnnouncer();
 
 const html = document.documentElement;
 html.dataset.authority = getAuthority();

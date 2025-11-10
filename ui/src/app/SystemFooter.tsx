@@ -13,6 +13,7 @@ import { useSignalSelector, useSignalManySelector, shallowEqual } from '@/lib/us
 import { authority$, mood$ } from '@gratiaos/presence-kernel';
 import { consent$, depth$ } from '@/flows/relational/relationalAlignment';
 import { matchesChord } from '@/lib/hotkeys';
+import { chordLabel } from '@/lib/keyChords';
 
 const selectFooter = (vals: readonly unknown[]) => ({
   authority: vals[0] as string,
@@ -107,6 +108,8 @@ export function SystemFooter() {
       <small role="status">
         🌕 M3 · Garden Core Interface — {authority} · {formatMood(mood)} · {consent ? 'Memory' : 'No memory'} ·{' '}
         {depth === 'deep' ? 'Deep' : 'Soft'}
+        {' · '}
+        <span title={`Toggle Memory (${chordLabel('toggleMemory')})`}>{consent ? 'Persisting' : 'Ephemeral'}</span>
       </small>
       <div className="pad-footer-actions export-controls">
         <Button variant="ghost" size="sm" onClick={() => setEnabled(!enabled)} aria-pressed={enabled} data-fastener="A">

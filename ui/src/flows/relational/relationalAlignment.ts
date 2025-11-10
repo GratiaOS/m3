@@ -1,3 +1,5 @@
+import { announce } from '@/lib/srAnnouncer';
+
 type Listener = () => void;
 
 const makeSignal = <T,>(initial: T) => {
@@ -73,7 +75,6 @@ const loadHints = () => {
 export const consent$ = makeSignal<boolean>(initial.consent);
 export const depth$ = makeSignal<Depth>(initial.depth);
 export const hints$ = makeSignal<{ memoryHintSeen: boolean }>(loadHints());
-export const hints$ = makeSignal<{ memoryHintSeen: boolean }>(loadHints());
 
 const syncHtml = () => {
   const doc = safeDocument();
@@ -93,6 +94,7 @@ export function setConsent(next: boolean) {
   if (win) {
     win.dispatchEvent(new CustomEvent('consent:changed', { detail: next }));
   }
+  announce(next ? 'Memory on. Ledger will persist locally.' : 'Memory off. In-session only.');
 }
 
 export function setDepth(next: Depth) {
@@ -103,6 +105,7 @@ export function setDepth(next: Depth) {
   if (win) {
     win.dispatchEvent(new CustomEvent('depthgate:changed', { detail: next }));
   }
+  announce(next === 'deep' ? 'Depth set to Deep.' : 'Depth set to Soft.');
 }
 
 export function markMemoryHintSeen() {
