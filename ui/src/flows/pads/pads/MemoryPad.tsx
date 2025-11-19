@@ -7,7 +7,7 @@ import { CodexScene } from '@/flows/scenes/CodexScene';
 import { setPresenceMood } from '@/presence/presence-kernel';
 import { useSignalSelector } from '@/lib/useSignal';
 import { consent$, depth$, hints$, setConsent, setDepth, type Depth, markMemoryHintSeen } from '@/flows/relational/relationalAlignment';
-import { matchesChord, isMac } from '@/lib/hotkeys';
+import { matchesChord } from '@/lib/hotkeys';
 import { chordLabel } from '@/lib/keyChords';
 import { chordAttr, chordTitle } from '@/lib/chordUi';
 import { MotherlineScene } from '@/flows/scenes/MotherlineScene';
