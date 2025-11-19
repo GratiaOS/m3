@@ -108,6 +108,8 @@ export function setDepth(next: Depth) {
   announce(next === 'deep' ? 'Depth set to Deep.' : 'Depth set to Soft.');
 }
 
+export const getConsent = () => consent$.value;
+
 export function markMemoryHintSeen() {
   if (hints$.value.memoryHintSeen) return;
   hints$.set({ memoryHintSeen: true });

@@ -101,9 +101,7 @@ fn classify_label_pattern(label: &str) -> (PatternCategory, SignalStrength) {
     let bytes = digits.as_bytes();
 
     // All digits the same → Repeat
-    let all_same = digits
-        .chars()
-        .all(|c| Some(c) == digits.chars().next());
+    let all_same = digits.chars().all(|c| Some(c) == digits.chars().next());
 
     // Palindromic (but not trivially all-same) → Mirror
     let is_palindrome = digits.chars().eq(digits.chars().rev());
@@ -144,14 +142,7 @@ fn classify_number_effect(
 
     // Anything clearly in the "calm / relief / grounded" family → signal
     let calm_keywords = [
-        "calm",
-        "relief",
-        "relieved",
-        "grounded",
-        "softer",
-        "open",
-        "ease",
-        "eased",
+        "calm", "relief", "relieved", "grounded", "softer", "open", "ease", "eased",
     ];
     if calm_keywords.iter().any(|k| e.contains(k)) {
         return NumberSignalResponse {
@@ -164,15 +155,7 @@ fn classify_number_effect(
 
     // Anything clearly in the "tense / pressure / must guess" family → anxiety loop
     let tension_keywords = [
-        "tense",
-        "tension",
-        "tight",
-        "pressure",
-        "obliged",
-        "must",
-        "panic",
-        "urgency",
-        "anxious",
+        "tense", "tension", "tight", "pressure", "obliged", "must", "panic", "urgency", "anxious",
         "anxiety",
     ];
     if tension_keywords.iter().any(|k| e.contains(k)) {

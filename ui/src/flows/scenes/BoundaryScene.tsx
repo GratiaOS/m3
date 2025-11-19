@@ -4,9 +4,10 @@ import { useSceneLifecycle } from '@/flows/pads/hooks/useSceneLifecycle';
 
 type SceneProps = {
   onNext?: () => void;
+  onBack?: () => void;
 };
 
-export function BoundaryScene({ onNext }: SceneProps) {
+export function BoundaryScene({ onNext, onBack }: SceneProps) {
   useSceneLifecycle('boundary');
   return (
     <Card className="space-y-4">
@@ -30,9 +31,16 @@ export function BoundaryScene({ onNext }: SceneProps) {
         <Button tone="accent" variant="solid">
           queue boundary
         </Button>
-        <Button variant="outline" onClick={onNext}>
-          back to gratitude
-        </Button>
+        {onBack && (
+          <Button variant="outline" onClick={onBack}>
+            back to gratitude
+          </Button>
+        )}
+        {onNext && (
+          <Button variant="outline" onClick={onNext}>
+            decode →
+          </Button>
+        )}
       </div>
     </Card>
   );

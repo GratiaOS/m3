@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import { runValueSealRitual, mood$ } from '@gratiaos/presence-kernel';
+import { useProfile } from '@/state/profile';
 import { Field } from '../presence/placeholders/Field';
+import { triggerEmber } from '../feedback/ember';
+import { createGratitudeToken } from '../value/gratitudeTokens';
 import '../../styles/system.css';
 
 const DEFAULT_RECEIVED = 'vision';
 
 export function ValueBridge() {
+  const { me } = useProfile();
   const [received] = useState(DEFAULT_RECEIVED);
   const [felt, setFelt] = useState('');
   const [given, setGiven] = useState('');
@@ -16,7 +21,15 @@ export function ValueBridge() {
   }, [received, given]);
 
   const seal = () => {
-    // TODO: integrate with reciprocity stream
+    runValueSealRitual();
+    triggerEmber();
+    const message = felt.trim() || given.trim() || received;
+    createGratitudeToken({
+      from: me ?? 'local-user',
+      message,
+      scene: 'ValueBridge',
+      resonance: mood$.value,
+    });
     setFelt('');
     setGiven('');
   };

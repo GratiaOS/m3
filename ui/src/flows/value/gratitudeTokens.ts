@@ -8,7 +8,7 @@ export interface GratitudeToken {
   message: string;
   timestamp: number;
   scene?: string;
-  resonance?: string;
+  resonance?: unknown;
 }
 
 const STORAGE_KEY = 'garden.gratitude.ledger';

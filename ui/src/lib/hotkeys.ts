@@ -12,7 +12,13 @@ export const inEditable = (target: EventTarget | null) => {
   return Boolean(el.closest('input, textarea, [contenteditable=""], [contenteditable="true"]'));
 };
 
-export type ChordId = 'memoryToggle' | 'depthCycle' | 'decodeJump';
+export type ChordId =
+  | 'memoryToggle'
+  | 'depthCycle'
+  | 'decodeJump'
+  | 'sendToWeave'
+  | 'openHotkeys'
+  | 'sealMotherline';
 
 type Matcher = (event: KeyboardEvent) => boolean;
 
@@ -20,6 +26,7 @@ const key = (k: string) => (event: KeyboardEvent) => event.key.toLowerCase() ===
 const alt = (event: KeyboardEvent) => event.altKey;
 const ctrl = (event: KeyboardEvent) => event.ctrlKey;
 const shift = (event: KeyboardEvent) => event.shiftKey;
+const meta = (event: KeyboardEvent) => event.metaKey;
 
 const withMods = (
   ...mods: Array<(event: KeyboardEvent) => boolean>
@@ -47,9 +54,25 @@ const chords: Record<ChordId, { mac: Matcher; win: Matcher }> = {
     mac: withCombo(ctrl, alt, shift)('d'),
     win: withCombo(alt, shift)('d'),
   },
+  sendToWeave: {
+    mac: withCombo(alt)('w'),
+    win: withCombo(alt)('w'),
+  },
+  openHotkeys: {
+    mac: (event) => event.key === '?' && event.shiftKey,
+    win: (event) => event.key === '?' && event.shiftKey,
+  },
+  sealMotherline: {
+    mac: or(withCombo(alt)('enter'), withCombo(meta)('enter')),
+    win: or(withCombo(alt)('enter'), withCombo(ctrl)('enter')),
+  },
 };
 
-export function matchesChord(event: KeyboardEvent, chord: ChordId): boolean {
-  if (inEditable(event.target)) return false;
+type MatchOpts = {
+  allowEditable?: boolean;
+};
+
+export function matchesChord(event: KeyboardEvent, chord: ChordId, opts: MatchOpts = {}): boolean {
+  if (!opts.allowEditable && inEditable(event.target)) return false;
   return (isMac ? chords[chord].mac : chords[chord].win)(event);
 }
