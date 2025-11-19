@@ -8,6 +8,16 @@
 
 ---
 
+## 🧮 Numbers, Pads & Field Play — 2025-11-19
+
+- docs+server (Numbers): added `docs/modules/numbers.md`, linked it from README, Emotional, Energy, USB Vault, and index docs so mirrored times/number patterns have a single home; `number_signal` classifier v0.2 on the server now returns category + strength for repeated, mirrored, and sequence labels.
+- ui/pads (Numbers Pad): introduced a **Numbers Pad** wired to the new API helper, registered it in the Pad registry and host/shelf/scene plumbing, and added PadTabs + hotkeys so pads feel like a small neural net instead of a flat list.
+- flows (Codex, games, rituals): landed Codex / feedback / games flows, PresenceTrace/presenceTraceStore, relational gates (`gardenRedact`, `gardenShareGate`), new scenes (CoBreath, Codex, EchoSketch, Motherline, Weave), and value views (Moments, Gratitude Tokens) so field play stays soft while signals stay traceable.
+
+🌬 whisper: _“Numbers sync body with clocks; pads bloom as signals anchor; field play keeps signals gentle.”_
+
+---
+
 ## 🌐 Presence Kernel Unification — 2025-11-02
 
 - packages: introduced a shared `@gratiaos/presence-kernel` module (phase$, mood$, PresenceKernel class) so Garden apps breathe from one signal core.
