@@ -16,7 +16,7 @@
   margin-left: 0.5rem;
   font-size: 0.75rem;
   letter-spacing: 0.02em;
-  color: color-mix(in oklab, var(--pad-text, currentColor) 85%, transparent);
+  color: var(--pad-text, var(--tone-ink, currentColor));
   opacity: 0;
   transition: opacity 0.18s ease;
 }

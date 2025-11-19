@@ -506,6 +506,27 @@ export async function fetchBridge(kind: BridgeKindAlias, intensity: number = 0.6
   return request<BridgeSuggestion>(`/patterns/bridge_suggest?${search.toString()}`, { method: 'GET' });
 }
 
+export type PatternCategory = 'mirror' | 'repeat' | 'sequence' | 'none';
+export type SignalStrength = 'low' | 'medium' | 'high';
+
+export type NumberSignalResponse = {
+  classification: 'signal' | 'anxiety_loop' | 'neutral';
+  reasoning: string;
+  category: PatternCategory;
+  strength: SignalStrength;
+};
+
+export async function postNumberSignal(input: { label: string; effect?: string }): Promise<NumberSignalResponse> {
+  const payload = {
+    label: input.label,
+    effect: input.effect,
+  };
+  return request<NumberSignalResponse>('/patterns/number_signal', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
 // --- Towns (Pad) -----------------------------------------------------------
 
 /**

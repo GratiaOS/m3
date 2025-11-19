@@ -50,10 +50,11 @@ class PadErrorBoundary extends React.Component<{ padId: string; children: React.
 
 interface PadHostProps {
   padId: string;
+  sceneId?: string | null;
   me: string;
 }
 
-const PadHost: React.FC<PadHostProps> = ({ padId, me }) => {
+const PadHost: React.FC<PadHostProps> = ({ padId, sceneId, me }) => {
   const descriptor = getPadManifest(padId) as PadManifest<PadMetadata> | null;
 
   useEffect(() => {
@@ -115,7 +116,7 @@ const PadHost: React.FC<PadHostProps> = ({ padId, me }) => {
               </Card>
             </div>
           }>
-          <PadComponent me={me} />
+          <PadComponent me={me} sceneId={sceneId} />
         </Suspense>
       </PadChrome>
     </PadErrorBoundary>

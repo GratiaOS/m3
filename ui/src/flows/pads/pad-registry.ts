@@ -23,6 +23,8 @@ import { MemoryPad } from '@/flows/pads/pads/MemoryPad';
 import { TownPresencePad } from '@/flows/pads/pads/TownPresencePad';
 import { EnergyPad } from '@/flows/pads/pads/EnergyPad';
 import { ValueBridgePad } from '@/flows/pads/pads/ValueBridgePad';
+import { GamesPad } from '@/flows/pads/pads/GamesPad';
+import { NumbersPad } from '@/flows/pads/pads/NumbersPad';
 import type { PadManifest, PadId } from '@gratiaos/pad-core';
 import { registerAll, globalRegistry } from '@gratiaos/pad-core';
 
@@ -43,12 +45,34 @@ export const PADS: ReadonlyArray<PadManifest<UiPadMeta>> = [
     scenes: [
       { id: 'gratitude', title: 'Gratitude' },
       { id: 'boundary', title: 'Boundary' },
+      { id: 'decode', title: 'Decode' },
+      { id: 'codex', title: 'Codex' },
+      { id: 'motherline', title: 'Motherline' },
     ],
     defaultSceneId: 'gratitude',
     meta: {
       component: MemoryPad,
       preview: MemoryPad,
       keyboard: { open: 'g m' },
+    },
+  },
+  {
+    id: 'games',
+    title: 'Games Pad',
+    icon: '🎮',
+    tone: 'accent',
+    whisper: 'Co-regulation playground rituals.',
+    route: { mode: 'hash', hashKey: 'pad' },
+    scenes: [
+      { id: 'cobreath', title: 'Co-Breath' },
+      { id: 'weave', title: 'Presence Weave' },
+      { id: 'echosketch', title: 'Echo Sketch' },
+    ],
+    defaultSceneId: 'cobreath',
+    meta: {
+      component: GamesPad,
+      preview: GamesPad,
+      keyboard: { open: 'g g' },
     },
   },
   {
@@ -64,6 +88,21 @@ export const PADS: ReadonlyArray<PadManifest<UiPadMeta>> = [
       component: EnergyPad,
       preview: EnergyPad,
       keyboard: { open: 'g e' },
+    },
+  },
+  {
+    id: 'numbers',
+    title: 'Numbers Pad',
+    icon: '🔢',
+    tone: 'accent',
+    whisper: 'Read mirrored times and repeating digits.',
+    route: { mode: 'hash', hashKey: 'pad' },
+    scenes: [{ id: 'signal', title: 'Signals' }],
+    defaultSceneId: 'signal',
+    meta: {
+      component: NumbersPad,
+      preview: NumbersPad,
+      keyboard: { open: 'g n' },
     },
   },
   {

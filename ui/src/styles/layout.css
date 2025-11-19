@@ -1,13 +1,25 @@
+:root {
+  --tone-drift-warmth: 0.5;
+  --tone-drift-hue: 0;
+  --tone-surface: color-mix(in oklab, var(--color-surface) calc(94% - (var(--tone-drift-warmth) * 6%)), var(--color-accent));
+  --tone-ink: color-mix(in oklab, var(--color-text) calc(88% + (var(--tone-drift-warmth) * 6%)), white);
+  --tone-accent: color-mix(in oklab, var(--color-accent) calc(85% - (var(--tone-drift-warmth) * 5%)), white);
+  transition:
+    --tone-surface 240s linear,
+    --tone-ink 240s linear,
+    --tone-accent 240s linear;
+}
+
 .garden-layout {
   display: grid;
   grid-template-columns: 248px 1fr 280px;
   grid-template-rows: 1fr auto;
   min-height: 100vh;
-  background: var(--color-surface);
-  color: var(--color-text);
-  --layout-rail-bg: color-mix(in oklab, var(--color-elev) 88%, transparent);
+  background: var(--tone-surface, var(--color-surface));
+  color: var(--tone-ink, var(--color-text));
+  --layout-rail-bg: color-mix(in oklab, var(--color-elev) calc(85% - var(--tone-drift-warmth) * 5%), var(--tone-accent) 8%);
   --layout-rail-border: color-mix(in oklab, var(--color-border) 65%, transparent);
-  --layout-footer-bg: color-mix(in oklab, var(--color-elev) 80%, transparent);
+  --layout-footer-bg: color-mix(in oklab, var(--color-elev) calc(78% - var(--tone-drift-warmth) * 6%), transparent);
 }
 
 .rail-left,

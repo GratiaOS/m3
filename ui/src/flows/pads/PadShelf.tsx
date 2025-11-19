@@ -328,10 +328,10 @@ export function PadShelf() {
               burstPad(entry.id);
             }}
           >
-            <span className="seed-dot" aria-hidden="true">
+            <span className="seed-dot icon" aria-hidden="true">
               {entry.icon}
             </span>
-            <span className="seed-label">{entry.label}</span>
+            <span className="seed-label label">{entry.label}</span>
           </button>
         );
       })}

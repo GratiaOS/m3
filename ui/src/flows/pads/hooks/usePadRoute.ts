@@ -65,7 +65,8 @@ export type PadRoute = {
 
 export function usePadRoute(): PadRoute | null {
   const padId = useSignal<PadId | null>(activePadId$, activePadId$.value ?? null);
-  const sceneId = useSignal<string | null>(scene$, scene$.value ?? null);
+  const initialScene = useMemo(() => scene$.value ?? readHash().scene ?? null, []);
+  const sceneId = useSignal<string | null>(scene$, initialScene);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

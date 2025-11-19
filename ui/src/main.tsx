@@ -9,14 +9,19 @@ import PadHost from '@/flows/pads/PadHost';
 import { useProfile } from '@/state/profile';
 import { usePadRoute } from '@/flows/pads/hooks/usePadRoute';
 import { Toaster } from '@gratiaos/ui';
-import { Heartbeat, ConstellationHUD, kernelAuthority, authority$, mood$, getAuthority, mood$ as moodSignal } from '@gratiaos/presence-kernel';
+import { Heartbeat, ConstellationHUD, kernelAuthority, authority$, mood$, phase$, pulse$, getAuthority, mood$ as moodSignal } from '@gratiaos/presence-kernel';
 import './styles/accessibility.css';
 import './styles.css';
+import { startCodexBridge, stopCodexBridge } from '@/flows/codex/codexBridge';
+import { broadcaster } from '@/lib/gardenBroadcaster';
+import { attachGhostPartnerBridge } from '@/flows/games/ghostPartnerBridge';
 
 console.log('🌬️ Presence Kernel Authority:', kernelAuthority);
 
 import { mountSrAnnouncer } from './lib/srAnnouncer';
 mountSrAnnouncer();
+startCodexBridge();
+window.addEventListener('unload', () => stopCodexBridge());
 
 window.addEventListener(
   'keydown',
@@ -41,6 +46,12 @@ authority$.subscribe((value) => {
 });
 mood$.subscribe((value) => {
   html.dataset.mood = value;
+});
+
+const detachGhostPartnerBridge = attachGhostPartnerBridge();
+
+window.addEventListener('unload', () => {
+  detachGhostPartnerBridge?.();
 });
 
 const RootApp: React.FC = () => {
@@ -75,3 +86,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </ReversePolesProvider>
   </React.StrictMode>
 );
+
+if (typeof document !== 'undefined') {
+  const unsubscribePulse = pulse$.subscribe((tick) => {
+    if (document.hidden) return;
+    broadcaster.mirrorPulse({ tick, phase: phase$.value, mood: mood$.value });
+  });
+  window.addEventListener('unload', () => unsubscribePulse());
+}

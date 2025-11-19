@@ -4,8 +4,12 @@ import { useSceneTransition } from '@/flows/pads/hooks/useSceneTransition';
 import { IntegrationScene } from '@/flows/scenes/IntegrationScene';
 import { setPresenceMood } from '@/presence/presence-kernel';
 
-export function EnergyPad() {
-  const { scene, change } = useSceneTransition('integration');
+type EnergyPadProps = {
+  sceneId?: string | null;
+};
+
+export function EnergyPad({ sceneId }: EnergyPadProps) {
+  const { scene, change } = useSceneTransition('integration', sceneId);
 
   useEffect(() => {
     if (scene !== 'integration') {

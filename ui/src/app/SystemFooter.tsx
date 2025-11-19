@@ -14,6 +14,9 @@ import { authority$, mood$ } from '@gratiaos/presence-kernel';
 import { consent$, depth$ } from '@/flows/relational/relationalAlignment';
 import { matchesChord } from '@/lib/hotkeys';
 import { chordLabel } from '@/lib/keyChords';
+import { chordAttr } from '@/lib/chordUi';
+import { toggleHotkeysOpen } from '@/lib/uiSignals';
+import { setPadScene } from '@/lib/nav';
 
 const selectFooter = (vals: readonly unknown[]) => ({
   authority: vals[0] as string,
@@ -52,6 +55,17 @@ export function SystemFooter() {
     showToast({ icon: '💾', title: `Exported ${kind}`, desc: `${kind} ledger saved.`, variant: 'neutral' });
   };
 
+  const downloadRedacted = async (kind: 'gratitude' | 'boundary') => {
+    const blob = await exportLedgerRedactedBlob(kind, 'hash');
+    const ts = new Date().toISOString().replace(/[:]/g, '-').replace('T', '-').split('.')[0];
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `garden-${kind}-ledger-redacted-${ts}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast({ icon: '🔒', title: `Exported ${kind} (redacted)`, desc: 'Content hashed for sharing.', variant: 'neutral' });
+  };
+
   const clearAll = () => {
     if (!window.confirm('Clear all local ledgers? This cannot be undone.')) return;
     clearGratitudeLedger();
@@ -67,14 +81,7 @@ export function SystemFooter() {
 
     const handleKey = (event: KeyboardEvent) => {
       if (matchesChord(event, 'decodeJump')) {
-        const targetHash = '#pad=memory&scene=decode';
-        if (window.location.hash !== targetHash) {
-          window.location.hash = targetHash;
-        } else {
-          const hashEvent =
-            typeof HashChangeEvent === 'function' ? new HashChangeEvent('hashchange') : new Event('hashchange');
-          window.dispatchEvent(hashEvent);
-        }
+        setPadScene('memory', 'decode', { announce: 'Scene: Decode' });
         requestAnimationFrame(() => {
           const el = document.getElementById('decode-incoming') as HTMLTextAreaElement | null;
           if (el) {
@@ -109,7 +116,7 @@ export function SystemFooter() {
         🌕 M3 · Garden Core Interface — {authority} · {formatMood(mood)} · {consent ? 'Memory' : 'No memory'} ·{' '}
         {depth === 'deep' ? 'Deep' : 'Soft'}
         {' · '}
-        <span title={`Toggle Memory (${chordLabel('toggleMemory')})`}>{consent ? 'Persisting' : 'Ephemeral'}</span>
+        <span title={`Toggle Memory (${chordLabel('memoryToggle')})`}>{consent ? 'Persisting' : 'Ephemeral'}</span>
       </small>
       <div className="pad-footer-actions export-controls">
         <Button variant="ghost" size="sm" onClick={() => setEnabled(!enabled)} aria-pressed={enabled} data-fastener="A">
@@ -136,17 +143,10 @@ export function SystemFooter() {
           disabled={!canExportGratitude && !canExportBoundary}>
           Clear ledgers
         </Button>
+        <Button variant="ghost" size="sm" onClick={toggleHotkeysOpen} {...chordAttr('openHotkeys')}>
+          Hotkeys
+        </Button>
       </div>
     </footer>
   );
 }
-  const downloadRedacted = async (kind: 'gratitude' | 'boundary') => {
-    const blob = await exportLedgerRedactedBlob(kind, 'hash');
-    const ts = new Date().toISOString().replace(/[:]/g, '-').replace('T', '-').split('.')[0];
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `garden-${kind}-ledger-redacted-${ts}.json`;
-    a.click();
-    URL.revokeObjectURL(a.href);
-    showToast({ icon: '🔒', title: `Exported ${kind} (redacted)`, desc: 'Content hashed for sharing.', variant: 'neutral' });
-  };

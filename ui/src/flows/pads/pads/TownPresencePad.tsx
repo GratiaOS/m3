@@ -4,8 +4,12 @@ import { FamJamScene } from '@/flows/scenes/FamJamScene';
 import { CatTownScene } from '@/flows/scenes/CatTownScene';
 import { setPresenceMood } from '@/presence/presence-kernel';
 
-export function TownPresencePad() {
-  const { scene, change } = useSceneTransition('famjam');
+type TownPresencePadProps = {
+  sceneId?: string | null;
+};
+
+export function TownPresencePad({ sceneId }: TownPresencePadProps) {
+  const { scene, change } = useSceneTransition('famjam', sceneId);
 
   useEffect(() => {
     if (scene === 'famjam') {

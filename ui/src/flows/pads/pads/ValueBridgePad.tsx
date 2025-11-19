@@ -3,8 +3,12 @@ import { Button, Card } from '@gratiaos/ui';
 import { useSceneTransition } from '@/flows/pads/hooks/useSceneTransition';
 import { setPresenceMood } from '@/presence/presence-kernel';
 
-export function ValueBridgePad() {
-  const { scene, change } = useSceneTransition('ledger');
+type ValueBridgePadProps = {
+  sceneId?: string | null;
+};
+
+export function ValueBridgePad({ sceneId }: ValueBridgePadProps) {
+  const { scene, change } = useSceneTransition('ledger', sceneId);
 
   useEffect(() => {
     if (scene === 'ledger') {

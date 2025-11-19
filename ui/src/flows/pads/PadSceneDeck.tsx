@@ -6,6 +6,9 @@ import { useSignal } from '../shared/useSignal';
 import { useMomentum } from './hooks/useMomentum';
 import { useSceneBloom } from './hooks/useSceneBloom';
 import { useFocusHandoff } from './hooks/useFocusHandoff';
+import { PresenceTrace } from './PresenceTrace';
+import { setPadTrace, clearPadTrace, releasePadTrace } from './presenceTraceStore';
+import { pressGround } from '../feedback/earthGroundStore';
 import '../../styles/pads.css';
 
 const EXIT_TIMEOUT_MS = 320;
@@ -35,6 +38,8 @@ export function PadSceneDeck() {
   const bloomRef = useSceneBloom<HTMLDivElement>();
   // Current scene root ref (used for focus handoff queries)
   const currentRef = useRef<HTMLElement | null>(null);
+  const deckRef = useRef<HTMLElement | null>(null);
+  const padIdRef = useRef<string | null>(snapshot.pad?.id ?? null);
 
   // Chain bloom ref + store current scene element for focus logic
   const setCurrentRef = (el: HTMLElement | null) => {
@@ -48,6 +53,12 @@ export function PadSceneDeck() {
 
   useEffect(() => {
     const unsubscribe = flow$.subscribe((snap) => {
+      const prevPad = padIdRef.current;
+      const nextPadId = snap.pad?.id ?? null;
+      if (prevPad && prevPad !== nextPadId) {
+        releasePadTrace(prevPad);
+      }
+      padIdRef.current = nextPadId;
       setSnapshot(snap);
       if (!snap.pad) {
         setStack([]);
@@ -79,6 +90,7 @@ export function PadSceneDeck() {
 
       window.setTimeout(() => {
         setStack((state) => state.slice(0, 1));
+        pressGround();
       }, EXIT_TIMEOUT_MS);
     });
 
@@ -88,7 +100,7 @@ export function PadSceneDeck() {
   if (stack.length === 0) {
     return (
       <section className="pad-deck" aria-label="Pad scene" data-phase={phase}>
-        <p className="pad-shelf__empty">{pads.length === 0 ? 'Pads warming up…' : 'Select a pad from the shelf to begin.'}</p>
+        <p className="pad-shelf__empty">{pads.length === 0 ? 'Pads warming up…' : "Whenever you're ready."}</p>
       </section>
     );
   }
@@ -105,8 +117,49 @@ export function PadSceneDeck() {
 
   const momentumClass = dir !== 'none' ? ` is-momenting dir-${dir}` : '';
 
+  useEffect(() => {
+    const root = deckRef.current;
+    if (!root) return;
+
+    const handleFocusIn = (event: FocusEvent) => {
+      const padId = padIdRef.current;
+      if (!padId) return;
+      const target = event.target as HTMLElement | null;
+      if (!target) return;
+      const traceTarget = target.closest<HTMLElement>('input, textarea, [contenteditable="true"], [data-traceable]');
+      if (!traceTarget) return;
+      const scene = root.querySelector<HTMLElement>('.pad-scene.current .pad-scene-inner');
+      if (!scene) return;
+      const sceneRect = scene.getBoundingClientRect();
+      const targetRect = traceTarget.getBoundingClientRect();
+      const scrollTop = scene.scrollTop ?? 0;
+      const y = targetRect.top - sceneRect.top + scrollTop;
+      setPadTrace({ padId, y: Math.max(0, y), ts: Date.now() });
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const padId = padIdRef.current;
+      if (!padId) return;
+      if (!(event.target instanceof HTMLElement)) return;
+      if (!root.contains(event.target)) return;
+      clearPadTrace();
+    };
+
+    root.addEventListener('focusin', handleFocusIn);
+    root.addEventListener('keydown', handleKeyDown);
+    return () => {
+      root.removeEventListener('focusin', handleFocusIn);
+      root.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   return (
-    <section className={`pad-deck phase-${phase}${momentumClass}`} style={sceneStyle} data-phase={phase} aria-live="polite">
+    <section
+      ref={deckRef}
+      className={`pad-deck phase-${phase}${momentumClass}`}
+      style={sceneStyle}
+      data-phase={phase}
+      aria-live="polite">
       <div className="pad-track">
         {stack.map((entry, index) => {
           const isCurrent = index === 0;
@@ -114,6 +167,7 @@ export function PadSceneDeck() {
             return (
               <div key={entry.key} className={`pad-scene current phase-${entry.phase}`}>
                 <div ref={setCurrentRef} className="pad-scene-inner">
+                  <PresenceTrace padId={snapshot.pad?.id ?? null} />
                   {entry.node}
                 </div>
               </div>
