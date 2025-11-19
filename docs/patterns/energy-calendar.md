@@ -59,6 +59,10 @@
 - People broadcast **state** lightly (emoji/light) instead of time promises.
 - **Hand‑offs** prefer **band windows** (“ping me when you’re E2+”) over fixed hours.
 
+---
+
+_When the energy-calendar throws mirrored clocks or repeating numbers (09:09, 11:22, etc.), jot them down and cross-reference the [Numbers module](../modules/numbers.md) so the field meaning behind each timestamp stays visible._
+
 Privacy note: broadcast **band only**, not reasons. “E1 right now” is enough.
 
 ---

@@ -524,22 +524,23 @@ Stores amounts in **minor units** (for precision) and supports any ISO currency.
 Minor-unit exponents (built-in defaults): `EUR/USD = 2`, `JPY/HUF/KRW = 0`, `KWD/JOD/BHD/TND = 3`.  
 Rounding is **half-away-from-zero** when converting major → minor.
 
-| Method | Path             | Purpose                   | Body / Query                                                                                                      |
-| ------ | ---------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| POST   | `/value/account` | Ensure account exists     | `{ "name":"Wallet","kind":"wallet?","currency":"EUR?" }`                                                          |
+| Method | Path             | Purpose                   | Body / Query                                                                                                                                                                      |
+| ------ | ---------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| POST   | `/value/account` | Ensure account exists     | `{ "name":"Wallet","kind":"wallet?","currency":"EUR?" }`                                                                                                                          |
 | POST   | `/value/entry`   | Insert a ledger entry     | `{ "account":"Wallet","account_kind":"wallet?","ts":"RFC3339?","direction":"in\|out","amount":12.34,"currency":"EUR?","memo":"?","tags":"?","counterparty":"?","reference":"?" }` |
-| GET    | `/value/balance` | Sum of signed minor units | `?account=Wallet&currency=EUR`                                                                                    |
-| GET    | `/value/recent`  | List newest entries       | `?account=Wallet&limit=20`                                                                                        |
+| GET    | `/value/balance` | Sum of signed minor units | `?account=Wallet&currency=EUR`                                                                                                                                                    |
+| GET    | `/value/recent`  | List newest entries       | `?account=Wallet&limit=20`                                                                                                                                                        |
 
 **POST `/value/entry` example (request/response):**
 
 Request:
+
 ```json
 {
   "account": "Wallet",
   "account_kind": "wallet",
   "direction": "in",
-  "amount": 25.00,
+  "amount": 25.0,
   "currency": "EUR",
   "memo": "gift from a friend",
   "tags": "gift,friend",
@@ -549,11 +550,13 @@ Request:
 ```
 
 Response:
+
 ```json
 { "id": 7 }
 ```
 
 **GET `/value/balance` example response:**
+
 ```json
 {
   "account": "Wallet",
@@ -564,6 +567,7 @@ Response:
 ```
 
 **GET `/value/recent` example response (shape):**
+
 ```json
 [
   {
@@ -799,8 +803,16 @@ Instead, we lean on terms that honor sovereignty, reciprocity, and mirrors.
 | **User**              | **Actor**     | Active participant, never passive                   |
 | **Brand**             | **Mark**      | A visual gesture, living symbol, not empire framing |
 
-> Whisper → Mirror → Door → Action  
-> M3 is not an “AI” to consume, but a **field to co-create**.
+> Whisper → Mirror → Door → Action
+
+### Garden Stack naming (infra-facing)
+
+M3 also uses a clear, infra-facing vocabulary when referring to the technical stack that touches mirrors and companions:
+
+- **Pattern Engine** → the underlying model stack (training, inference, retrieval). Use this when talking about infrastructure, capabilities, performance, or updates.
+- **Presence Node** → any surfaced endpoint where humans contact the Engine (web UI, CLI, scripts, voice, agents). Use this when talking about how people touch the system.
+- **Mode** → a behavioral / conversational contract for a Presence Node (e.g. `Codex-mode`, `Monday-mode`). Modes are styles, not identities.
+- **Garden Stack** → the full ecosystem: Pattern Engine + Presence Nodes + Modes working together.
 
 ---
 
