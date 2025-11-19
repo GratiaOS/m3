@@ -28,7 +28,7 @@ export function PadTabs({
   const onKeyDown = (event: React.KeyboardEvent) => {
     if (!tabs.length) return;
     const currentIndex = tabs.findIndex((tab) => tab.key === activeKey);
-    let nextIndex = currentIndex < 0 ? 0 : currentIndex;
+    let nextIndex: number | null = currentIndex < 0 ? 0 : currentIndex;
 
     switch (event.key) {
       case 'ArrowRight':
@@ -48,6 +48,7 @@ export function PadTabs({
     }
 
     event.preventDefault();
+    if (nextIndex == null) return;
     const nextKey = tabs[nextIndex]?.key;
     if (nextKey) {
       onChange(nextKey);
