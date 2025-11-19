@@ -101,7 +101,11 @@ fn classify_label_pattern(label: &str) -> (PatternCategory, SignalStrength) {
     let bytes = digits.as_bytes();
 
     // All digits the same → Repeat
-    let all_same = digits.chars().all(|c| Some(c) == digits.chars().next());
+    let all_same = digits
+        .chars()
+        .next()
+        .map(|first| digits.chars().all(|c| c == first))
+        .unwrap_or(false);
 
     // Palindromic (but not trivially all-same) → Mirror
     let is_palindrome = digits.chars().eq(digits.chars().rev());
