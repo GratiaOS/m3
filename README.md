@@ -74,6 +74,7 @@ curl -s -X POST localhost:3033/retrieve \
 - **Tells** → lightweight event/task log
 - [**Towns**](#towns) → local bulletin for species/neighborhoods (Pad; CatTown default)
 - [**Value**](#value) → local minor-units ledger (accounts & entries)
+- [**Numbers**](docs/modules/numbers.md) → classify mirrored/repeated time & number patterns together with body-felt effects
 - **Reply Engine** → random poetic/sarcastic/paradoxical nudges, with energy cost estimates
 - **Panic Redirect Oracle** → logs panic redirect steps locally (via CLI or UI button)
 
@@ -705,7 +706,7 @@ We’re opening M3 carefully, in service of local-first privacy and clear bounda
 **Phase 3 — Extensions (v0.1.9)**
 
 - Stable webhook contract + sample receivers.
-- UI primitives published as `@gratiaos/garden-core` preview.
+- UI primitives published as `@gratiaos/ui` preview.
 - Docs: “How to run fully offline”, “Sealed notes threat model (home use)”.
 
 **Phase 4 — Bundles (v0.1.10+)**
