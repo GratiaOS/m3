@@ -134,6 +134,10 @@ jobs:
         working-directory: m3
         run: pnpm --filter @gratiaos/icons build
 
+      - name: Build Garden signal package
+        working-directory: m3
+        run: pnpm --filter @gratiaos/signal build
+
       - name: Build Garden presence kernel
         working-directory: m3
         run: pnpm --filter @gratiaos/presence-kernel build
