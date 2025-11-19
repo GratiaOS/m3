@@ -1,0 +1,26 @@
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  clip-path: inset(50%) !important;
+  border: 0 !important;
+  white-space: nowrap !important;
+}
+
+[data-chord]::after {
+  content: attr(data-chord);
+  margin-left: 0.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  color: var(--pad-text, var(--tone-ink, currentColor));
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+html[data-kbm='on'] [data-chord]::after {
+  opacity: 0.6;
+}

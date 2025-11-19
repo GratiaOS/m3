@@ -12,13 +12,13 @@ type RetrievedChunk = {
 };
 
 type Props = {
-  chunks: RetrievedChunk[];
+  chunks?: RetrievedChunk[];
   onLogged?: () => void;
 };
 
 const ENERGY_VALUES: Energy[] = ['crown', 'play', 'life', 'dragon', 'void'];
 
-export default function EnergyPanel({ onLogged, chunks }: Props) {
+export default function EnergyCoach({ onLogged, chunks = [] }: Props) {
   const [history, setHistory] = useState<Energy[]>([]);
   const [note, setNote] = useState('');
   const primed = useRef(false);
@@ -123,3 +123,5 @@ export default function EnergyPanel({ onLogged, chunks }: Props) {
     </div>
   );
 }
+
+export { EnergyCoach };

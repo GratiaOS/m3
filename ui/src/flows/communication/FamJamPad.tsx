@@ -1,3 +1,8 @@
+import * as React from 'react';
+import { Button, Card, Pill } from '@gratiaos/ui';
+import { Heart, Sparkles, Leaf } from '@gratiaos/icons';
+import { notify } from '@/utils/joy';
+
 // local persistence helper (simple, no SSR issues assumed here)
 function useStickyState<T>(key: string, initial: T) {
   const [value, setValue] = React.useState<T>(() => {
@@ -15,10 +20,6 @@ function useStickyState<T>(key: string, initial: T) {
   }, [key, value]);
   return [value, setValue] as const;
 }
-import * as React from 'react';
-import { Button, Card, Pill } from '@garden/ui';
-import { notify } from '@/utils/joy';
-import { Heart, Sparkles, Leaf } from '@garden/icons';
 
 type Actor = 'me' | 'n' | 's' | 'all';
 
@@ -35,7 +36,7 @@ const ROOMS = [
   { id: 'anywhere', label: 'Anywhere', emoji: '✨' },
 ] as const;
 
-export function FamJamPanel() {
+const FamJamPad: React.FC = () => {
   const [actor, setActor] = useStickyState<Actor>('famjam:actor', 'me');
   const [room, setRoom] = useStickyState<(typeof ROOMS)[number]['id']>('famjam:room', 'anywhere');
   const [note, setNote] = React.useState('');
@@ -190,7 +191,8 @@ export function FamJamPanel() {
             }
           }}
           placeholder="One sentence is enough. What’s here now?"
-          className="w-full rounded-lg border border-border bg-elev p-3 text-sm outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+          className="w-full rounded-lg border border-border bg-elev p-3 text-sm outline-none focus:ring-2 focus:ring-[var(--color-accent)] halo"
+          data-halo
           rows={3}
         />
       </section>
@@ -218,4 +220,6 @@ export function FamJamPanel() {
       </p>
     </Card>
   );
-}
+};
+
+export default FamJamPad;

@@ -1,0 +1,105 @@
+.field {
+  position: relative;
+  display: grid;
+}
+
+.field-input {
+  width: 100%;
+  padding: 0.8rem 0.9rem;
+  padding-top: 1.4rem;
+  border-radius: 12px;
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-layer-1);
+  color: var(--color-text);
+}
+
+.field-label {
+  position: absolute;
+  left: 0.75rem;
+  top: 0.62rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  color: color-mix(in oklab, var(--color-text) 70%, transparent);
+  transform-origin: left center;
+  transition: transform 160ms ease, opacity 160ms ease;
+  opacity: 0.82;
+  pointer-events: none;
+}
+
+.field-input:placeholder-shown:not(:focus) ~ .field-label {
+  transform: translateY(0.45rem) scale(1.06);
+  opacity: 0.66;
+}
+
+.field-input:focus ~ .field-label,
+.field-input:not(:placeholder-shown) ~ .field-label {
+  transform: translateY(-0.25rem) scale(0.96);
+  opacity: 0.95;
+}
+
+.field-hint {
+  position: absolute;
+  left: 0.9rem;
+  top: 1.05rem;
+  font-size: 0.9rem;
+  pointer-events: none;
+  color: color-mix(in oklab, var(--color-text) 55%, transparent);
+  transform: translateY(0);
+  opacity: 0;
+  transition: transform var(--halo-ms, 180ms) ease, opacity 140ms ease;
+}
+
+.field-input:placeholder-shown ~ .field-hint {
+  opacity: 0.85;
+}
+
+.field-input:focus ~ .field-hint {
+  opacity: 0.15;
+}
+
+:root.is-pulsing .field-input:focus ~ .field-hint,
+:root.is-pulsing .field-input[data-caret-active] ~ .field-hint {
+  transform: translateY(-1px);
+  opacity: 0.92;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field-label,
+  .field-hint {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* --- Tints --------------------------------------------------------------- */
+
+.field[data-tint='ask'] .field-input {
+  border-color: color-mix(in oklab, oklch(78% 0.14 70) 55%, transparent);
+}
+
+.field[data-tint='ask'] .field-label {
+  color: color-mix(in oklab, oklch(72% 0.12 70) 60%, var(--color-text) 40%);
+}
+
+.field[data-tint='ask'] .field-hint {
+  color: color-mix(in oklab, oklch(74% 0.14 70) 50%, transparent);
+}
+
+.field[data-tint='true'] .field-input {
+  border-color: color-mix(in oklab, oklch(72% 0.12 190) 58%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, oklch(78% 0.09 200) 24%, transparent);
+}
+
+.field[data-tint='true'] .field-label {
+  color: color-mix(in oklab, oklch(70% 0.1 200) 65%, var(--color-text) 35%);
+}
+
+.field[data-tint='true'] .field-hint {
+  opacity: 0.25;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field[data-tint='true'] .field-input {
+    box-shadow: none;
+  }
+}

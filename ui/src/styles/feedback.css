@@ -1,0 +1,156 @@
+[data-ui='ember-pulse'] {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  background: radial-gradient(circle at 50% 60%, hsl(18 80% 58% / 0.12), transparent 70%);
+  opacity: 0;
+  transform: scale(0.96);
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out;
+  will-change: opacity, transform;
+}
+
+[data-ui='ember-pulse'].on {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ui='ember-pulse'] {
+    display: none;
+  }
+}
+
+[data-ui='water-echo'] {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+  background: radial-gradient(circle at center, hsl(200 60% 72% / 0.05), transparent 70%);
+  opacity: 0;
+  transform: scale(0.98);
+  animation: water-echo 3s ease-out forwards;
+}
+
+@keyframes water-echo {
+  0% {
+    opacity: 0.04;
+    transform: scale(0.98);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+}
+
+[data-ui='earth-ground'] {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  background: radial-gradient(circle at center, hsl(140 20% 12% / 0.05), transparent 85%);
+  opacity: 0;
+  transform: translateY(2px);
+  transition:
+    opacity 0.4s ease-out,
+    transform 0.4s ease-out;
+}
+
+[data-ui='earth-ground'].settle {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+[data-ui='spirit-chord'] {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background: radial-gradient(circle at 50% 40%, hsl(280 70% 70% / 0.04), transparent 80%);
+  opacity: 0;
+  animation: spirit-chord 3.2s ease-out forwards;
+}
+
+@keyframes spirit-chord {
+  0% {
+    opacity: 0.04;
+    filter: hue-rotate(0deg) brightness(1);
+  }
+  50% {
+    opacity: 0.05;
+    filter: hue-rotate(18deg) brightness(1.08);
+  }
+  100% {
+    opacity: 0;
+    filter: hue-rotate(0deg) brightness(1);
+  }
+}
+
+[data-ui='moments-view'] {
+  position: fixed;
+  bottom: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 0.25rem;
+  pointer-events: none;
+  z-index: 101;
+}
+
+[data-ui='moments-view'] .moment {
+  font-size: 0.85rem;
+  color: hsl(210 10% 82%);
+  opacity: 0;
+  animation: moment-fade 9s ease-in-out forwards;
+  white-space: nowrap;
+  user-select: none;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+[data-ui='moments-view'] .scene {
+  opacity: 0.75;
+  font-size: 0.78rem;
+}
+
+html[data-consent='off'] [data-ui='moments-view'] .moment {
+  animation: none;
+  opacity: 0.3;
+  filter: saturate(0.85);
+}
+
+html[data-consent='off'] .export-controls {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.pad-footer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-left: auto;
+  opacity: 0.92;
+}
+
+.pad-footer-actions:focus-within {
+  opacity: 1;
+}
+
+@keyframes moment-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  10%,
+  80% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}

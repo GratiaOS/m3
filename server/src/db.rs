@@ -20,12 +20,15 @@ Conventions
 
 Paths & env
 • M3_DB_PATH overrides path.
+• M3_BASE_CURRENCY sets the default base currency for the Value Bridge (see `read_base_currency()`); falls back to "EUR".
 • Otherwise we walk up to repo root (directory with `.git`) and use `<repo>/memory.db`.
 
 Notes for agents/devs
 • Keep function headers/docstrings; they are the map.
 • Prefer the async helpers here over raw `Connection` access in handlers.
+• `read_base_currency()` is the single source of truth for base currency; used by `get_or_create_account_id` and `insert_value_entry` to normalize currency inputs.
 • If schema changes, add migrations in-place (CREATE IF NOT EXISTS and new columns guarded).
+• Sponsorships: If this project helps you or your team, garden sponsorships are welcome 🌱 — see the top-level README (Contributing → Support) for ways to help.
 ─────────────────────────────────────────────────────── */
 
 use rusqlite::{params, OptionalExtension};
@@ -334,22 +337,30 @@ pub struct ValueEntryParams<'a> {
 /// Returns: the new row id.
 ///
 /// ### Example
-/// ```
+/// ```ignore
+/// // (Doc example only; crate exposes this module only to the binary. For external reuse,
+/// // consider adding a `lib.rs` that `pub mod db;`.)
+/// // use crate::db::{insert_value_entry, Database, ValueEntryParams};
+///
+/// # async fn example(db: &Database) -> Result<(), Box<dyn std::error::Error>> {
 /// let _rowid = insert_value_entry(
-///     &db,
-///     ValueEntryParams{
+///     db,
+///     ValueEntryParams {
 ///         account: "wallet/eu",
 ///         account_kind: None,
-///         ts: None,                // now
+///         ts: None, // now
 ///         direction: "in",
-///         amount_major: 21.00,
+///         amount_major: 21.0,
 ///         currency: Some("EUR"),
 ///         memo: Some("seed"),
 ///         tags: None,
 ///         counterparty: None,
 ///         reference: None,
-///     }
-/// ).await?;
+///     },
+/// )
+/// .await?;
+/// # Ok(())
+/// # }
 /// ```
 pub async fn insert_value_entry(db: &Database, p: ValueEntryParams<'_>) -> anyhow::Result<i64> {
     // Normalize inputs up front (clone small strings for the move into the blocking closure).

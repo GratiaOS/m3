@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
-import { Button } from '@garden/ui';
+import { Button } from '@gratiaos/ui';
 import { getStatus, setStatus } from '@/api';
 import { useReversePoles } from '@/state/reversePoles';
 

@@ -82,11 +82,12 @@ jobs:
           if-no-files-found: ignore
 
   ui:
-    name: UI (Node) – fmt • lint • build
+    name: UI (Node ${{ matrix.node }}) – fmt • lint • build
     needs: openapi
     strategy:
       matrix:
-        node: [18, 20]
+        # Test against active LTS majors + current to ensure broad compatibility.
+        node: [18, 20, 22]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -114,14 +115,9 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: m3/pnpm-lock.yaml
 
-      - name: Verify pnpm availability (and fallback via Corepack)
+      - name: Verify pnpm availability
         run: |
           set -euxo pipefail
-          which pnpm || true
-          pnpm -v || true
-          # Fallback to Corepack in case the action didn't inject pnpm in PATH
-          corepack enable
-          corepack prepare pnpm@10.18.3 --activate
           which pnpm
           pnpm -v
 
@@ -136,11 +132,23 @@ jobs:
 
       - name: Build Garden Icons package
         working-directory: m3
-        run: pnpm --filter @garden/icons build
+        run: pnpm --filter @gratiaos/icons build
+
+      - name: Build Garden signal package
+        working-directory: m3
+        run: pnpm --filter @gratiaos/signal build
+
+      - name: Build Garden presence kernel
+        working-directory: m3
+        run: pnpm --filter @gratiaos/presence-kernel build
 
       - name: Build Garden UI package
         working-directory: m3
-        run: pnpm --filter @garden/ui build
+        run: pnpm --filter @gratiaos/ui build
+
+      - name: Build Garden pad-core
+        working-directory: m3
+        run: pnpm --filter @gratiaos/pad-core build
 
       - name: Format (workspace)
         working-directory: m3

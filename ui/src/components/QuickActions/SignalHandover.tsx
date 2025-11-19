@@ -117,7 +117,14 @@ export default function SignalHandover({ onClose, defaultTags = [] }: { onClose:
             </button>
           </div>
           {freq === 'custom' && (
-            <input autoFocus placeholder="name the frequency…" value={freqCustom} onChange={(e) => setFreqCustom(e.target.value)} />
+            <input
+              autoFocus
+              placeholder="name the frequency…"
+              value={freqCustom}
+              onChange={(e) => setFreqCustom(e.target.value)}
+              className="halo"
+              data-halo
+            />
           )}
         </section>
       )}
@@ -131,6 +138,8 @@ export default function SignalHandover({ onClose, defaultTags = [] }: { onClose:
             placeholder="What you observed, word-for-word / timestamps / behaviors…"
             value={raw}
             onChange={(e) => setRaw(e.target.value)}
+            className="halo"
+            data-halo
           />
         </section>
       )}
@@ -166,7 +175,13 @@ export default function SignalHandover({ onClose, defaultTags = [] }: { onClose:
               </button>
             ))}
           </div>
-          <input placeholder="or custom…" value={coAction} onChange={(e) => setCoAction(e.target.value)} />
+          <input
+            placeholder="or custom…"
+            value={coAction}
+            onChange={(e) => setCoAction(e.target.value)}
+            className="halo"
+            data-halo
+          />
         </section>
       )}
 

@@ -11,7 +11,7 @@
 //! - Secrets live only in RAM (`AppState.key`); no plaintext passphrase is written to disk.
 //!
 //! ## Exports & logs
-//! - Export/log files are written under `<repo>/server/exports` (or `M3_EXPORTS_DIR`).
+//! - Export/log files are written under `$REPO_ROOT/exports` (or `M3_EXPORTS_DIR`).
 //! - Panic compact logs: `exports/panic/YYYY-MM/panic-YYYY-MM-DD.log`.
 //! - Gratitude quick logs: `exports/thanks/…`.
 //!
@@ -28,7 +28,7 @@
 //! - /state/* — dashboard model
 //! - /reply, /replies/preview — lightweight reply engine
 //! - /panic, /panic/run, /panic/last — redirect oracle + audit
-//! - /emotions/*, /patterns/*, /energy/*, /rhythm/*, /tells/*, /timeline/*, /cycles/*, /value/* — nested routers
+//! - /emotions/*, /patterns/*, /energy/*, /rhythm/*, /tells/*, /timeline/*, /cycles/*, /value/*, /towns/* — nested routers
 mod config;
 mod webhook;
 // mod auth; // keep if you actually use guards later
@@ -49,7 +49,8 @@ mod replies;
 mod rhythm;
 mod tells;
 mod timeline;
-mod value;
+mod towns;
+mod value; // community bulletin board (news feed): /towns/*
 
 use bus::Bus;
 use chrono::Utc;
@@ -113,7 +114,7 @@ fn repo_root() -> StdPathBuf {
 /// Resolve the exports directory:
 /// - if `M3_EXPORTS_DIR` is absolute, use it as-is
 /// - if `M3_EXPORTS_DIR` is relative, resolve from **repo root**
-/// - otherwise, default to `<repo>/server/exports`
+/// - otherwise, default to `<repo>/exports`
 fn resolve_exports_dir() -> StdPathBuf {
     if let Ok(val) = std::env::var("M3_EXPORTS_DIR") {
         let p = StdPathBuf::from(val);
@@ -123,7 +124,7 @@ fn resolve_exports_dir() -> StdPathBuf {
             repo_root().join(p)
         };
     }
-    repo_root().join("server/exports")
+    repo_root().join("exports")
 }
 
 /// Resolve a path from an ENV var relative to an anchor, with a default fallback.
@@ -1817,7 +1818,7 @@ async fn main() -> anyhow::Result<()> {
 
     // attach state after nesting emotions, patterns, energy, rhythm (apply CORS last so it covers nested routes)
     // Nested routers mounted under prefixes (see their modules):
-    // /emotions, /patterns, /energy, /rhythm, /tells, /timeline, /cycles, /value
+    // /emotions, /patterns, /energy, /rhythm, /tells, /timeline, /cycles, /value, /towns
     let app = app
         .nest("/emotions", emotions::router())
         .nest("/patterns", patterns::router())
@@ -1827,6 +1828,7 @@ async fn main() -> anyhow::Result<()> {
         .nest("/timeline", timeline::router())
         .nest("/cycles", cycles::router())
         .nest("/value", value::router())
+        .nest("/towns", towns::router())
         .layer(cors)
         .with_state(state.clone());
 

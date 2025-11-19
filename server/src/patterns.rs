@@ -53,6 +53,175 @@ pub struct DetectResponse {
     pub cues: Vec<String>,
 }
 
+/// -------- Number signal vs anxiety-loop (Numbers module hook) --------
+
+#[derive(Deserialize)]
+pub struct NumberSignalRequest {
+    /// e.g. "09:09", "111", "2025-11-19"
+    pub label: String,
+    /// Optional felt effect in the body, e.g. "calm", "relief", "tense", "tight"
+    pub effect: Option<String>,
+}
+
+#[derive(Serialize, Clone, Copy)]
+#[serde(rename_all = "snake_case")]
+pub enum PatternCategory {
+    Mirror,
+    Repeat,
+    Sequence,
+    None,
+}
+
+#[derive(Serialize, Clone, Copy)]
+#[serde(rename_all = "snake_case")]
+pub enum SignalStrength {
+    Low,
+    Medium,
+    High,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "snake_case")]
+pub struct NumberSignalResponse {
+    /// "signal", "anxiety_loop", or "neutral"
+    pub classification: &'static str,
+    pub reasoning: &'static str,
+    pub category: PatternCategory,
+    pub strength: SignalStrength,
+}
+
+fn classify_label_pattern(label: &str) -> (PatternCategory, SignalStrength) {
+    // Strip everything except ASCII digits so "11:11" and "11-11" both reduce to "1111"
+    let digits: String = label.chars().filter(|c| c.is_ascii_digit()).collect();
+
+    if digits.is_empty() {
+        return (PatternCategory::None, SignalStrength::Low);
+    }
+
+    let bytes = digits.as_bytes();
+
+    // All digits the same → Repeat
+    let all_same = digits
+        .chars()
+        .next()
+        .map(|first| digits.chars().all(|c| c == first))
+        .unwrap_or(false);
+
+    // Palindromic (but not trivially all-same) → Mirror
+    let is_palindrome = digits.chars().eq(digits.chars().rev());
+
+    // Simple ascending/descending sequence like 1234 or 4321 → Sequence
+    let is_sequence = bytes.windows(2).all(|w| {
+        let d0 = w[0];
+        let d1 = w[1];
+        d1 == d0 + 1 || d1 == d0 - 1
+    });
+
+    let category = if is_palindrome && !all_same {
+        PatternCategory::Mirror
+    } else if all_same {
+        PatternCategory::Repeat
+    } else if is_sequence {
+        PatternCategory::Sequence
+    } else {
+        PatternCategory::None
+    };
+
+    let len = digits.len();
+    let strength = match (category, len) {
+        (PatternCategory::None, _) => SignalStrength::Low,
+        (_, l) if l >= 4 => SignalStrength::High,
+        _ => SignalStrength::Medium,
+    };
+
+    (category, strength)
+}
+
+fn classify_number_effect(
+    effect: &str,
+    category: PatternCategory,
+    strength: SignalStrength,
+) -> NumberSignalResponse {
+    let e = effect.trim().to_ascii_lowercase();
+
+    // Anything clearly in the "calm / relief / grounded" family → signal
+    let calm_keywords = [
+        "calm", "relief", "relieved", "grounded", "softer", "open", "ease", "eased",
+    ];
+    if calm_keywords.iter().any(|k| e.contains(k)) {
+        return NumberSignalResponse {
+            classification: "signal",
+            reasoning: "effect described as calming/grounding → treat as signal",
+            category,
+            strength,
+        };
+    }
+
+    // Anything clearly in the "tense / pressure / must guess" family → anxiety loop
+    let tension_keywords = [
+        "tense", "tension", "tight", "pressure", "obliged", "must", "panic", "urgency", "anxious",
+        "anxiety",
+    ];
+    if tension_keywords.iter().any(|k| e.contains(k)) {
+        return NumberSignalResponse {
+            classification: "anxiety_loop",
+            reasoning: "effect described as tense/pressured → treat as anxiety pattern",
+            category,
+            strength,
+        };
+    }
+
+    // Otherwise, stay neutral; number alone is not decisive without a clear effect.
+    NumberSignalResponse {
+        classification: "neutral",
+        reasoning: "no clear calming or tensing effect described → treat as neutral",
+        category,
+        strength,
+    }
+}
+
+/// POST /patterns/number_signal
+/// Minimal hook for the Numbers module:
+/// we don't interpret the digits themselves for meaning,
+/// only the *reported felt effect* plus simple emphasis patterns in the label.
+pub async fn number_signal(Json(req): Json<NumberSignalRequest>) -> Json<NumberSignalResponse> {
+    let label_trimmed = req.label.trim();
+
+    if label_trimmed.is_empty() {
+        return Json(NumberSignalResponse {
+            classification: "neutral",
+            reasoning: "no label provided → treat as neutral",
+            category: PatternCategory::None,
+            strength: SignalStrength::Low,
+        });
+    }
+
+    // Always derive category/strength from the label, even if effect is present.
+    let (category, strength) = classify_label_pattern(label_trimmed);
+
+    // If an effect is provided, classification is driven by how it feels in the body.
+    if let Some(effect) = req.effect.as_deref() {
+        return Json(classify_number_effect(effect, category, strength));
+    }
+
+    // No felt effect → use label pattern as a light signal, if any.
+    if let PatternCategory::None = category {
+        Json(NumberSignalResponse {
+            classification: "neutral",
+            reasoning: "no felt effect and no strong pattern in label → treat as neutral",
+            category,
+            strength,
+        })
+    } else {
+        Json(NumberSignalResponse {
+            classification: "signal",
+            reasoning: "label shows an emphasis pattern → treat as light signal",
+            category,
+            strength,
+        })
+    }
+}
+
 pub async fn detect_victim_aggressor(Json(req): Json<DetectRequest>) -> Json<DetectResponse> {
     let text = normalize_text(&req.text);
 
@@ -338,6 +507,7 @@ pub fn router() -> Router<AppState> {
         .route("/bridge_suggest", get(bridge_suggest))
         .route("/lanes", get(lanes))
         .route("/productivity", get(productivity_map))
+        .route("/number_signal", post(number_signal))
 }
 
 #[cfg(test)]
@@ -484,6 +654,41 @@ mod tests {
         assert_eq!(out.role, "Unclear");
         assert_eq!(out.cues.len(), 0);
         assert_eq!(out.confidence, 0.0);
+    }
+
+    // --- number_signal ---
+
+    #[tokio::test]
+    async fn number_signal_classifies_calm_as_signal() {
+        let resp = super::number_signal(Json(super::NumberSignalRequest {
+            label: "09:09".into(),
+            effect: Some("I feel more calm and relieved".into()),
+        }))
+        .await;
+        let out = resp.0;
+        assert_eq!(out.classification, "signal");
+    }
+
+    #[tokio::test]
+    async fn number_signal_classifies_tense_as_anxiety_loop() {
+        let resp = super::number_signal(Json(super::NumberSignalRequest {
+            label: "11:11".into(),
+            effect: Some("I feel tense and pressured to decode it".into()),
+        }))
+        .await;
+        let out = resp.0;
+        assert_eq!(out.classification, "anxiety_loop");
+    }
+
+    #[tokio::test]
+    async fn number_signal_without_effect_uses_label_pattern_as_signal() {
+        let resp = super::number_signal(Json(super::NumberSignalRequest {
+            label: "22:22".into(),
+            effect: None,
+        }))
+        .await;
+        let out = resp.0;
+        assert_eq!(out.classification, "signal");
     }
 
     // --- Lanes ---

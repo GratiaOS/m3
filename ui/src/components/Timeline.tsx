@@ -1,5 +1,5 @@
 import React from 'react';
-import { Badge } from '@garden/ui';
+import { Badge } from '@gratiaos/ui';
 
 /**
  * Roadmap — Timeline polish & theming bridge
@@ -27,9 +27,9 @@ import { Badge } from '@garden/ui';
  *      multi-day groupings later without changing call sites.
  *
  * Bridge plan (repo-level):
- *  - garden-core: ensure `@garden/tokens` and (optional) `@garden/ui/styles/base.css`
+ *  - garden-core: ensure `@gratiaos/tokens` and (optional) `@gratiaos/ui/styles/base.css`
  *    are published/linked.
- *  - m3/ui: import tokens once at the root (e.g. `import '@garden/tokens'`) so
+ *  - m3/ui: import tokens once at the root (e.g. `import '@gratiaos/tokens'`) so
  *    Timeline responds to global semantics immediately.
  */
 

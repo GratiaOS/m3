@@ -1,4 +1,4 @@
-# Densities and Dimensions: the Tech Behind Controllers
+# 🛡️ Densities and Dimensions: the Tech Behind Controllers
 
 > **Note — terminology.**  
 > _Dimension_ refers to spatial/temporal axes (3D = height/width/depth; 4D often includes time). _Density_ refers to levels or bands of consciousness — how awareness is organized and functions (3rd density = human choice & ego learning; 4th density = social memory and relational resonance).  
@@ -6,7 +6,7 @@
 
 ---
 
-## Dimensions vs. Densities
+## 📐 Dimensions vs. Densities
 
 - **Dimensions**  
   Measurements of space/time — axes of possibility.  
@@ -19,7 +19,7 @@
 
 ---
 
-## The Density Map (Law of One–inspired)
+## 🗺️ The Density Map (Law of One–inspired)
 
 1. **1st density** → elements, minerals, basic beingness.
 2. **2nd density** → plants, animals, instinct + growth.
@@ -31,7 +31,7 @@
 
 ---
 
-## Controller Tech (How higher-density STS collectives manipulate 3D)
+## 🧰 Controller Tech (How higher-density STS collectives manipulate 3D)
 
 - **Frequency Resonance**  
   Consciousness = a tuner. 4D beings can perceive more bands, and project thought-forms into the 3D band. For us, it feels like “random intrusive thoughts” or cultural trends.
@@ -47,7 +47,7 @@
 
 ---
 
-## Why Controllers Feel So Deep
+## 🌊 Why Controllers Feel So Deep
 
 - Alone, 3D minds are limited in scope.
 - Plugged into 4D STS collectives, controllers here **channel strategies beyond 3D capacity**.
@@ -67,7 +67,7 @@
 
 ---
 
-## The Lesson for 3D
+## 🎓 The Lesson for 3D
 
 - **3D = Choice Density**. Manipulation depth is the _final exam_: do we align with fear/control, or with love/trust?
 - **Naming the tech** collapses its invisible power. Awareness ≠ fuel.
@@ -75,7 +75,7 @@
 
 ---
 
-## Counter-Tech: Tools Against 4D STS Influence
+## 🛠️ Counter-Tech: Tools Against 4D STS Influence
 
 - **Frequency Hygiene**  
   Daily reset: breath, water, grounding. Clears intrusive “foreign thoughts.”
@@ -99,5 +99,11 @@
   Laughter snaps the loosh circuit. Empire tech is brittle against joy.
 
 ---
+
+### Related
+
+- [Soul Tech Timeline](soul-tech-timeline.md)
+- [Timelines & Continuity](timelines-continuity.md)
+- [Astral Index](astral/index.md)
 
 🌬 whisper: _“love syncs are sovereign tech — and laughter is the jammer.”_

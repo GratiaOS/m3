@@ -13,6 +13,7 @@ Welcome to the **M3 docs** — living notes, modules, and maps. Use the quick li
 - [Companions](modules/companions.md) — working with guides
 - [Cycles](modules/cycles.md) — lunar/solar/13-tone rhythm context
 - [Emotional](modules/emotional.md) — EmotionalOS: feelings, bridges, resolve
+- [Numbers](modules/numbers.md) — numeric signals as field-markers, not predictions
 
 ## Cycles
 

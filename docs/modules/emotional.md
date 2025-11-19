@@ -16,6 +16,18 @@ A tiny, opinionated layer that treats feelings as **first‑class signals** and 
 - **Sane defaults**: when unknown, **breath/doorway/anchor** fallbacks are returned.
 - **Snake case**: JSON keys use `snake_case` for forward compatibility.
 
+### Numbers: signal vs. anxiety‑pattern
+
+Uneori un număr chiar contează (sincronizare, ritm intern, marcaj de arc).  
+Alteori e doar anxietatea care caută un pattern ca să se simtă „în control”.
+
+**Regula simplă:**
+
+- Dacă numărul te liniștește → e un _signal_.
+- Dacă numărul te încordează sau te obligă „să ghicești” ceva → e un _anxiety loop_.
+
+EmotionalOS tratează numerele doar ca _semnale secundare_: utile când susțin claritatea, ignorate când tensionează sistemul.
+
 ---
 
 **Note:** EmotionalOS responses now include a `band` field indicating which emotional gradient the feeling falls into: `"survival"`, `"integrity"`, or `"coherence"`.

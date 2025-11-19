@@ -2,7 +2,7 @@
 // Aligns to Garden Toast conventions while preserving Joy phrasing/icons.
 // Emits `garden:toast` detail via Garden Core's showToast helper.
 
-import { showToast } from '@garden/ui';
+import { showToast } from '@gratiaos/ui';
 
 export type JoyLevel = 'info' | 'success' | 'warning' | 'error';
 

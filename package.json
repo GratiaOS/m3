@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "preinstall": "node scripts/ensure-garden-core.mjs",
     "prepare": "husky",
     "lint": "pnpm -w -r run lint || true",
     "fmt": "cargo fmt && pnpm -w -r run format || true",

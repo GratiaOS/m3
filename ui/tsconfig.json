@@ -25,7 +25,10 @@
     "paths": {
       "@/*": ["src/*"],
       "@components/*": ["src/components/*"],
-      "@assets/*": ["src/assets/*"]
+      "@assets/*": ["src/assets/*"],
+      "@gratiaos/pad-core": ["../garden-core/packages/pad-core/src/index.ts"],
+      "@gratiaos/pad-core/*": ["../garden-core/packages/pad-core/src/*"],
+      "@gratiaos/presence-kernel": ["../../garden-core/packages/presence-kernel/src/index.ts"]
     }
   },
   "include": ["src", "src/**/*.d.ts", "vite-env.d.ts"],

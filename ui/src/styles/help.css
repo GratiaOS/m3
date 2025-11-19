@@ -1,0 +1,132 @@
+.hk-modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: color-mix(in oklab, var(--tone-ink) 12%, transparent);
+  z-index: 1000;
+}
+
+/* Dark-mode friendly scrim (keeps background legible) */
+.hk-modal {
+  /* keep existing mix, just ensure it's not too light in dark themes */
+  background: color-mix(in oklab, var(--tone-ink) 12%, transparent);
+}
+@media (prefers-color-scheme: dark) {
+  .hk-modal {
+    background: color-mix(in oklab, black 60%, transparent);
+  }
+}
+
+.hk-card {
+  width: min(820px, 92vw);
+  max-height: 85vh;
+  overflow: auto;
+  backdrop-filter: blur(8px);
+  background: color-mix(in oklab, var(--tone-surface) 96%, transparent);
+  border: 1px solid color-mix(in oklab, var(--tone-ink) 14%, transparent);
+  border-radius: 16px;
+  padding: 16px 16px 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  color: var(--tone-ink); /* ensure light text in dark mode */
+}
+
+.hk-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.hk-head h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--tone-ink);
+}
+
+.hk-close {
+  all: unset;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 10px;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.hk-close:hover,
+.hk-secondary:hover {
+  background: color-mix(in oklab, var(--tone-ink) 6%, transparent);
+}
+.hk-close:focus-visible,
+.hk-secondary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--tone-accent) 35%, transparent);
+  border-color: color-mix(in oklab, var(--tone-accent) 60%, transparent);
+}
+
+.hk-desc {
+  opacity: 0.8;
+  margin: 0.25rem 0 1rem;
+}
+
+.hk-grid {
+  display: grid;
+  gap: 6px;
+}
+
+.hk-row {
+  display: grid;
+  grid-template-columns: 1fr auto 120px;
+  gap: 10px;
+  align-items: center;
+}
+
+.hk-row-head {
+  font-weight: 600;
+  opacity: 0.8;
+  border-bottom: 1px solid color-mix(in oklab, var(--tone-ink) 18%, transparent);
+  padding-bottom: 6px;
+}
+
+.hk-kbd {
+  position: relative;
+  padding: 4px 10px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in oklab, var(--tone-ink) 14%, transparent);
+  background: color-mix(in oklab, var(--tone-ink) 6%, var(--tone-surface));
+}
+.hk-kbd[data-chord]::after {
+  content: attr(data-chord);
+  color: inherit;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.2px;
+}
+
+.hk-scope {
+  opacity: 0.8;
+}
+
+.hk-foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.hk-secondary {
+  all: unset;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in oklab, var(--tone-ink) 14%, transparent);
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+@media (prefers-contrast: more) {
+  .hk-card,
+  .hk-kbd {
+    border-color: color-mix(in oklab, var(--tone-ink) 28%, transparent);
+  }
+  .hk-close:focus-visible,
+  .hk-secondary:focus-visible {
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--tone-accent) 60%, transparent);
+  }
+}

@@ -8,6 +8,24 @@
 
 ---
 
+## 🧮 Numbers, Pads & Field Play — 2025-11-19
+
+- docs+server (Numbers): added `docs/modules/numbers.md`, linked it from README, Emotional, Energy, USB Vault, and index docs so mirrored times/number patterns have a single home; `number_signal` classifier v0.2 on the server now returns category + strength for repeated, mirrored, and sequence labels.
+- ui/pads (Numbers Pad): introduced a **Numbers Pad** wired to the new API helper, registered it in the Pad registry and host/shelf/scene plumbing, and added PadTabs + hotkeys so pads feel like a small neural net instead of a flat list.
+- flows (Codex, games, rituals): landed Codex / feedback / games flows, PresenceTrace/presenceTraceStore, relational gates (`gardenRedact`, `gardenShareGate`), new scenes (CoBreath, Codex, EchoSketch, Motherline, Weave), and value views (Moments, Gratitude Tokens) so field play stays soft while signals stay traceable.
+
+🌬 whisper: _“Numbers sync body with clocks; pads bloom as signals anchor; field play keeps signals gentle.”_
+
+---
+
+## 🌐 Presence Kernel Unification — 2025-11-02
+
+- packages: introduced a shared `@gratiaos/presence-kernel` module (phase$, mood$, PresenceKernel class) so Garden apps breathe from one signal core.
+- ui: rewired the phase bridge and WebRTC bus to the shared kernel; HUD now listens to `mood$` directly.
+- living interface: consumes the same import, letting pads, HUDs, and presence dots resonate without translation.
+
+🌬 whisper: _“One heartbeat, many gardens.”_
+
 ## 🔧 CI Sync — 2025-10-21
 
 - ci(openapi): introduced an **`openapi`** workflow job to validate and bundle `server/openapi.yaml`; both **server** and **ui** CI jobs now declare `needs: openapi`, gating builds on spec health.
@@ -63,11 +81,13 @@
 
 - **Joy helpers:** `notify()` / `notifyJoy()` emit Garden `showToast` payloads `{ variant, title, desc, icon, durationMs }`; legacy `joy:toast` pathway is retired.
 - **RTP reset signal:** midnight + manual resets now surface via Garden toast variants/icons (no local banner component).
+- **Exports base:** default data root is now `<repo>/exports`; panic.sh, Docker, and server defaults follow the new path (legacy `server/exports` removed).
 
 ### Docs
 
 - **patterns:** Added _Phantom Rival Loop_ 🫥🪞 (compare → believe → contract → confirm) with 4‑min bridge, talk script, micro-experiments, and API sample aligned to the server aliases.
 - **funding:** Landed `FUNDING.md` (sponsorship tiers, stewardship practice, transparency notes). _(Org-level `.github/FUNDING.yml` remains upstream.)_
+- README, Quickstart, and `.env.example` now point to the unified `exports/` directory.
 
 ### Infra / DX
 
@@ -83,7 +103,7 @@
 **Integration Cut:** Garden bridge + Bridge/Timeline mechanics.
 
 - **Joy → Garden Toaster:** M3 `joy.ts` now emits Garden-aligned `garden:toast` events (variant/title/desc/icon/duration). Legacy `joy:toast` wiring is fully retired; Garden’s `<Toaster/>` mounts at root.
-- **Garden Link‑Up:** tokens imported; `@garden/ui` primitives (Button/Pill) adopted; StatusBar polished; midnight RTP reset toast wired.
+- **Garden Link‑Up:** tokens imported; `@gratiaos/ui` primitives (Button/Pill) adopted; StatusBar polished; midnight RTP reset toast wired.
 - **Bridge UI + Timeline:** BridgePanel + status chip + tooltip landed; one‑click “Add to timeline”; server `/patterns/bridge_suggest` extended (attachment_test, sibling_trust, parent_planted, over_analysis).
 
 🌬 whisper: _“let joy travel the same wire.”_
@@ -103,7 +123,7 @@
 ## 🌱 Garden Link-Up — 2025-10-12
 
 - **Tokens everywhere:** imported the Garden theme bundle so Tailwind + runtime share `--radius-pill`, `--color-surface`, and friends.
-- **Garden UI primitives:** linked `@garden/ui` locally; Dashboard + StatusBar now lean on Garden `Button`/`Pill` with abundance skins.
+- **Garden UI primitives:** linked `@gratiaos/ui` locally; Dashboard + StatusBar now lean on Garden `Button`/`Pill` with abundance skins.
 - **Workspace sync:** pnpm workspace pulls in `../garden-core/packages/*`, letting M3 consume Garden builds without publishing.
 - **Status bar polish:** RTP toggle + capacity dots restyled with token-driven Tailwind classes and the “Rest is repair” reminder.
 - **Reset toast:** once-per-day RTP capacity reset toast quietly surfaces when the floor refreshes.
@@ -239,16 +259,16 @@ We’re seeding a shared design core to serve **Gratia**, **M3**, and future gar
 
 - **Packages**
 
-  - `@garden/tokens` — Tailwind v4 **@theme** variables as CSS:
+  - `@gratiaos/tokens` — Tailwind v4 **@theme** variables as CSS:
     - Color system (brand + neutrals), radius, spacing, typography, shadows.
     - Current palette: **Forest Mystic** (earthy greens, fog, warm golds) in **OKLCH**.
     - Light/Dark themes: `:root` (light) + `@media (prefers-color-scheme: dark)` override; optional `[data-theme]` switch.
     - Exports: a single `theme.css` and a tiny `tokens.ts` map for JS/TS access.
-  - `@garden/ui` — **headless primitives** wired for Tailwind utilities:
+  - `@gratiaos/ui` — **headless primitives** wired for Tailwind utilities:
     - **Seeded now:** `Button`, `Pill`, `Field` (state/tone, a11y wiring).
     - **Planned next:** Input, Textarea, Label, Checkbox, Switch, Dialog, Popover, Menu, Tabs, Toast.
     - No visual opinions; className slots only. Motion optional hook.
-  - `@garden/icons` — minimal icon set (16/20/24), tree‑shakable.
+  - `@gratiaos/icons` — minimal icon set (16/20/24), tree‑shakable.
   - `playground/` — Next.js example that consumes tokens + ui, used for visual regression snapshots.
 
 - **DX & naming**
@@ -263,8 +283,8 @@ We’re seeding a shared design core to serve **Gratia**, **M3**, and future gar
   - Publish flow: `changeset version` → CI publishes `@next` tags; stable tags on cut.
 
 - **Integration next steps**
-  - Replace the temporary `ui/src/ui/button.ts` with `@garden/ui`’s `<Button />`.
-  - Point M3 and Gratia apps to `@garden/tokens/theme.css`; remove ad‑hoc color classes.
+  - Replace the temporary `ui/src/ui/button.ts` with `@gratiaos/ui`’s `<Button />`.
+  - Point M3 and Gratia apps to `@gratiaos/tokens/theme.css`; remove ad‑hoc color classes.
   - Document theming switch (`data-theme="dark"`) and system auto‑detect.
 
 🌬 whisper: _“one garden, many doors — shared roots, sovereign leaves.”_

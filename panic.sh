@@ -18,7 +18,7 @@ fi
 
 # Config
 M3_URL="${M3_URL:-http://127.0.0.1:3033}"
-EXPORTS_DIR="${M3_EXPORTS_DIR:-server/exports}"
+EXPORTS_DIR="${M3_EXPORTS_DIR:-exports}"
 
 # Optional mode from CLI
 mode="${1:-default}"

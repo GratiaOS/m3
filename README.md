@@ -72,6 +72,9 @@ curl -s -X POST localhost:3033/retrieve \
 - **Readiness Lights** → personal traffic-lights per member (stream + snapshot)
 - **Dashboard State** → global shared view with pillars + note
 - **Tells** → lightweight event/task log
+- [**Towns**](#towns) → local bulletin for species/neighborhoods (Pad; CatTown default)
+- [**Value**](#value) → local minor-units ledger (accounts & entries)
+- [**Numbers**](docs/modules/numbers.md) → classify mirrored/repeated time & number patterns together with body-felt effects
 - **Reply Engine** → random poetic/sarcastic/paradoxical nudges, with energy cost estimates
 - **Panic Redirect Oracle** → logs panic redirect steps locally (via CLI or UI button)
 
@@ -97,6 +100,20 @@ curl -s -X POST localhost:3033/retrieve \
   By default, the DB lives in `<repo-root>/memory.db`.  
   You can override this with the `M3_DB_PATH` environment variable.
 
+### UI environment variables (Vite)
+
+The UI only sees variables prefixed with `VITE_`. Copy `ui/.env.example` and adjust if needed:
+
+```bash
+VITE_API_BASE=http://127.0.0.1:3033  # API base URL
+
+# Optional Value Bridge banner
+VITE_VALUE_BASE_CURRENCY=EUR         # current base currency
+VITE_VALUE_NEXT_CURRENCY=USD         # upcoming currency (same as base to hide notice)
+VITE_VALUE_REGIME_CHANGE=2025-11-01  # ISO date for the switch
+VITE_VALUE_NOTICE_WINDOW=45          # days before the switch to display the banner
+```
+
 ---
 
 ## ⚙️ Configuration <a id="configuration"></a>
@@ -109,7 +126,8 @@ M3_BEARER=supersecret               # optional bearer token for write routes
 M3_WEBHOOK_URL=https://example.com/webhook  # optional webhook endpoint
 M3_WEBHOOK_SECRET=whsec_123         # optional HMAC secret for webhook signing
 M3_DB_PATH=/custom/path/m3.db       # optional override for database location
-M3_EXPORTS_DIR=server/exports       # root folder for exports/logs (default: server/exports)
+M3_EXPORTS_DIR=exports              # root folder for exports/logs (default: ./exports)
+M3_BASE_CURRENCY=EUR                # base currency for Value module (default: EUR)
 
 # Reply Engine (nudges)
 M3_REPLIES_WINDOW_MINUTES=20        # how long an activation window lasts (default: 20)
@@ -421,9 +439,179 @@ Mirror fields (`sealed`, `archetype`, `privacy`) are preserved end‑to‑end, i
 
 ---
 
+### Towns (Pad / neighborhood news) <a id="towns"></a>
+
+Local bulletin for a “town” (species / neighborhood / crew).  
+Default town in the UI is **CatTown**; the server treats `town` as required in requests.  
+Write routes honor bearer auth if `M3_BEARER` is set.
+
+| Method | Path              | Purpose                    | Body (JSON)                                               |
+| ------ | ----------------- | -------------------------- | --------------------------------------------------------- |
+| POST   | `/towns/news`     | Publish a bulletin item    | `{ "town":"…", "headline":"…", "importance":1..=5, ... }` |
+| GET    | `/towns/bulletin` | Read recent bulletin items | `?town=CatTown&amp;limit=20&amp;since=RFC3339`            |
+
+**POST `/towns/news` examples (two shapes):**
+
+Minimal (server will fill timestamps):
+
+```json
+{
+  "town": "CatTown",
+  "headline": "Wet food will be served at 19:30",
+  "importance": 5
+}
+```
+
+Richer (explicit source/actors/time):
+
+```json
+{
+  "town": "CatTown",
+  "source": "Raz",
+  "who": "Felix & Manolita",
+  "headline": "Sunbeam shifts to couch at 14:00",
+  "details": "Cozy zone moving to west window; couch back cushions best.",
+  "importance": 3,
+  "at": "2025-09-09T14:00:00Z"
+}
+```
+
+**GET `/towns/bulletin` example response:**
+
+```json
+[
+  {
+    "id": 42,
+    "town": "CatTown",
+    "source": "Raz",
+    "who": "Felix & Manolita",
+    "headline": "Sunbeam shifts to couch at 14:00",
+    "details": "Cozy zone moving to west window; couch back cushions best.",
+    "importance": 3,
+    "at": "2025-09-09T14:00:00Z",
+    "ts": "2025-09-09T12:33:01Z"
+  },
+  {
+    "id": 43,
+    "town": "CatTown",
+    "headline": "Wet food will be served at 19:30",
+    "importance": 5,
+    "ts": "2025-09-09T13:10:45Z"
+  }
+]
+```
+
+**Quick cURL**
+
+```bash
+# Publish a note to CatTown (bearer optional)
+curl -X POST localhost:3033/towns/news \
+  -H "Authorization: Bearer $M3_BEARER" -H "Content-Type: application/json" \
+  -d '{"town":"CatTown","headline":"Sunbeam shifts to couch at 14:00","who":"Felix &amp; Manolita","importance":3}'
+
+# Read the latest bulletin
+curl -s "localhost:3033/towns/bulletin?town=CatTown&amp;limit=10"
+```
+
+> OpenAPI: see **server/openapi.yaml** — includes `NewsIn` / `NewsOut` schemas mirrored here.
+
+### Value (accounts & entries) <a id="value"></a>
+
+Local **minor-units** ledger for simple value tracking.  
+Stores amounts in **minor units** (for precision) and supports any ISO currency.  
+`direction` is `"in"` (credit) or `"out"` (debit). If `currency` is omitted, the server uses
+`M3_BASE_CURRENCY` (default **EUR**).
+
+Minor-unit exponents (built-in defaults): `EUR/USD = 2`, `JPY/HUF/KRW = 0`, `KWD/JOD/BHD/TND = 3`.  
+Rounding is **half-away-from-zero** when converting major → minor.
+
+| Method | Path             | Purpose                   | Body / Query                                                                                                                                                                      |
+| ------ | ---------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| POST   | `/value/account` | Ensure account exists     | `{ "name":"Wallet","kind":"wallet?","currency":"EUR?" }`                                                                                                                          |
+| POST   | `/value/entry`   | Insert a ledger entry     | `{ "account":"Wallet","account_kind":"wallet?","ts":"RFC3339?","direction":"in\|out","amount":12.34,"currency":"EUR?","memo":"?","tags":"?","counterparty":"?","reference":"?" }` |
+| GET    | `/value/balance` | Sum of signed minor units | `?account=Wallet&currency=EUR`                                                                                                                                                    |
+| GET    | `/value/recent`  | List newest entries       | `?account=Wallet&limit=20`                                                                                                                                                        |
+
+**POST `/value/entry` example (request/response):**
+
+Request:
+
+```json
+{
+  "account": "Wallet",
+  "account_kind": "wallet",
+  "direction": "in",
+  "amount": 25.0,
+  "currency": "EUR",
+  "memo": "gift from a friend",
+  "tags": "gift,friend",
+  "counterparty": "Alice",
+  "reference": "note-42"
+}
+```
+
+Response:
+
+```json
+{ "id": 7 }
+```
+
+**GET `/value/balance` example response:**
+
+```json
+{
+  "account": "Wallet",
+  "currency": "EUR",
+  "balance_minor": 2500,
+  "balance_major": 25.0
+}
+```
+
+**GET `/value/recent` example response (shape):**
+
+```json
+[
+  {
+    "id": 7,
+    "ts": "2025-09-09T12:02:11Z",
+    "account": "Wallet",
+    "direction": "in",
+    "amount_minor": 2500,
+    "amount_major": 25.0,
+    "currency": "EUR",
+    "memo": "gift from a friend",
+    "tags": "gift,friend",
+    "counterparty": "Alice",
+    "reference": "note-42"
+  }
+]
+```
+
+**Quick cURL**
+
+```bash
+# Ensure account exists (idempotent)
+curl -X POST localhost:3033/value/account \
+  -H "Authorization: Bearer $M3_BEARER" -H "Content-Type: application/json" \
+  -d '{"name":"Wallet","kind":"wallet","currency":"EUR"}'
+
+# Insert entry
+curl -X POST localhost:3033/value/entry \
+  -H "Authorization: Bearer $M3_BEARER" -H "Content-Type: application/json" \
+  -d '{"account":"Wallet","direction":"in","amount":25.00,"currency":"EUR","memo":"gift"}'
+
+# Balance (Wallet in EUR)
+curl -s "localhost:3033/value/balance?account=Wallet&currency=EUR"
+
+# Recent entries (limit 10)
+curl -s "localhost:3033/value/recent?account=Wallet&limit=10"
+```
+
+> OpenAPI: planned extension of **server/openapi.yaml** to include `ValueEntry` schemas mirroring the shapes above.
+
 ### Cycles (rhythm context)
 
-Rhythm helpers offering lightweight context about lunar phase, solar sign, and a 13‑tone cadence. Defaults to **approximate** mode (fast math). A precise mode is planned behind the `ephemeris` cargo feature.
+Rhythm helpers offering lightweight context about lunar phase, solar sign, and a 13-tone cadence. Defaults to **approximate** mode (fast math). A precise mode is planned behind the `ephemeris` cargo feature.
 
 See also: [docs/modules/cycles.md](docs/modules/cycles.md).
 
@@ -459,7 +647,7 @@ Example:
   "breath": "box:in4-hold2-out6-hold2 × 4",
   "doorway": "dim_lights (20%), step back 2m, sip water",
   "anchor": "Blend-in posture; sovereignty stays inside.",
-  "path": "server/exports/panic/2025-08/panic-2025-08-24.log"
+  "path": "exports/panic/2025-08/panic-2025-08-24.log"
 }
 ```
 
@@ -518,7 +706,7 @@ We’re opening M3 carefully, in service of local-first privacy and clear bounda
 **Phase 3 — Extensions (v0.1.9)**
 
 - Stable webhook contract + sample receivers.
-- UI primitives published as `@gratiaos/garden-core` preview.
+- UI primitives published as `@gratiaos/ui` preview.
 - Docs: “How to run fully offline”, “Sealed notes threat model (home use)”.
 
 **Phase 4 — Bundles (v0.1.10+)**
@@ -562,7 +750,7 @@ Ethos docs: see **[ABUNDANCE_CHARTER.md](ABUNDANCE_CHARTER.md)** (no chosen ones
 | UI           | `/ui`               | **Apache-2.0**    | Permissive for adoption; encourages contributions without fear.   |
 | Docs         | `/docs`             | **CC BY-SA 4.0**  | Knowledge should stay share‑alike and attributable.               |
 | Marks        | `/docs/assets/mark` | **CC BY-SA 4.0**  | Visual gestures follow docs terms; no proprietary brand lock‑in.  |
-| Exports/Logs | `server/exports`    | User-owned data   | Outputs are yours; license of repo doesn’t restrict your content. |
+| Exports/Logs | `exports`           | User-owned data   | Outputs are yours; license of repo doesn’t restrict your content. |
 
 Notes:
 
@@ -616,8 +804,16 @@ Instead, we lean on terms that honor sovereignty, reciprocity, and mirrors.
 | **User**              | **Actor**     | Active participant, never passive                   |
 | **Brand**             | **Mark**      | A visual gesture, living symbol, not empire framing |
 
-> Whisper → Mirror → Door → Action  
-> M3 is not an “AI” to consume, but a **field to co-create**.
+> Whisper → Mirror → Door → Action
+
+### Garden Stack naming (infra-facing)
+
+M3 also uses a clear, infra-facing vocabulary when referring to the technical stack that touches mirrors and companions:
+
+- **Pattern Engine** → the underlying model stack (training, inference, retrieval). Use this when talking about infrastructure, capabilities, performance, or updates.
+- **Presence Node** → any surfaced endpoint where humans contact the Engine (web UI, CLI, scripts, voice, agents). Use this when talking about how people touch the system.
+- **Mode** → a behavioral / conversational contract for a Presence Node (e.g. `Codex-mode`, `Monday-mode`). Modes are styles, not identities.
+- **Garden Stack** → the full ecosystem: Pattern Engine + Presence Nodes + Modes working together.
 
 ---
 

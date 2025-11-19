@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: M3 Memory Server — Tiny API Map
-  version: 0.1.8
+  version: 0.1.9
   description: |
     Minimal, hand‑rolled OpenAPI for the endpoints currently wired in `server/`.
     Scope: cycles, emotions, and the Value Bridge (accounts + entries). Intended
@@ -31,8 +31,92 @@ tags:
     description: Emotion capture + bridges (A11y‑first, privacy‑aware).
   - name: value
     description: Value Bridge (accounts + entries in minor units).
+  - name: towns
+    description: Local inter‑species bulletin; quick news notes per town.
 
 paths:
+  /towns/news:
+    post:
+      tags: [towns]
+      summary: Post a news note to a town bulletin
+      operationId: postTownNews
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewsIn'
+            examples:
+              sample:
+                value:
+                  town: CatTown
+                  headline: 'Pillow rotation tonight'
+                  who: 'cat:felix'
+                  note: 'new pillows in bedroom; queue starts on window shelf'
+              sunbeamShift:
+                value:
+                  town: CatTown
+                  headline: 'Sunbeam shifts to couch at 14:00'
+                  who: 'cat:all'
+                  note: 'afternoon sun leaves window; couch and rug are warm'
+      responses:
+        '200':
+          description: Created news echo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsOut'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /towns/bulletin:
+    get:
+      tags: [towns]
+      summary: List recent town news (newest first)
+      operationId: getTownBulletin
+      parameters:
+        - $ref: '#/components/parameters/TownParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NewsOut'
+              examples:
+                recentCatTown:
+                  value:
+                    - id: 101
+                      created_at: '2025-10-20T21:00:00Z'
+                      town: CatTown
+                      headline: 'Pillow rotation tonight'
+                      note: 'new pillows in bedroom; queue starts on window shelf'
+                      who: 'cat:felix'
+                    - id: 102
+                      created_at: '2025-10-20T12:58:00Z'
+                      town: CatTown
+                      headline: 'Sunbeam shifts to couch at 14:00'
+                      note: 'afternoon sun leaves window; couch and rug are warm'
+                      who: 'cat:all'
+                morningAndEvening:
+                  value:
+                    - id: 103
+                      created_at: '2025-10-20T06:55:00Z'
+                      town: CatTown
+                      headline: 'Door patrol paused for breakfast'
+                      note: 'porch watch resumes after 08:15'
+                      who: 'cat:felix'
+                    - id: 104
+                      created_at: '2025-10-20T18:40:00Z'
+                      town: CatTown
+                      headline: 'Cushion claimed by Manolita'
+                      note: 'corner pillow marked; alternate spots encouraged'
+                      who: 'cat:all'
+        '400':
+          $ref: '#/components/responses/BadRequest'
   /cycles/current:
     get:
       tags: [cycles]
@@ -337,6 +421,11 @@ paths:
 
 components:
   parameters:
+    TownParam:
+      in: query
+      name: town
+      schema: { type: string }
+      description: Optional town name; omit for all towns.
     AccountParam:
       in: query
       name: account
@@ -515,3 +604,27 @@ components:
               items: {}
             - type: 'null'
       required: [code, message]
+
+    NewsIn:
+      type: object
+      properties:
+        town: { type: string, description: 'Town identifier, e.g., CatTown' }
+        headline: { type: string, description: 'Primary whisper text (one line)' }
+        who: { type: [string, 'null'], description: 'Optional author / source' }
+        note: { type: [string, 'null'], description: 'Secondary clarifying note' }
+        created_at:
+          type: [string, 'null']
+          format: date-time
+          description: 'Override timestamp (defaults to server now)'
+      required: [town, headline]
+
+    NewsOut:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        town: { type: string }
+        headline: { type: string }
+        who: { type: [string, 'null'] }
+        note: { type: [string, 'null'] }
+        created_at: { type: string, format: date-time }
+      required: [id, town, headline, created_at]

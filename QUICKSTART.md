@@ -22,7 +22,7 @@ cargo run
 ```
 
 - Default bind: 127.0.0.1:3033
-- Logs appear in server/exports
+- Logs appear in exports
 
 ## 3. UI setup
 
