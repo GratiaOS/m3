@@ -12,7 +12,7 @@ GratiaOS is not just software — it’s a living garden: code, community, and c
 
 **Name**  
 Gratia (Asociación en formación)  
-GratiaOS (ecosistemul de cod, protocoale și spații)
+GratiaOS (ecosistem de cod, protocoale și spații)
 
 **Place**  
 Casbas de Huesca · España
