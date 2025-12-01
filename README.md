@@ -66,7 +66,7 @@ curl -s -X POST localhost:3033/retrieve \
 - **Sealed notes** → passphrase-protected; unlock for session only
 - **Exports** → Markdown & CSV (sealed notes exported as plaintext only when unlocked)
 - **Auth** → optional Bearer token for **write** endpoints
-- **Webhooks** → fire events to external systems (HMAC-signed)
+- **Webhooks** → fire events to external systems (HMAC-signed); see [example receiver](examples/webhook-receiver)
 - **OpenAI Import** → ingest your data export
 - **Web UI** → simple interface to explore & search your memory
 - **Readiness Lights** → personal traffic-lights per member (stream + snapshot)
@@ -148,7 +148,64 @@ VALUE_HORIZON=7d                    # plan window (e.g., 7d, 1m)
 VALUE_FORCE_MOCK_UNTIL=             # optional guard timestamp (RFC3339)
 ```
 
+>
 > If `M3_BEARER` is set, all **write** endpoints require `Authorization: Bearer <token>`.
+
+---
+
+## 🪝 Webhooks <a id="webhooks"></a>
+
+M3 can send webhook events to external systems when important actions occur. This enables integrations with notification services, analytics, automation tools, and more.
+
+### Configuration
+
+Set these environment variables when starting the M3 server:
+
+```bash
+M3_WEBHOOK_URL=http://localhost:4001/webhook    # Your webhook receiver endpoint
+M3_WEBHOOK_SECRET=your-secret-key-here          # HMAC-SHA256 signing secret
+```
+
+### Event Types
+
+M3 sends webhooks for these events:
+
+| Event          | Triggered When              | Status      | Example Use Case                    |
+|----------------|-----------------------------|-------------|-------------------------------------|
+| `panic.ui`     | Panic button pressed (UI)   | ✅ Active   | Send urgent notification            |
+| `panic.run`    | Panic redirect (CLI)        | ✅ Active   | Log emergency protocol              |
+| `status.set`   | Readiness light changes     | ✅ Active   | Update team dashboard               |
+| `ingest`       | Message saved to timeline   | 📋 Planned  | Log to external database            |
+| `emotion`      | Emotion event logged        | 📋 Planned  | Track mood patterns                 |
+| `tell`         | Tell created                | 📋 Planned  | Trigger external workflow           |
+
+> **Note**: The [webhook receiver example](examples/webhook-receiver) includes handlers for all event types, including planned ones.
+
+### Security
+
+All webhooks are signed with HMAC-SHA256 for verification. The signature is sent in the `X-M3-Signature` header:
+
+```
+X-M3-Signature: m3=t=1234567890,v1=abc123def456...
+```
+
+**Always verify signatures** to ensure webhooks are authentic. See the [webhook receiver example](examples/webhook-receiver) for implementation details.
+
+### Example Receiver
+
+A complete, working webhook receiver is provided in [`examples/webhook-receiver`](examples/webhook-receiver). It demonstrates:
+
+- Signature verification
+- Event handling for all types
+- Health checks
+- Security best practices
+
+```bash
+cd examples/webhook-receiver
+M3_WEBHOOK_SECRET=your-secret npm start
+```
+
+See the [webhook receiver README](examples/webhook-receiver/README.md) for full documentation.
 
 ---
 
