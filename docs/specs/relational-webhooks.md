@@ -216,9 +216,9 @@ Note: sign raw request body bytes, not a re-serialized JSON string.
 
 ### 5) Golden path (end-to-end example with payloads)
 
-This is a concrete, end-to-end walkthrough showing how a gentle care signal moves through the system: emit → route → invite → acknowledge → close.
+This is a concrete, end-to-end walkthrough showing how a gentle care signal moves through the system: emit -> route -> invite -> acknowledge -> close.
 
-#### Step 1 — Emit (inside M3)
+#### Step 1 - Emit (inside M3)
 
 A client action or internal state produces a `panic.ui` event.
 
@@ -250,28 +250,28 @@ A client action or internal state produces a `panic.ui` event.
 }
 ```
 
-#### Step 2 — Route (M3 router decision)
+#### Step 2 - Route (M3 router decision)
 
 The router checks:
 
 - consent.mode === explicit
-- "panic.ui" ∈ consent.scope
-- audience resolution → user:ana
+- "panic.ui" in consent.scope
+- audience resolution -> user:ana
 
 Decision: deliver to internal receiver and (optionally) external relay.
 
 No payload change is required. Router only enriches delivery metadata (out of band).
 
-#### Step 3 — Invite (human-facing relay)
+#### Step 3 - Invite (human-facing relay)
 
 The receiver translates the event into a human invitation (example message, not protocol):
 
-> "Hei Ana. Raz a trimis un semnal blând: ‘Sunt aici. Nu e urgență. Aș vrea însoțire.’
-> Vrei să faci un soft check-in sau să ții spațiul?"
+> "Hei Ana. Raz a trimis un semnal bland: 'Sunt aici. Nu e urgenta. As vrea insotire.'
+> Vrei sa faci un soft check-in sau sa tii spatiul?"
 
 Buttons / actions map to `suggested_responses`.
 
-#### Step 4 — Acknowledge (receiver → M3)
+#### Step 4 - Acknowledge (receiver -> M3)
 
 When Ana accepts, the receiver emits `care.ack`.
 
@@ -287,7 +287,7 @@ When Ana accepts, the receiver emits `care.ack`.
 
 M3 records that the signal has been received and is being held.
 
-#### Step 5 — Close (receiver → M3)
+#### Step 5 - Close (receiver -> M3)
 
 After the check-in finishes, the receiver emits `care.done`.
 
@@ -311,24 +311,24 @@ M3 marks the care loop as closed.
 
 This is the minimal relational lifecycle:
 
-panic.ui → care.ack → care.done
+panic.ui -> care.ack -> care.done
 
 ## Anti-patterns (what NOT to build)
 
 These are explicit violations of this spec. They turn relational signals into systems of power, pressure, or surveillance.
 
-### ❌ Automated escalation loops
+### X Automated escalation loops
 
 Wrong:
 
-- panic.ui → auto-route to “on duty” logic
-- auto-trigger timers, reminders, or “nudge if no response”
-- auto-promote to “urgent” or “critical” states
+- panic.ui -> auto-route to "on duty" logic
+- auto-trigger timers, reminders, or "nudge if no response"
+- auto-promote to "urgent" or "critical" states
 
 Why wrong:
 
 - the system acts _on_ people instead of _inviting_ people
-- introduces performance pressure (“someone must respond”)
+- introduces performance pressure ("someone must respond")
 - collapses care into incident management
 
 Relational rule:
@@ -336,12 +336,12 @@ Relational rule:
 - time windows invite, they never threaten
 - silence is information, not failure
 
-### ❌ Surveillance or emotional telemetry
+### X Surveillance or emotional telemetry
 
 Wrong:
 
-- status.set → dashboards, heatmaps, counters
-- aggregations like “panic frequency”, “mood trends”, “risk scores”
+- status.set -> dashboards, heatmaps, counters
+- aggregations like "panic frequency", "mood trends", "risk scores"
 - visibility to third parties without renewed, explicit consent
 
 Why wrong:
@@ -355,13 +355,13 @@ Relational rule:
 - no anonymous observers
 - no extraction of meaning without the person present
 
-### ❌ Action without a human “yes”
+### X Action without a human "yes"
 
 Wrong:
 
 - webhooks that directly trigger interventions
 - state changes that affect others without a receiver committing
-- systems that “resolve” care loops automatically
+- systems that "resolve" care loops automatically
 
 Why wrong:
 
@@ -374,14 +374,14 @@ Relational rule:
 - nothing closes without a person stepping in
 - care.ack is the minimum proof of life
 
-### ✅ The line
+### OK The line
 
 Relational webhooks invite.  
 They never decide, escalate, optimize, or measure.
 
 If your system can:
 
-- act without someone saying “I’m here”
+- act without someone saying "I'm here"
 - optimize response instead of protecting dignity
 - observe without being part of the circle
 

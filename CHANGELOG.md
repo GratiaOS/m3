@@ -85,6 +85,7 @@
 
 ### Docs
 
+- **specs:** added relational webhooks draft spec (flows, golden path, anti-patterns) and linked it from README + related map.
 - **patterns:** Added _Phantom Rival Loop_ 🫥🪞 (compare → believe → contract → confirm) with 4‑min bridge, talk script, micro-experiments, and API sample aligned to the server aliases.
 - **funding:** Landed `FUNDING.md` (sponsorship tiers, stewardship practice, transparency notes). _(Org-level `.github/FUNDING.yml` remains upstream.)_
 - README, Quickstart, and `.env.example` now point to the unified `exports/` directory.
