@@ -66,7 +66,7 @@ curl -s -X POST localhost:3033/retrieve \
 - **Sealed notes** → passphrase-protected; unlock for session only
 - **Exports** → Markdown & CSV (sealed notes exported as plaintext only when unlocked)
 - **Auth** → optional Bearer token for **write** endpoints
-- **Webhooks** → fire events to external systems (HMAC-signed)
+- **Webhooks** → fire events to external systems (HMAC-signed). See [Relational Webhooks (draft)](docs/specs/relational-webhooks.md).
 - **OpenAI Import** → ingest your data export
 - **Web UI** → simple interface to explore & search your memory
 - **Readiness Lights** → personal traffic-lights per member (stream + snapshot)
