@@ -279,7 +279,10 @@ fn timeline_sort_key(ts: &str) -> String {
     use chrono::SecondsFormat;
 
     chrono::DateTime::parse_from_rfc3339(ts)
-        .map(|dt| dt.with_timezone(&chrono::Utc).to_rfc3339_opts(SecondsFormat::Secs, true))
+        .map(|dt| {
+            dt.with_timezone(&chrono::Utc)
+                .to_rfc3339_opts(SecondsFormat::Secs, true)
+        })
         .unwrap_or_else(|_| ts.to_string())
 }
 
@@ -291,18 +294,8 @@ fn sort_timeline_items(items: &mut [TimelineItem]) {
 mod tests {
     use super::*;
     use crate::{bus::Bus, config::Config, db, replies::ReplyEngine, webhook::Webhook};
-    use axum::{http::Request, Router};
-    use hyper::body::to_bytes;
     use std::sync::{Arc, Mutex};
     use tokio_rusqlite::Connection as AsyncConnection;
-    use tower::ServiceExt;
-
-    #[derive(serde::Deserialize)]
-    struct TimelineItemOut {
-        id: String,
-        ts: String,
-        source: String,
-    }
 
     async fn make_state_for_test() -> AppState {
         let conn = AsyncConnection::open_in_memory().await.unwrap();
@@ -352,11 +345,7 @@ mod tests {
 
     #[test]
     fn sort_falls_back_to_lexicographic_for_invalid() {
-        let mut items = vec![
-            item("zzzz"),
-            item("aaaa"),
-            item("bbbb"),
-        ];
+        let mut items = vec![item("zzzz"), item("aaaa"), item("bbbb")];
 
         sort_timeline_items(&mut items);
 
@@ -374,7 +363,10 @@ mod tests {
         sort_timeline_items(&mut items);
 
         let ordered: Vec<&str> = items.iter().map(|entry| entry.ts.as_str()).collect();
-        assert_eq!(ordered, vec!["2026-01-07T10:12:00-05:00", "2026-01-07T14:12:00Z"]);
+        assert_eq!(
+            ordered,
+            vec!["2026-01-07T10:12:00-05:00", "2026-01-07T14:12:00Z"]
+        );
     }
 
     #[test]
@@ -407,20 +399,10 @@ mod tests {
             .await
             .unwrap();
 
-        let app = Router::new().nest("/timeline", router()).with_state(state);
-        let res = app
-            .oneshot(
-                Request::builder()
-                    .uri("/timeline/recent?limit=2")
-                    .body(axum::body::Body::empty())
-                    .unwrap(),
-            )
+        let Json(items) = recent(State(state), Query(RecentQuery { limit: Some(2) }))
             .await
             .unwrap();
-
-        let body = to_bytes(res.into_body()).await.unwrap();
-        let items: Vec<TimelineItemOut> = serde_json::from_slice(&body).unwrap();
-        let tells: Vec<&TimelineItemOut> = items.iter().filter(|item| item.source == "tell").collect();
+        let tells: Vec<&TimelineItem> = items.iter().filter(|item| item.source == "tell").collect();
 
         assert_eq!(tells.len(), 2);
         assert_eq!(tells[0].id, "tell:1");
