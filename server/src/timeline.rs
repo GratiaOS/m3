@@ -260,7 +260,18 @@ async fn recent(
     all.extend(tells);
 
     // Robust sort: parse ts as DateTime when possible, fallback to string compare
-    all.sort_by(|a, b| {
+    sort_timeline_items(&mut all);
+
+    // re-limit after merge so sources don't overflow overall window
+    if all.len() > limit as usize {
+        all.truncate(limit as usize);
+    }
+
+    Ok(Json(all))
+}
+
+fn sort_timeline_items(items: &mut [TimelineItem]) {
+    items.sort_by(|a, b| {
         use chrono::DateTime;
         let a_dt = DateTime::parse_from_rfc3339(&a.ts).ok();
         let b_dt = DateTime::parse_from_rfc3339(&b.ts).ok();
@@ -269,11 +280,64 @@ async fn recent(
             _ => b.ts.cmp(&a.ts),            // fallback to lexicographic
         }
     });
+}
 
-    // re-limit after merge so sources don't overflow overall window
-    if all.len() > limit as usize {
-        all.truncate(limit as usize);
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn item(ts: &str) -> TimelineItem {
+        TimelineItem {
+            id: "test:1".into(),
+            ts: ts.into(),
+            source: "test".into(),
+            title: "test".into(),
+            subtitle: String::new(),
+            meta: serde_json::json!({}),
+        }
     }
 
-    Ok(Json(all))
+    #[test]
+    fn sort_by_rfc3339_desc() {
+        let mut items = vec![
+            item("2026-01-07T10:12:00Z"),
+            item("2025-01-07T10:12:00Z"),
+            item("2026-01-07T10:12:05Z"),
+        ];
+
+        sort_timeline_items(&mut items);
+
+        let ordered: Vec<&str> = items.iter().map(|entry| entry.ts.as_str()).collect();
+        assert_eq!(
+            ordered,
+            vec![
+                "2026-01-07T10:12:05Z",
+                "2026-01-07T10:12:00Z",
+                "2025-01-07T10:12:00Z",
+            ]
+        );
+    }
+
+    #[test]
+    fn sort_falls_back_to_lexicographic_for_invalid() {
+        let mut items = vec![
+            item("2026-01-07T10:12:00Z"),
+            item("zzzz"),
+            item("2024-01-07T10:12:00Z"),
+            item("aaaa"),
+        ];
+
+        sort_timeline_items(&mut items);
+
+        let ordered: Vec<&str> = items.iter().map(|entry| entry.ts.as_str()).collect();
+        assert_eq!(
+            ordered,
+            vec![
+                "zzzz",
+                "aaaa",
+                "2026-01-07T10:12:00Z",
+                "2024-01-07T10:12:00Z",
+            ]
+        );
+    }
 }
