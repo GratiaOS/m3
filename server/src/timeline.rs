@@ -25,11 +25,18 @@ pub fn router() -> Router<AppState> {
     Router::new().route("/recent", get(recent))
 }
 
+fn per_source_limit_for(limit: i64) -> i64 {
+    let safe = limit.clamp(1, 200);
+    (safe * 2).clamp(1, 400)
+}
+
 async fn recent(
     State(state): State<AppState>,
     Query(q): Query<RecentQuery>,
 ) -> Result<Json<Vec<TimelineItem>>, axum::http::StatusCode> {
     let limit = q.limit.unwrap_or(40).clamp(1, 200);
+    // Per-source limit: fetch more to ensure mix survives final truncation
+    let per_source_limit = per_source_limit_for(limit);
 
     // emotions (including gratitude rows from /emotions/resolve)
     let emotions: Vec<TimelineItem> = state
@@ -43,7 +50,7 @@ async fn recent(
              ORDER BY ts DESC
              LIMIT ?1",
             )?;
-            let it = st.query_map([limit], |r| {
+            let it = st.query_map([per_source_limit], |r| {
                 let id: i64 = r.get(0)?;
                 let ts: String = r.get(1)?;
                 let who: String = r.get(2)?;
@@ -95,7 +102,7 @@ async fn recent(
              ORDER BY ts DESC
              LIMIT ?1",
             )?;
-            let it = st.query_map([limit], |r| {
+            let it = st.query_map([per_source_limit], |r| {
                 let id: i64 = r.get(0)?;
                 let ts: String = r.get(1)?;
                 let who: Option<String> = r.get(2)?;
@@ -142,7 +149,7 @@ async fn recent(
                 ORDER BY ts DESC
                 LIMIT ?1",
             )?;
-            let it = st.query_map([limit], |r| {
+            let it = st.query_map([per_source_limit], |r| {
                 let id: i64 = r.get(0)?;
                 let ts: String = r.get(1)?;
                 let who: String = r.get(2)?;
@@ -183,10 +190,10 @@ async fn recent(
             if let Ok(mut st) = c.prepare(
                 "SELECT id, created_at, node, pre_activation, action
              FROM tells
-             ORDER BY id DESC
+             ORDER BY created_at DESC
              LIMIT ?1",
             ) {
-                let it = st.query_map([limit], |r| {
+                let it = st.query_map([per_source_limit], |r| {
                     let id: i64 = r.get(0)?;
                     let ts: String = r.get(1)?;
                     let node: String = r.get(2)?;
@@ -220,7 +227,7 @@ async fn recent(
              ORDER BY ts DESC
              LIMIT ?1",
             ) {
-                let it = st.query_map([limit], |r| {
+                let it = st.query_map([per_source_limit], |r| {
                     let id: i64 = r.get(0)?;
                     let ts: String = r.get(1)?;
                     let node: String = r.get(2)?;
@@ -250,18 +257,155 @@ async fn recent(
         .await
         .unwrap_or_default();
 
-    // merge + sort newest first (by ts)
+    // merge + sort newest first (by ts, with robust DateTime parsing)
     let mut all = Vec::new();
     all.extend(emotions);
     all.extend(gratitude);
     all.extend(energy);
     all.extend(tells);
 
-    all.sort_by(|a, b| b.ts.cmp(&a.ts));
+    // Robust sort: parse ts as DateTime when possible, fallback to string compare
+    sort_timeline_items(&mut all);
+
     // re-limit after merge so sources don't overflow overall window
     if all.len() > limit as usize {
         all.truncate(limit as usize);
     }
 
     Ok(Json(all))
+}
+
+fn timeline_sort_key(ts: &str) -> String {
+    use chrono::SecondsFormat;
+
+    chrono::DateTime::parse_from_rfc3339(ts)
+        .map(|dt| {
+            dt.with_timezone(&chrono::Utc)
+                .to_rfc3339_opts(SecondsFormat::Secs, true)
+        })
+        .unwrap_or_else(|_| ts.to_string())
+}
+
+fn sort_timeline_items(items: &mut [TimelineItem]) {
+    items.sort_by_key(|item| std::cmp::Reverse(timeline_sort_key(&item.ts)));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{bus::Bus, config::Config, db, replies::ReplyEngine, webhook::Webhook};
+    use std::sync::{Arc, Mutex};
+    use tokio_rusqlite::Connection as AsyncConnection;
+
+    async fn make_state_for_test() -> AppState {
+        let conn = AsyncConnection::open_in_memory().await.unwrap();
+        conn.call(|c| db::ensure_schema(c)).await.unwrap();
+        let db = db::Database(conn);
+        AppState {
+            db,
+            bus: Bus::default(),
+            key: Arc::new(Mutex::new(None)),
+            config: Config::from_env(),
+            webhook: Webhook::new(None, None),
+            reply_engine: ReplyEngine::from_env(),
+        }
+    }
+
+    fn item(ts: &str) -> TimelineItem {
+        TimelineItem {
+            id: "test:1".into(),
+            ts: ts.into(),
+            source: "test".into(),
+            title: "test".into(),
+            subtitle: String::new(),
+            meta: serde_json::json!({}),
+        }
+    }
+
+    #[test]
+    fn sort_by_rfc3339_desc() {
+        let mut items = vec![
+            item("2026-01-07T10:12:00Z"),
+            item("2025-01-07T10:12:00Z"),
+            item("2026-01-07T10:12:05Z"),
+        ];
+
+        sort_timeline_items(&mut items);
+
+        let ordered: Vec<&str> = items.iter().map(|entry| entry.ts.as_str()).collect();
+        assert_eq!(
+            ordered,
+            vec![
+                "2026-01-07T10:12:05Z",
+                "2026-01-07T10:12:00Z",
+                "2025-01-07T10:12:00Z",
+            ]
+        );
+    }
+
+    #[test]
+    fn sort_falls_back_to_lexicographic_for_invalid() {
+        let mut items = vec![item("zzzz"), item("aaaa"), item("bbbb")];
+
+        sort_timeline_items(&mut items);
+
+        let ordered: Vec<&str> = items.iter().map(|entry| entry.ts.as_str()).collect();
+        assert_eq!(ordered, vec!["zzzz", "bbbb", "aaaa"]);
+    }
+
+    #[test]
+    fn sort_normalizes_offsets() {
+        let mut items = vec![
+            item("2026-01-07T14:12:00Z"),
+            item("2026-01-07T10:12:00-05:00"),
+        ];
+
+        sort_timeline_items(&mut items);
+
+        let ordered: Vec<&str> = items.iter().map(|entry| entry.ts.as_str()).collect();
+        assert_eq!(
+            ordered,
+            vec!["2026-01-07T10:12:00-05:00", "2026-01-07T14:12:00Z"]
+        );
+    }
+
+    #[test]
+    fn per_source_limit_is_doubled_and_clamped() {
+        assert_eq!(per_source_limit_for(1), 2);
+        assert_eq!(per_source_limit_for(40), 80);
+        assert_eq!(per_source_limit_for(200), 400);
+        assert_eq!(per_source_limit_for(0), 2);
+        assert_eq!(per_source_limit_for(999), 400);
+    }
+
+    #[tokio::test]
+    async fn tells_are_ordered_by_created_at() {
+        let state = make_state_for_test().await;
+
+        state
+            .db
+            .0
+            .call(|c| {
+                c.execute(
+                    "INSERT INTO tells(node, pre_activation, action, created_at) VALUES (?1, ?2, ?3, ?4)",
+                    ["tell-one", "pre", "act", "2026-01-02T00:00:00Z"],
+                )?;
+                c.execute(
+                    "INSERT INTO tells(node, pre_activation, action, created_at) VALUES (?1, ?2, ?3, ?4)",
+                    ["tell-two", "pre", "act", "2026-01-01T00:00:00Z"],
+                )?;
+                Ok(())
+            })
+            .await
+            .unwrap();
+
+        let Json(items) = recent(State(state), Query(RecentQuery { limit: Some(2) }))
+            .await
+            .unwrap();
+        let tells: Vec<&TimelineItem> = items.iter().filter(|item| item.source == "tell").collect();
+
+        assert_eq!(tells.len(), 2);
+        assert_eq!(tells[0].id, "tell:1");
+        assert_eq!(tells[0].ts, "2026-01-02T00:00:00Z");
+    }
 }
