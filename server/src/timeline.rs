@@ -30,6 +30,8 @@ async fn recent(
     Query(q): Query<RecentQuery>,
 ) -> Result<Json<Vec<TimelineItem>>, axum::http::StatusCode> {
     let limit = q.limit.unwrap_or(40).clamp(1, 200);
+    // Per-source limit: fetch more to ensure mix survives final truncation
+    let per_source_limit = (limit * 2).clamp(1, 400);
 
     // emotions (including gratitude rows from /emotions/resolve)
     let emotions: Vec<TimelineItem> = state
@@ -43,7 +45,7 @@ async fn recent(
              ORDER BY ts DESC
              LIMIT ?1",
             )?;
-            let it = st.query_map([limit], |r| {
+            let it = st.query_map([per_source_limit], |r| {
                 let id: i64 = r.get(0)?;
                 let ts: String = r.get(1)?;
                 let who: String = r.get(2)?;
@@ -95,7 +97,7 @@ async fn recent(
              ORDER BY ts DESC
              LIMIT ?1",
             )?;
-            let it = st.query_map([limit], |r| {
+            let it = st.query_map([per_source_limit], |r| {
                 let id: i64 = r.get(0)?;
                 let ts: String = r.get(1)?;
                 let who: Option<String> = r.get(2)?;
@@ -142,7 +144,7 @@ async fn recent(
                 ORDER BY ts DESC
                 LIMIT ?1",
             )?;
-            let it = st.query_map([limit], |r| {
+            let it = st.query_map([per_source_limit], |r| {
                 let id: i64 = r.get(0)?;
                 let ts: String = r.get(1)?;
                 let who: String = r.get(2)?;
@@ -183,10 +185,10 @@ async fn recent(
             if let Ok(mut st) = c.prepare(
                 "SELECT id, created_at, node, pre_activation, action
              FROM tells
-             ORDER BY id DESC
+             ORDER BY created_at DESC
              LIMIT ?1",
             ) {
-                let it = st.query_map([limit], |r| {
+                let it = st.query_map([per_source_limit], |r| {
                     let id: i64 = r.get(0)?;
                     let ts: String = r.get(1)?;
                     let node: String = r.get(2)?;
@@ -220,7 +222,7 @@ async fn recent(
              ORDER BY ts DESC
              LIMIT ?1",
             ) {
-                let it = st.query_map([limit], |r| {
+                let it = st.query_map([per_source_limit], |r| {
                     let id: i64 = r.get(0)?;
                     let ts: String = r.get(1)?;
                     let node: String = r.get(2)?;
@@ -250,14 +252,24 @@ async fn recent(
         .await
         .unwrap_or_default();
 
-    // merge + sort newest first (by ts)
+    // merge + sort newest first (by ts, with robust DateTime parsing)
     let mut all = Vec::new();
     all.extend(emotions);
     all.extend(gratitude);
     all.extend(energy);
     all.extend(tells);
 
-    all.sort_by(|a, b| b.ts.cmp(&a.ts));
+    // Robust sort: parse ts as DateTime when possible, fallback to string compare
+    all.sort_by(|a, b| {
+        use chrono::DateTime;
+        let a_dt = DateTime::parse_from_rfc3339(&a.ts).ok();
+        let b_dt = DateTime::parse_from_rfc3339(&b.ts).ok();
+        match (a_dt, b_dt) {
+            (Some(a), Some(b)) => b.cmp(&a), // desc: newest first
+            _ => b.ts.cmp(&a.ts),            // fallback to lexicographic
+        }
+    });
+
     // re-limit after merge so sources don't overflow overall window
     if all.len() > limit as usize {
         all.truncate(limit as usize);
