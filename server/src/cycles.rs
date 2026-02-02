@@ -351,7 +351,10 @@ mod tests {
     #[test]
     fn solar_next_sign_after_equinox_is_taurus() {
         // After the March equinox, Aries should be current; next sign is Taurus.
-        let now = Utc.with_ymd_and_hms(2025, 3, 21, 12, 0, 0).single().unwrap();
+        let now = Utc
+            .with_ymd_and_hms(2025, 3, 21, 12, 0, 0)
+            .single()
+            .unwrap();
         let (sign, _at) = next_solar_sign(now);
         assert_eq!(sign, "taurus");
     }
