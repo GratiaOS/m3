@@ -62,6 +62,9 @@ mod compute {
 //     use super::*;
 //     // TODO: hook to a precise ephemeris crate (e.g., VSOP87/ELP),
 //     // replace next_lunar_phase / next_solar_sign with accurate solvers.
+//     // NOTE: `solunatus` currently exposes high-precision lunar phases but does
+//     // not provide public ecliptic longitude APIs for the Sun. We keep the
+//     // NOAA-based solar sign calculation until a clean ephemeris hook exists.
 //     // Keep function signatures identical so handlers don't change.
 // }
 
@@ -343,5 +346,13 @@ mod tests {
         let ok =
             ["new_moon", "first_quarter", "full_moon", "last_quarter"].contains(&label.as_str());
         assert!(ok, "unexpected lunar label: {}", label);
+    }
+
+    #[test]
+    fn solar_next_sign_after_equinox_is_taurus() {
+        // After the March equinox, Aries should be current; next sign is Taurus.
+        let now = Utc.with_ymd_and_hms(2025, 3, 21, 12, 0, 0).single().unwrap();
+        let (sign, _at) = next_solar_sign(now);
+        assert_eq!(sign, "taurus");
     }
 }
