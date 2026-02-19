@@ -17,7 +17,7 @@ Viața și Proiectul Trifoi vorbesc aceeași limbă de 4 litere. În biologie su
 
 Informația brută are nevoie de structură pentru a supraviețui diviziunii.
 
-* **Cromozomii noștri:** `/joint`, `/dosare`, `/covenant`.
+* **Cromozomii noștri:** `joint`, `/dosare`, `COVENANT.md`.
 * **Rol:** Împachetează „Hello!”-ul original într-o formă care poate fi transmisă mai departe fără a fi coruptă de Jitter-ul social.
 
 ### 3. Imunitatea la Performanță (Fără Mutații Goale) 🛡️
