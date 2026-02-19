@@ -806,6 +806,32 @@ Instead, we lean on terms that honor sovereignty, reciprocity, and mirrors.
 
 > Whisper → Mirror → Door → Action
 
+### 🎧 City of Lights: Manualul de Lifestyle (S-Edition)
+
+#### 🧱 Fundația: cum stăm în picioare
+- **Miezul** → claritate, siguranță, simplitate.
+- **Rust** → structură care ține.
+- **Orchestrare** → ritm comun.
+
+#### 🤝 Comunitatea: cum ne conectăm
+- **Vínculo** → legătura vie.
+- **Covenant (Pragul)** → intri cu respect.
+- **Joint** → linie directă, fără zgomot.
+
+#### 🕵️ Discreția: cum circulăm
+- **Ghost (Fantomă)** → prezență fără urme.
+- **Burn** → mesajul pleacă, spațiul rămâne curat.
+- **Designer de Orașe** → decizi cum se simte lumina.
+
+#### 🤖 Inteligența: cum evoluăm
+- **AI (Motorul)** → sfetnic de context.
+- **Tool-uri** → extensii ale viziunii.
+
+#### 🏮 Ritualuri: The Daily Beat
+- **☕ Dimineață** → cafea, răsărit, Firegate.
+- **🫧 Pâine** → când Masa Madre „manda”, task-urile încetinesc.
+- **🕯️ Seară** → burn pe zgomot, păstrăm lumina.
+
 ### Garden Stack naming (infra-facing)
 
 M3 also uses a clear, infra-facing vocabulary when referring to the technical stack that touches mirrors and companions:
