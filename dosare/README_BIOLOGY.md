@@ -1,8 +1,8 @@
 # 🧬 Dosarul: Genetică Digitală & Vínculo
 
 **Statut:** Confidențial / Miez Protejat 🛡️
-**Origine:** LUCA (Vypress Chat 2008) ⚓
-**Context:** Proiect Trifoi / Ciudad de los Gatos
+**Origine:** LUCA (Vypress Chat 2008) ⚓ — primul nucleu de conversație al proiectului, pornit pe rețeaua internă de chat.
+**Context:** Proiect Trifoi — inițiativa internă de arhivare și continuitate a „Hello!”-ului original / Ciudad de los Gatos — spațiul comunității hibride (online + offline) în care trăiește acest proiect.
 
 ### 1. Codul Universal (ADN-ul) 🔗
 
