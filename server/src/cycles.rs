@@ -42,7 +42,7 @@ mod compute {
             ("solar".to_string(), solar_phase, solar_at),
             ("pleiadian".to_string(), pleiadian_phase, pleiadian_at),
         ];
-    milestones.sort_by_key(|entry| entry.2);
+        milestones.sort_by_key(|entry| entry.2);
         milestones
             .into_iter()
             .map(|(kind, phase, at)| CycleMilestone {
