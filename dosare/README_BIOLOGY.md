@@ -25,7 +25,7 @@ Informația brută are nevoie de structură pentru a supraviețui diviziunii.
 Orice feature care nu servește supraviețuirii este „junk DNA”.
 
 * **Protocol:** Dacă nu pulsează cu viață și utilitate reală, se arde prin `Burn`.
-* **Busola:** Acțiunea reală (Pâinea Cristal 🫧) bate întotdeauna simularea digitală.
+* **Busola:** Acțiunea reală (Pâinea Cristal 🫧 — munca fizică, verificabilă, cu efecte reale în lume) bate întotdeauna simularea digitală.
 
 ---
 
