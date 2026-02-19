@@ -101,7 +101,7 @@ jobs:
           repository: gratiaOS/garden-core
           path: garden-core
           fetch-depth: 1
-
+          token: ${{ secrets.GH_PAT }}
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
