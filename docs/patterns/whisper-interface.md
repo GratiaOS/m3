@@ -57,7 +57,7 @@ While the **Whisper Interface** is poetic, it’s also implementable:
 - Keep **intensity low** — whispers break when over-designed.
 - Consider emotional state and context: whispers should feel _alive_, not random.
 
-👉 This pattern pairs beautifully with **[Layered Synesthetic UI](https://github.com/GratiaOS/garden-core/blob/main/docs/patterns/layered-synesthetic-ui.md)** for deeper multisensory interactions.
+👉 This pattern pairs beautifully with Layered Synesthetic UI for deeper multisensory interaction.
 
 ---
 
