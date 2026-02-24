@@ -1367,7 +1367,6 @@ dependencies = [
  "futures-util",
  "hex",
  "hmac",
- "once_cell",
  "parking_lot",
  "rand 0.8.5",
  "reqwest",
