@@ -1,3 +1,4 @@
 #!/bin/bash
 
-node scripts/commit-whisper-check.mjs "$1"
+author=$(git config user.email)
+node scripts/commit-whisper-check.mjs "$1" "$author"
