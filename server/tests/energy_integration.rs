@@ -58,5 +58,5 @@ async fn energy_endpoints_smoke() {
     // of { kind: level } (no `who` field). We just assert that our recent mark
     // influenced the latest value for "dragon" into the expected ballpark.
     let dragon = v.get("dragon").and_then(|x| x.as_f64()).unwrap_or(-1.0);
-    assert!(dragon >= 0.7 && dragon <= 0.75, "dragon was {dragon}");
+    assert!((0.7..=0.75).contains(&dragon), "dragon was {dragon}");
 }
