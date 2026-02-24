@@ -299,7 +299,7 @@ mod tests {
 
     async fn make_state_for_test() -> AppState {
         let conn = AsyncConnection::open_in_memory().await.unwrap();
-        conn.call(|c| db::ensure_schema(c)).await.unwrap();
+        conn.call(db::ensure_schema).await.unwrap();
         let db = db::Database(conn);
         AppState {
             db,

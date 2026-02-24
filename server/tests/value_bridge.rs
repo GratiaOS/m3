@@ -1,5 +1,4 @@
 use std::env;
-use std::path::PathBuf;
 
 use m3_memory_server::db::{
     account_balance_minor, get_or_create_account_id, init_db, insert_value_entry, ValueEntryParams,
@@ -14,11 +13,7 @@ async fn value_entry_roundtrip() {
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
         .as_millis();
-    let db_file = PathBuf::from(env::temp_dir()).join(format!(
-        "m3_test_{}_{}.db",
-        millis,
-        std::process::id()
-    ));
+    let db_file = env::temp_dir().join(format!("m3_test_{}_{}.db", millis, std::process::id()));
     env::set_var("M3_DB_PATH", &db_file);
 
     let db = init_db().await.expect("init_db");
