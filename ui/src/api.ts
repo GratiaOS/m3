@@ -202,6 +202,39 @@ export async function emotionsRecent(limit = 20): Promise<EmotionOut[]> {
   return request<EmotionOut[]>('/emotions/recent', { method: 'GET' });
 }
 
+/**
+ * POST /emotions/add — log a new emotion to the backend.
+ * Returns the inserted emotion with id, ts, and computed band.
+ */
+export interface EmotionIn {
+  who: string;
+  kind: string; // e.g. 'gratitude', 'signal', 'joy', 'anxiety'
+  intensity: number; // 0.0–1.0
+  note_id?: number;
+  details?: string;
+  sealed?: boolean;
+  archetype?: string;
+  privacy?: string; // defaults to 'private' on backend
+}
+
+export async function addEmotion(input: EmotionIn): Promise<EmotionOut> {
+  const body: EmotionIn = {
+    who: input.who,
+    kind: input.kind,
+    intensity: input.intensity,
+    note_id: input.note_id,
+    details: input.details,
+    sealed: input.sealed ?? false,
+    archetype: input.archetype,
+    privacy: input.privacy ?? 'private',
+  };
+  return request<EmotionOut>('/emotions/add', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+}
+
 // ----- Reply API -----
 export async function fetchReply(text: string): Promise<ReplyOut | null> {
   const r = await fetch(`${BASE}/reply`, {
@@ -556,10 +589,7 @@ export type TownNewsOut = {
   created_at: string;
 };
 
-export type TownBulletinPayload =
-  | TownNewsOut[]
-  | { items?: TownNewsOut[] }
-  | { bulletin?: TownNewsOut[] };
+export type TownBulletinPayload = TownNewsOut[] | { items?: TownNewsOut[] } | { bulletin?: TownNewsOut[] };
 
 /**
  * Post a news item into a town bulletin.

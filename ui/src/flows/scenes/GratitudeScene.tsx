@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { Card, Field, Button } from '@gratiaos/ui';
+import { Card, Field, Button, showToast } from '@gratiaos/ui';
 import { useSceneLifecycle } from '@/flows/pads/hooks/useSceneLifecycle';
 import { createGratitudeToken } from '@/flows/value/gratitudeTokens';
 import { triggerEmber } from '@/flows/feedback/ember';
@@ -7,6 +7,7 @@ import { useProfile } from '@/state/profile';
 import { mood$ } from '@gratiaos/presence-kernel';
 import { useSignalSelector } from '@/lib/useSignal';
 import { markMemoryHintSeen } from '@/flows/relational/relationalAlignment';
+import { addEmotion } from '@/api';
 
 export function GratitudeScene() {
   useSceneLifecycle('gratitude');
@@ -21,20 +22,44 @@ export function GratitudeScene() {
     requestAnimationFrame(() => fieldRef.current?.focus());
   }, []);
 
-  const seal = useCallback(() => {
+  const seal = useCallback(async () => {
     const message = line.trim();
     if (!message || isSealing) return;
     setIsSealing(true);
     try {
       triggerEmber?.();
+      // Keep localStorage for local cache
       createGratitudeToken({
         from: me ?? 'local-user',
         message,
         scene: 'memory/gratitude',
         resonance: currentMood,
       });
+      // POST to backend emotions table
+      await addEmotion({
+        who: me ?? 'local-user',
+        kind: 'gratitude',
+        intensity: 1.0,
+        details: message,
+        sealed: false,
+        privacy: 'community',
+      });
       clear();
       markMemoryHintSeen();
+      showToast({
+        title: 'Gratitude sealed',
+        desc: 'Carried to the ledger.',
+        icon: '💚',
+        variant: 'positive',
+      });
+    } catch (error) {
+      console.error('Failed to seal gratitude:', error);
+      showToast({
+        title: 'Seal failed',
+        desc: 'Saved locally, will retry.',
+        icon: '🌬️',
+        variant: 'warning',
+      });
     } finally {
       setIsSealing(false);
     }
@@ -67,7 +92,7 @@ export function GratitudeScene() {
             {...ariaProps}
             ref={fieldRef}
             rows={3}
-            placeholder='“Thank you for…”'
+            placeholder="“Thank you for…”"
             value={line}
             onChange={(event) => setLine(event.target.value)}
             onKeyDown={onKeyDown}
