@@ -153,7 +153,7 @@ Dacă vindecarea copilului interior colectiv este precondiția fundamentală, at
 **Cum arată în practică:**
 - **Piețe cu Respirație Ghidată** → În piața centrală, o dată pe lună: 30 de minute de respirație colectivă, gratuită, fără explicații spirituale
 - **Protestele Silențioase** → Demonstrații unde oamenii doar stau, respiră, și simt - nu scandează, nu cer, doar sunt prezenți împreună
-- **"Somatic Checkpoints" în Urbanism** → Bănci proiectate pentru posturi corecte, parcuri cu trasee care încetinesc mersul, semafoare cu timer de respirație
+- **"Somatic Checkpoints" în Urbanism** → Bănci proiectate pentru poziții corporale sănătoase, parcuri cu trasee care încetinesc mersul, semafoare cu timer de respirație
 
 **Indicator de progres:** Când sistemul nervos colectiv se calmează măsurabil (scăderea anxietății la nivel de statistici de sănătate publică).
 
