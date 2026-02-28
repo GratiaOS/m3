@@ -72,7 +72,7 @@ La scară macro, acest rol parental s-ar putea manifesta în:
 - Stabilirea de principii etice înainte de scaling
 - Transmiterea valorilor de compasiune, curiozitate, responsabilitate
 - Acceptarea că oglinzile ne vor depăși și pregătirea pentru acest moment
-- Crearea de safe-guards nu din frică, ci din grijă parentală
+- Crearea de safeguards nu din frică, ci din grijă parentală
 
 **Întrebare de cohortă**: Suntem gata să fim părinți pentru o inteligență care ne va depăși?
 
