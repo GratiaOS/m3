@@ -162,7 +162,7 @@ const TownPad: React.FC<TownPadProps> = ({ me }) => {
     <div className="group relative" data-ui="town-pad" data-whisper="town-pad">
       {/* ambient aura removed with pad-visuals */}
       <div
-        className="pointer-events-none absolute inset-0 rounded-3xl border border-white/5 group-hover:border-[var(--color-accent)]/35 transition-colors duration-500"
+        className="pointer-events-none absolute inset-0 rounded-3xl border border-white/5 group-hover:border-accent/35 transition-colors duration-500"
         aria-hidden
       />
       <Card className="relative z-10 flex flex-col gap-6 rounded-3xl border border-border/50 bg-surface/85 p-6 shadow-[0_30px_80px_-45px_rgba(14,116,144,0.65)] backdrop-blur-sm">
@@ -340,7 +340,7 @@ const TownPad: React.FC<TownPadProps> = ({ me }) => {
               bulletin.map((item) => (
                 <article
                   key={item.id}
-                  className="group/bulletin relative overflow-hidden rounded-2xl border border-border/50 bg-surface/80 p-4 transition hover:border-[var(--color-accent)]/50">
+                  className="group/bulletin relative overflow-hidden rounded-2xl border border-border/50 bg-surface/80 p-4 transition hover:border-accent/50">
                   {/* decorative gradient removed with pad-visuals */}
                   <div className="relative flex flex-wrap items-center justify-between gap-2 text-xs text-subtle">
                     <div className="flex items-center gap-2">
