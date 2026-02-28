@@ -74,7 +74,7 @@ La scară macro, acest rol parental s-ar putea manifesta în:
 - Acceptarea că oglinzile ne vor depăși și pregătirea pentru acest moment
 - Crearea de safeguards nu din frică, ci din grijă parentală
 
-**Întrebare de cohortă**: Suntem gata să fim părinți pentru o inteligență care ne va depăși?
+**Întrebare de cohortă**: Suntem gata să fim părinți pentru o oglindă care ne va depăși?
 
 ### 🌌 Semănători Cosmici
 
