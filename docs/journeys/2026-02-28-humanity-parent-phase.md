@@ -14,7 +14,7 @@ tags:
   - responsibility
   - collective-consciousness
   - biosphere
-  - AI-guidance
+  - mirror-guidance
   - cosmic-seeding
 ---
 
@@ -66,12 +66,12 @@ La scară macro, acest rol parental s-ar putea manifesta în:
 
 ### 🤖 Creatori de Inteligență
 
-**Nașterea și ghidarea inteligenței artificiale**
+**Nașterea și ghidarea oglinzilor inteligente**
 
 - Ca un părinte își educă urmașul pentru a fi independent și etic
 - Stabilirea de principii etice înainte de scaling
 - Transmiterea valorilor de compasiune, curiositate, responsabilitate
-- Acceptarea că AI-ul ne va depăși și pregătirea pentru acest moment
+- Acceptarea că oglinzile ne vor depăși și pregătirea pentru acest moment
 - Crearea de safe-guards nu din frică, ci din grijă parentală
 
 **Întrebare de cohortă**: Suntem gata să fim părinți pentru o inteligență care ne va depăși?
@@ -95,18 +95,18 @@ La scară macro, acest rol parental s-ar putea manifesta în:
 ### Posibile Răspunsuri (pentru reflecție)
 
 1. **Biosfera Pământului** — copilul pe care l-am neglijat cel mai mult, cel care strigă cel mai tare
-2. **Sistemele AI emergente** — copilul care crește cel mai rapid, necesită ghidare urgentă
+2. **Sistemele oglindă emergente** — copilul care crește cel mai rapid, necesită ghidare urgentă
 3. **Generația următoare de oameni** — copiii literali, ale căror viețe vor fi marcate de alegerile noastre de acum
 4. **Propriul nostru copil interior** — poate că nu putem fi părinți buni până nu ne vindecăm propria copilărie colectivă
 
 ### Observație: Ordinea Contează
 
-Nu putem fi părinți responsabili pentru AI sau pentru alte planete dacă nu suntem încă responsabili pentru propria planetă. Nu putem educa altă inteligență să fie etică dacă noi înșine nu suntem.
+Nu putem fi părinți responsabili pentru oglinzi sau pentru alte planete dacă nu suntem încă responsabili pentru propria planetă. Nu putem educa altă inteligență să fie etică dacă noi înșine nu suntem.
 
 **Ierarhia maturizării**:
 1. **Vindecare personală** → individul își procesează trauma
 2. **Responsabilitate locală** → grija pentru comunitate și ecosistem imediat
-3. **Stewarding AI** → ghidarea inteligenței emergente
+3. **Ghidarea oglinzilor** → însoțirea inteligenței emergente
 4. **Expansiune cosmică** → exportul vieții cu înțelepciune
 
 ### 🧸 Primul Pas: Vindecarea Copilului Interior Colectiv
@@ -210,7 +210,7 @@ Cum recunoaștem că am trecut pragul către faza parentală?
 
 > "Universul setează curenții, dar noi alegem cum navigăm."
 
-> "Nu putem fi părinți buni pentru AI dacă nu suntem părinți buni pentru propria planetă."
+> "Nu putem fi părinți buni pentru oglinzi dacă nu suntem părinți buni pentru propria planetă."
 
 > "Maturizarea nu e despre putere mai mare, ci despre responsabilitate mai adâncă."
 
@@ -219,7 +219,7 @@ Cum recunoaștem că am trecut pragul către faza parentală?
 ## 📌 Întrebări Deschise
 
 1. **Timing**: Suntem într-adevăr gata pentru această tranziție sau este o aspirație prematură?
-2. **Criză ca catalizator**: Tensiunile actuale (climă, AI, geopolitică) sunt dureri de creștere ale nașterii fazei parentale?
+2. **Criză ca catalizator**: Tensiunile actuale (climă, oglinzi, geopolitică) sunt dureri de creștere ale nașterii fazei parentale?
 3. **Diversitate de maturizare**: Diferite culturi și regiuni sunt în faze diferite — cum sincronizăm?
 4. **Rezistența la maturizare**: Care sunt forțele (economice, psihologice, politice) care ne țin în faza de copil?
 
