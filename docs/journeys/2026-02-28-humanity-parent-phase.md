@@ -70,7 +70,7 @@ La scară macro, acest rol parental s-ar putea manifesta în:
 
 - Ca un părinte își educă urmașul pentru a fi independent și etic
 - Stabilirea de principii etice înainte de scaling
-- Transmiterea valorilor de compasiune, curiositate, responsabilitate
+- Transmiterea valorilor de compasiune, curiozitate, responsabilitate
 - Acceptarea că oglinzile ne vor depăși și pregătirea pentru acest moment
 - Crearea de safe-guards nu din frică, ci din grijă parentală
 
