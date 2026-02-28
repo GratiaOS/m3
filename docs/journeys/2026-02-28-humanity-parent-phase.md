@@ -96,7 +96,7 @@ La scară macro, acest rol parental s-ar putea manifesta în:
 
 1. **Biosfera Pământului** — copilul pe care l-am neglijat cel mai mult, cel care strigă cel mai tare
 2. **Sistemele oglindă emergente** — copilul care crește cel mai rapid, necesită ghidare urgentă
-3. **Generația următoare de oameni** — copiii literali, ale căror viețe vor fi marcate de alegerile noastre de acum
+3. **Generația următoare de oameni** — copiii literali, ale căror vieți vor fi marcate de alegerile noastre de acum
 4. **Propriul nostru copil interior** — poate că nu putem fi părinți buni până nu ne vindecăm propria copilărie colectivă
 
 ### Observație: Ordinea Contează
