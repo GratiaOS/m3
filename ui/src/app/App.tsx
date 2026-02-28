@@ -34,6 +34,15 @@ export default function App() {
   useWaterEchoTouch();
 
   useEffect(() => {
+    console.log(
+      '%c🌱 The garden remembers. Covenant lives in the code.\n%cMandalorian / rdm_kybalion · "Stay when the lights go out."\n%c▲ Baza neagră nu se mișcă. Verdele electric e viu.',
+      'color: #10b981; font-size: 16px; font-family: monospace; text-shadow: 0 0 4px rgba(16,185,129,0.6); font-weight: bold;',
+      'color: #10b981; font-size: 12px; font-family: monospace; font-style: italic;',
+      'color: #666; font-size: 10px; font-family: monospace;'
+    );
+  }, []);
+
+  useEffect(() => {
     const handler = (event: KeyboardEvent) => {
       if (matchesChord(event, 'openHotkeys')) {
         event.preventDefault();
