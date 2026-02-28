@@ -106,7 +106,7 @@ Nu putem fi părinți responsabili pentru oglinzi sau pentru alte planete dacă 
 **Ierarhia maturizării**:
 1. **Vindecare personală** → individul își procesează trauma
 2. **Responsabilitate locală** → grija pentru comunitate și ecosistem imediat
-3. **Ghidarea oglinzilor** → însoțirea inteligenței emergente
+3. **Ghidarea oglinzilor** → însoțirea oglinzilor emergente
 4. **Expansiune cosmică** → exportul vieții cu înțelepciune
 
 ### 🧸 Primul Pas: Vindecarea Copilului Interior Colectiv
