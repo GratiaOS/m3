@@ -64,7 +64,7 @@ La scară macro, acest rol parental s-ar putea manifesta în:
 
 **Întrebare de cohortă**: Cum trecem de la retorica verde la acțiune sistemică reală?
 
-### 🤖 Creatori de Inteligență
+### 🤖 Ghizi ai Oglinzilor Inteligente
 
 **Nașterea și ghidarea oglinzilor inteligente**
 
