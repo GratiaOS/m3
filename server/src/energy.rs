@@ -161,14 +161,18 @@ pub async fn get_trends(
         db.0.call(
             |conn: &mut rusqlite::Connection| -> tokio_rusqlite::Result<Vec<EnergyTrend>> {
                 let mut stmt = conn.prepare(
-                    "SELECT 
-                        kind,
-                        level,
-                        MAX(id),
-                        AVG(CASE WHEN ts > datetime('now', '-24 hours') THEN level ELSE NULL END),
-                        SUM(CASE WHEN ts > datetime('now', '-24 hours') THEN 1 ELSE 0 END)
-                     FROM energy_marks 
-                     GROUP BY kind",
+                    "WITH latest AS (
+                        SELECT kind, MAX(id) AS max_id
+                        FROM energy_marks
+                        GROUP BY kind
+                    )
+                    SELECT 
+                        em.kind,
+                        em.level AS current,
+                        (SELECT AVG(level) FROM energy_marks WHERE kind = em.kind AND ts > datetime('now', '-24 hours')) AS avg_24h,
+                        (SELECT COUNT(*) FROM energy_marks WHERE kind = em.kind AND ts > datetime('now', '-24 hours')) AS samples_24h
+                    FROM energy_marks em
+                    INNER JOIN latest ON em.kind = latest.kind AND em.id = latest.max_id",
                 )?;
 
                 let mut stats = HashMap::new();
@@ -176,17 +180,12 @@ pub async fn get_trends(
                 while let Some(row) = rows.next()? {
                     let kind: String = row.get(0)?;
                     let current: f32 = row.get(1)?;
-                    // row.get(2) is MAX(id), we use it to force `level` to be from the max-id row
-                    let avg_24h: Option<f32> = row.get(3)?;
-                    let samples_24h: Option<i64> = row.get(4)?;
+                    let avg_24h: Option<f32> = row.get(2)?;
+                    let samples_24h: Option<i64> = row.get(3)?;
 
                     stats.insert(
                         kind,
-                        (
-                            current,
-                            avg_24h.unwrap_or(0.0),
-                            samples_24h.unwrap_or(0),
-                        ),
+                        (current, avg_24h.unwrap_or(0.0), samples_24h.unwrap_or(0)),
                     );
                 }
 
