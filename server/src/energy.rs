@@ -160,43 +160,41 @@ pub async fn get_trends(
     let result =
         db.0.call(
             |conn: &mut rusqlite::Connection| -> tokio_rusqlite::Result<Vec<EnergyTrend>> {
+                let mut stmt = conn.prepare(
+                    "SELECT 
+                        kind,
+                        level,
+                        MAX(id),
+                        AVG(CASE WHEN ts > datetime('now', '-24 hours') THEN level ELSE NULL END),
+                        SUM(CASE WHEN ts > datetime('now', '-24 hours') THEN 1 ELSE 0 END)
+                     FROM energy_marks 
+                     GROUP BY kind",
+                )?;
+
+                let mut stats = HashMap::new();
+                let mut rows = stmt.query([])?;
+                while let Some(row) = rows.next()? {
+                    let kind: String = row.get(0)?;
+                    let current: f32 = row.get(1)?;
+                    // row.get(2) is MAX(id), we use it to force `level` to be from the max-id row
+                    let avg_24h: Option<f32> = row.get(3)?;
+                    let samples_24h: Option<i64> = row.get(4)?;
+
+                    stats.insert(
+                        kind,
+                        (
+                            current,
+                            avg_24h.unwrap_or(0.0),
+                            samples_24h.unwrap_or(0),
+                        ),
+                    );
+                }
+
                 let mut trends = Vec::new();
-
                 for &kind in ENERGY_KINDS {
-                    // Get current level (most recent mark)
-                    let current: f32 = conn
-                        .query_row(
-                            "SELECT level FROM energy_marks 
-                         WHERE kind = ?1 
-                         ORDER BY id DESC LIMIT 1",
-                            [kind],
-                            |row| row.get(0),
-                        )
-                        .unwrap_or(0.0);
+                    let (current, avg_24h, samples_24h) =
+                        stats.get(kind).copied().unwrap_or((0.0, 0.0, 0));
 
-                    // Get 24h average
-                    let avg_24h: f32 = conn
-                        .query_row(
-                            "SELECT AVG(level) FROM energy_marks 
-                         WHERE kind = ?1 
-                         AND ts > datetime('now', '-24 hours')",
-                            [kind],
-                            |row| row.get(0),
-                        )
-                        .unwrap_or(0.0);
-
-                    // Count samples in last 24h (to assess confidence)
-                    let samples_24h: i64 = conn
-                        .query_row(
-                            "SELECT COUNT(*) FROM energy_marks 
-                         WHERE kind = ?1 
-                         AND ts > datetime('now', '-24 hours')",
-                            [kind],
-                            |row| row.get(0),
-                        )
-                        .unwrap_or(0);
-
-                    // Determine direction using helper function
                     let direction = calculate_direction(current, avg_24h, samples_24h);
 
                     trends.push(EnergyTrend {
