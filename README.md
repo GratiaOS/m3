@@ -154,7 +154,7 @@ VALUE_FORCE_MOCK_UNTIL=             # optional guard timestamp (RFC3339)
 
 ## 🪝 Webhooks <a id="webhooks"></a>
 
-M3 can send webhook events to external systems when important actions occur. This enables integrations with notification services, analytics, automation tools, and more.
+M3 can send webhook events to external systems when important actions occur. This enables local-first integrations: personal archives, home automation, ritual triggers, and sovereignty-aligned tools.
 
 ### Configuration
 
@@ -171,12 +171,12 @@ M3 sends webhooks for these events:
 
 | Event          | Triggered When              | Status      | Example Use Case                    |
 |----------------|-----------------------------|-------------|-------------------------------------|
-| `panic.ui`     | Panic button pressed (UI)   | ✅ Active   | Send urgent notification            |
-| `panic.run`    | Panic redirect (CLI)        | ✅ Active   | Log emergency protocol              |
-| `status.set`   | Readiness light changes     | ✅ Active   | Update team dashboard               |
-| `ingest`       | Message saved to timeline   | 📋 Planned  | Log to external database            |
-| `emotion`      | Emotion event logged        | 📋 Planned  | Track mood patterns                 |
-| `tell`         | Tell created                | 📋 Planned  | Trigger external workflow           |
+| `panic.ui`     | Panic button pressed (UI)   | ✅ Active   | Local alert, archive to journal     |
+| `panic.run`    | Panic redirect (CLI)        | ✅ Active   | Trigger breath work, log locally    |
+| `status.set`   | Readiness light changes     | ✅ Active   | Home automation (lights, sounds)    |
+| `ingest`       | Message saved to timeline   | 📋 Planned  | Personal archive to SQLite/markdown |
+| `emotion`      | Emotion event logged        | 📋 Planned  | Local journal sync, ritual triggers |
+| `tell`         | Tell created                | 📋 Planned  | Personal workflow automation        |
 
 > **Note**: The [webhook receiver example](examples/webhook-receiver) includes handlers for all event types, including planned ones.
 

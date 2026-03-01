@@ -46,12 +46,11 @@ HMAC computed over: `timestamp + "." + body` using SHA-256
 
 ## Integration Ideas
 
-- 🔔 **Slack/Discord** - Notify team when panic triggered
-- 📊 **Analytics** - Track emotional patterns over time
-- 💾 **Database** - Log all events for analysis
-- 🤖 **Automation** - Trigger workflows based on status changes
-- 📱 **Push notifications** - Alert on critical events
-- 🔍 **Monitoring** - Dashboard of M3 activity
+- 📁 **Local archive** - Save events to your own SQLite/filesystem for sovereignty
+- 🔔 **Personal alerts** - Desktop notifications (libnotify) or system sounds
+- 🏠 **Home automation** - Control IoT devices via local bridge (no cloud)
+- 🕯️ **Ritual triggers** - Breath work prompts, ambient lighting changes
+- 📓 **Journal sync** - Append to plaintext/markdown logs you control
 
 ## Security
 

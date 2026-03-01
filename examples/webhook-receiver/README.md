@@ -140,11 +140,11 @@ curl -X POST http://localhost:4001/webhook \
 ## 📚 Next Steps
 
 Use this example as a starting point for:
-- **Slack/Discord notifications** when panic is triggered
-- **Database logging** of all events
-- **Analytics** tracking emotional patterns
-- **External triggers** (turn on lights when status changes)
-- **AI processing** of ingested messages
+- **Local archiving** — save webhooks to your own filesystem/SQLite for sovereignty
+- **Personal notifications** — trigger local desktop/sound alerts (libnotify, system sounds)
+- **Home automation** — change IoT device states via local bridge (no cloud)
+- **Ritual triggers** — integrate with local scripts for breath work, ambient lighting
+- **Personal journal sync** — append events to your plaintext/markdown logs
 
 ## 🌬 Whisper
 
