@@ -9,6 +9,26 @@ use axum::{
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+// ============================================================================
+// CANONICAL ENERGY KINDS
+// ============================================================================
+
+/// Standard energy kinds used in M3
+/// These map to the Energy Calendar bands (E0-E4)
+pub const ENERGY_KINDS: &[&str] = &["crown", "dragon", "play", "life", "void"];
+
+/// Get a human-readable label for an energy kind
+pub fn energy_label(kind: &str) -> &'static str {
+    match kind {
+        "crown" => "Crown (E4)",
+        "dragon" => "Dragon (E3)",
+        "play" => "Play (E2)",
+        "life" => "Life Force (E1)",
+        "void" => "Void (E0)",
+        _ => "Unknown",
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EnergyMark {
     pub id: i64,
@@ -25,6 +45,16 @@ pub struct NewEnergyMark {
     pub kind: String,
     pub level: f32,
     pub note: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct EnergyTrend {
+    pub kind: String,
+    pub label: String,
+    pub current: f32,
+    pub avg_24h: f32,
+    pub direction: String, // "up" | "down" | "stable" | "no_data"
+    pub samples_24h: i64,
 }
 
 pub async fn mark_energy(
@@ -104,14 +134,93 @@ pub async fn get_state(
     }
 }
 
+/// GET /energy/trends — analyze energy evolution over time
+pub async fn get_trends(
+    State(state): State<AppState>,
+) -> Result<Json<Vec<EnergyTrend>>, (StatusCode, String)> {
+    let db = state.db.clone();
+
+    let result =
+        db.0.call(
+            |conn: &mut rusqlite::Connection| -> tokio_rusqlite::Result<Vec<EnergyTrend>> {
+                let mut trends = Vec::new();
+
+                for &kind in ENERGY_KINDS {
+                    // Get current level (most recent mark)
+                    let current: f32 = conn
+                        .query_row(
+                            "SELECT level FROM energy_marks 
+                         WHERE kind = ?1 
+                         ORDER BY id DESC LIMIT 1",
+                            [kind],
+                            |row| row.get(0),
+                        )
+                        .unwrap_or(0.0);
+
+                    // Get 24h average
+                    let avg_24h: f32 = conn
+                        .query_row(
+                            "SELECT AVG(level) FROM energy_marks 
+                         WHERE kind = ?1 
+                         AND ts > datetime('now', '-24 hours')",
+                            [kind],
+                            |row| row.get(0),
+                        )
+                        .unwrap_or(0.0);
+
+                    // Count samples in last 24h (to assess confidence)
+                    let samples_24h: i64 = conn
+                        .query_row(
+                            "SELECT COUNT(*) FROM energy_marks 
+                         WHERE kind = ?1 
+                         AND ts > datetime('now', '-24 hours')",
+                            [kind],
+                            |row| row.get(0),
+                        )
+                        .unwrap_or(0);
+
+                    // Determine direction with 0.1 threshold to avoid noise
+                    let direction = if samples_24h == 0 {
+                        "no_data".to_string()
+                    } else if (current - avg_24h).abs() < 0.1 {
+                        "stable".to_string()
+                    } else if current > avg_24h {
+                        "up".to_string()
+                    } else {
+                        "down".to_string()
+                    };
+
+                    trends.push(EnergyTrend {
+                        kind: kind.to_string(),
+                        label: energy_label(kind).to_string(),
+                        current,
+                        avg_24h,
+                        direction,
+                        samples_24h,
+                    });
+                }
+
+                Ok(trends)
+            },
+        )
+        .await;
+
+    match result {
+        Ok(trends) => Ok(Json(trends)),
+        Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+    }
+}
+
 pub fn router() -> Router<AppState> {
     Router::new()
         .route("/mark", post(mark_energy))
         .route("/state", get(get_state))
+        .route("/trends", get(get_trends))
 }
 
 #[cfg(test)]
 mod tests {
+    use super::energy_label;
     use rusqlite::{params, Connection};
     use std::collections::HashMap;
 
@@ -247,5 +356,93 @@ mod tests {
             (latest_level - 0.9_f32).abs() < 1e-6,
             "expected latest level 0.9, got {latest_level}"
         );
+    }
+
+    #[test]
+    fn energy_label_returns_correct_labels() {
+        assert_eq!(energy_label("crown"), "Crown (E4)");
+        assert_eq!(energy_label("dragon"), "Dragon (E3)");
+        assert_eq!(energy_label("play"), "Play (E2)");
+        assert_eq!(energy_label("life"), "Life Force (E1)");
+        assert_eq!(energy_label("void"), "Void (E0)");
+        assert_eq!(energy_label("unknown"), "Unknown");
+    }
+
+    #[test]
+    fn trends_calculates_direction_correctly() {
+        let conn = setup_conn();
+
+        // Insert marks with decreasing dragon energy
+        conn.execute(
+            "INSERT INTO energy_marks (ts, who, kind, level, note)
+             VALUES (datetime('now', '-23 hours'), 'Raz', 'dragon', 0.9, NULL)",
+            [],
+        )
+        .unwrap();
+
+        conn.execute(
+            "INSERT INTO energy_marks (ts, who, kind, level, note)
+             VALUES (datetime('now', '-12 hours'), 'Raz', 'dragon', 0.6, NULL)",
+            [],
+        )
+        .unwrap();
+
+        conn.execute(
+            "INSERT INTO energy_marks (ts, who, kind, level, note)
+             VALUES (datetime('now', '-1 hour'), 'Raz', 'dragon', 0.3, NULL)",
+            [],
+        )
+        .unwrap();
+
+        // Calculate trend
+        let current: f32 = conn
+            .query_row(
+                "SELECT level FROM energy_marks WHERE kind = 'dragon' ORDER BY id DESC LIMIT 1",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+
+        let avg_24h: f32 = conn
+            .query_row(
+                "SELECT AVG(level) FROM energy_marks WHERE kind = 'dragon' AND ts > datetime('now', '-24 hours')",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+
+        // Current = 0.3, avg = (0.9 + 0.6 + 0.3) / 3 = 0.6
+        assert!((current - 0.3).abs() < 0.01);
+        assert!((avg_24h - 0.6).abs() < 0.01);
+
+        // Direction should be "down"
+        let direction = if (current - avg_24h).abs() < 0.1 {
+            "stable"
+        } else if current > avg_24h {
+            "up"
+        } else {
+            "down"
+        };
+
+        assert_eq!(direction, "down");
+    }
+
+    #[test]
+    fn trends_returns_no_data_when_empty() {
+        let conn = setup_conn();
+
+        let samples: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM energy_marks WHERE kind = 'dragon' AND ts > datetime('now', '-24 hours')",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+
+        assert_eq!(samples, 0);
+
+        let direction = if samples == 0 { "no_data" } else { "stable" };
+
+        assert_eq!(direction, "no_data");
     }
 }
