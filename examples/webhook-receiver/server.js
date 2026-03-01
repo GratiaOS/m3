@@ -105,9 +105,25 @@ const server = createServer(async (req, res) => {
 
   // Read body
   let body = '';
-  req.on('data', chunk => body += chunk.toString());
-  
+  const maxSize = 1048576; // 1MB
+  let size = 0;
+  let tooLarge = false;
+  req.on('data', chunk => {
+    size += chunk.length;
+    if (size > maxSize) {
+      tooLarge = true;
+      req.destroy();
+      res.writeHead(413, { 'Content-Type': 'text/plain' });
+      res.end('Payload Too Large');
+      return;
+    }
+    body += chunk.toString();
+  });
   req.on('end', () => {
+    if (tooLarge) {
+      // Already responded with 413
+      return;
+    }
     try {
       const signature = req.headers['x-m3-signature'];
       const eventType = req.headers['x-m3-event'];
