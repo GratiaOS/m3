@@ -594,19 +594,14 @@ mod tests {
         // Map over all ENERGY_KINDS (same as production endpoint)
         let mut trends = Vec::new();
         for &kind in super::ENERGY_KINDS {
-            let (current, avg_24h, samples_24h) =
-                stats.get(kind).copied().unwrap_or((0.0, 0.0, 0));
+            let (current, avg_24h, samples_24h) = stats.get(kind).copied().unwrap_or((0.0, 0.0, 0));
             let direction = calculate_direction(current, avg_24h, samples_24h);
 
             trends.push((kind.to_string(), current, avg_24h, samples_24h, direction));
         }
 
         // RULE 1: Must return exactly 5 canonical kinds
-        assert_eq!(
-            trends.len(),
-            5,
-            "Must return all 5 canonical energy kinds"
-        );
+        assert_eq!(trends.len(), 5, "Must return all 5 canonical energy kinds");
 
         // RULE 2: Kinds with data should have correct stats
         let dragon = trends.iter().find(|t| t.0 == "dragon").unwrap();
