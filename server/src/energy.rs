@@ -529,4 +529,111 @@ mod tests {
         // samples_24h should count 3 marks (not the -30 hours one)
         assert_eq!(samples_24h.unwrap(), 3);
     }
+
+    #[test]
+    fn trends_returns_all_canonical_kinds_with_fallbacks() {
+        let conn = setup_conn();
+
+        // Insert data ONLY for dragon (2 marks) and play (1 mark)
+        // Leave crown, life, void completely absent
+        conn.execute(
+            "INSERT INTO energy_marks (ts, who, kind, level, note)
+             VALUES (datetime('now', '-2 hours'), 'Raz', 'dragon', 0.9, 'deep work')",
+            [],
+        )
+        .unwrap();
+
+        conn.execute(
+            "INSERT INTO energy_marks (ts, who, kind, level, note)
+             VALUES (datetime('now', '-1 hour'), 'Raz', 'dragon', 0.7, 'still focused')",
+            [],
+        )
+        .unwrap();
+
+        conn.execute(
+            "INSERT INTO energy_marks (ts, who, kind, level, note)
+             VALUES (datetime('now', '-3 hours'), 'Raz', 'play', 0.6, 'hoops')",
+            [],
+        )
+        .unwrap();
+
+        // Execute the same query logic as production get_trends()
+        let mut stmt = conn
+            .prepare(
+                "WITH latest AS (
+                    SELECT kind, MAX(id) AS max_id
+                    FROM energy_marks
+                    GROUP BY kind
+                )
+                SELECT 
+                    em.kind,
+                    em.level AS current,
+                    (SELECT AVG(level) FROM energy_marks WHERE kind = em.kind AND datetime(ts) > datetime('now', '-24 hours')) AS avg_24h,
+                    (SELECT COUNT(*) FROM energy_marks WHERE kind = em.kind AND datetime(ts) > datetime('now', '-24 hours')) AS samples_24h
+                FROM energy_marks em
+                INNER JOIN latest ON em.kind = latest.kind AND em.id = latest.max_id",
+            )
+            .unwrap();
+
+        // Collect query results into HashMap (same as production)
+        let mut stats = std::collections::HashMap::new();
+        let mut rows = stmt.query([]).unwrap();
+
+        while let Some(row) = rows.next().unwrap() {
+            let kind: String = row.get(0).unwrap();
+            let current: f32 = row.get(1).unwrap();
+            let avg_24h: Option<f32> = row.get(2).unwrap();
+            let samples_24h: Option<i64> = row.get(3).unwrap();
+
+            stats.insert(
+                kind,
+                (current, avg_24h.unwrap_or(0.0), samples_24h.unwrap_or(0)),
+            );
+        }
+
+        // Map over all ENERGY_KINDS (same as production endpoint)
+        let mut trends = Vec::new();
+        for &kind in super::ENERGY_KINDS {
+            let (current, avg_24h, samples_24h) =
+                stats.get(kind).copied().unwrap_or((0.0, 0.0, 0));
+            let direction = calculate_direction(current, avg_24h, samples_24h);
+
+            trends.push((kind.to_string(), current, avg_24h, samples_24h, direction));
+        }
+
+        // RULE 1: Must return exactly 5 canonical kinds
+        assert_eq!(
+            trends.len(),
+            5,
+            "Must return all 5 canonical energy kinds"
+        );
+
+        // RULE 2: Kinds with data should have correct stats
+        let dragon = trends.iter().find(|t| t.0 == "dragon").unwrap();
+        assert_eq!(
+            dragon.4, "down",
+            "Dragon trending down (0.7 current < 0.8 avg)"
+        );
+        assert_eq!(dragon.3, 2, "Dragon should have 2 samples");
+        assert!(
+            (dragon.1 - 0.7).abs() < 0.01,
+            "Dragon current should be latest (0.7)"
+        );
+
+        let play = trends.iter().find(|t| t.0 == "play").unwrap();
+        assert_eq!(play.4, "stable", "Play stable (0.6 == 0.6)");
+        assert_eq!(play.3, 1, "Play should have 1 sample");
+
+        // RULE 3: Missing kinds should gracefully return no_data
+        let crown = trends.iter().find(|t| t.0 == "crown").unwrap();
+        assert_eq!(crown.4, "no_data", "Crown should show no_data");
+        assert_eq!(crown.3, 0, "Crown should have 0 samples");
+        assert_eq!(crown.1, 0.0, "Crown current should be 0.0");
+
+        let void_trend = trends.iter().find(|t| t.0 == "void").unwrap();
+        assert_eq!(void_trend.4, "no_data", "Void should show no_data");
+
+        let life = trends.iter().find(|t| t.0 == "life").unwrap();
+        assert_eq!(life.4, "no_data", "Life should show no_data");
+    }
 }
