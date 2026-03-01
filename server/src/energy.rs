@@ -421,8 +421,17 @@ mod tests {
         assert!((current - 0.3).abs() < 0.01);
         assert!((avg_24h - 0.6).abs() < 0.01);
 
+        // Compute number of samples in the last 24 hours
+        let samples_24h: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM energy_marks WHERE kind = 'dragon' AND ts > datetime('now', '-24 hours')",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+
         // Direction should be "down" using the helper function
-        let direction = calculate_direction(current, avg_24h, 2);
+        let direction = calculate_direction(current, avg_24h, samples_24h);
 
         assert_eq!(direction, "down");
     }
