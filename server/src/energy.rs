@@ -528,4 +528,5 @@ mod tests {
 
         // samples_24h should count 3 marks (not the -30 hours one)
         assert_eq!(samples_24h.unwrap(), 3);
-    }}
+    }
+}
