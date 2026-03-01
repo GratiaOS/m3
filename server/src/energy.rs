@@ -169,8 +169,8 @@ pub async fn get_trends(
                     SELECT 
                         em.kind,
                         em.level AS current,
-                        (SELECT AVG(level) FROM energy_marks WHERE kind = em.kind AND ts > datetime('now', '-24 hours')) AS avg_24h,
-                        (SELECT COUNT(*) FROM energy_marks WHERE kind = em.kind AND ts > datetime('now', '-24 hours')) AS samples_24h
+                        (SELECT AVG(level) FROM energy_marks WHERE kind = em.kind AND datetime(ts) > datetime('now', '-24 hours')) AS avg_24h,
+                        (SELECT COUNT(*) FROM energy_marks WHERE kind = em.kind AND datetime(ts) > datetime('now', '-24 hours')) AS samples_24h
                     FROM energy_marks em
                     INNER JOIN latest ON em.kind = latest.kind AND em.id = latest.max_id",
                 )?;
@@ -411,7 +411,7 @@ mod tests {
 
         let avg_24h: f32 = conn
             .query_row(
-                "SELECT AVG(level) FROM energy_marks WHERE kind = 'dragon' AND ts > datetime('now', '-24 hours')",
+                "SELECT AVG(level) FROM energy_marks WHERE kind = 'dragon' AND datetime(ts) > datetime('now', '-24 hours')",
                 [],
                 |row| row.get(0),
             )
@@ -424,7 +424,7 @@ mod tests {
         // Compute number of samples in the last 24 hours
         let samples_24h: i64 = conn
             .query_row(
-                "SELECT COUNT(*) FROM energy_marks WHERE kind = 'dragon' AND ts > datetime('now', '-24 hours')",
+                "SELECT COUNT(*) FROM energy_marks WHERE kind = 'dragon' AND datetime(ts) > datetime('now', '-24 hours')",
                 [],
                 |row| row.get(0),
             )
@@ -442,7 +442,7 @@ mod tests {
 
         let samples: i64 = conn
             .query_row(
-                "SELECT COUNT(*) FROM energy_marks WHERE kind = 'dragon' AND ts > datetime('now', '-24 hours')",
+                "SELECT COUNT(*) FROM energy_marks WHERE kind = 'dragon' AND datetime(ts) > datetime('now', '-24 hours')",
                 [],
                 |row| row.get(0),
             )
@@ -455,4 +455,77 @@ mod tests {
 
         assert_eq!(direction, "no_data");
     }
-}
+    #[test]
+    fn get_trends_returns_correct_latest_and_24h_stats() {
+        let conn = setup_conn();
+
+        // Insert older crown mark (outside 24h window)
+        conn.execute(
+            "INSERT INTO energy_marks (ts, who, kind, level, note)
+             VALUES (datetime('now', '-30 hours'), 'Raz', 'crown', 0.5, NULL)",
+            [],
+        )
+        .unwrap();
+
+        // Insert recent crown marks within 24h
+        conn.execute(
+            "INSERT INTO energy_marks (ts, who, kind, level, note)
+             VALUES (datetime('now', '-23 hours'), 'Raz', 'crown', 0.7, NULL)",
+            [],
+        )
+        .unwrap();
+
+        conn.execute(
+            "INSERT INTO energy_marks (ts, who, kind, level, note)
+             VALUES (datetime('now', '-12 hours'), 'Raz', 'crown', 0.9, NULL)",
+            [],
+        )
+        .unwrap();
+
+        // Latest crown (should be current)
+        conn.execute(
+            "INSERT INTO energy_marks (ts, who, kind, level, note)
+             VALUES (datetime('now', '-1 hour'), 'Raz', 'crown', 0.8, NULL)",
+            [],
+        )
+        .unwrap();
+
+        // Run the same query logic as get_trends()
+        let mut stmt = conn
+            .prepare(
+                "WITH latest AS (
+                    SELECT kind, MAX(id) AS max_id
+                    FROM energy_marks
+                    GROUP BY kind
+                )
+                SELECT 
+                    em.kind,
+                    em.level AS current,
+                    (SELECT AVG(level) FROM energy_marks WHERE kind = em.kind AND datetime(ts) > datetime('now', '-24 hours')) AS avg_24h,
+                    (SELECT COUNT(*) FROM energy_marks WHERE kind = em.kind AND datetime(ts) > datetime('now', '-24 hours')) AS samples_24h
+                FROM energy_marks em
+                INNER JOIN latest ON em.kind = latest.kind AND em.id = latest.max_id",
+            )
+            .unwrap();
+
+        let mut rows = stmt.query([]).unwrap();
+        let row = rows.next().unwrap().unwrap();
+
+        let kind: String = row.get(0).unwrap();
+        let current: f32 = row.get(1).unwrap();
+        let avg_24h: Option<f32> = row.get(2).unwrap();
+        let samples_24h: Option<i64> = row.get(3).unwrap();
+
+        // Verify crown was selected
+        assert_eq!(kind, "crown");
+
+        // Current should be latest (0.8 from -1 hour)
+        assert!((current - 0.8).abs() < 0.01);
+
+        // avg_24h should be average of last 3 marks (0.7, 0.9, 0.8) = 0.8
+        // (the -30 hours mark should be excluded)
+        assert!((avg_24h.unwrap() - 0.8).abs() < 0.01);
+
+        // samples_24h should count 3 marks (not the -30 hours one)
+        assert_eq!(samples_24h.unwrap(), 3);
+    }}
