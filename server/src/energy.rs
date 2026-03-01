@@ -175,6 +175,11 @@ pub async fn get_trends(
                     INNER JOIN latest ON em.kind = latest.kind AND em.id = latest.max_id",
                 )?;
 
+                // TODO: Handle legacy/aliased energy kind names
+                // Current query matches exact canonical names from ENERGY_KINDS.
+                // If DB contains legacy names (e.g., "life_force" → "life", "deep_work" → "dragon"),
+                // those marks are silently skipped and returned as no_data.
+                // Solution: Add kind normalization map before stats.get(kind) lookup or in SQL WHERE clauses.
                 let mut stats = HashMap::new();
                 let mut rows = stmt.query([])?;
                 while let Some(row) = rows.next()? {
