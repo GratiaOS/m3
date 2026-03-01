@@ -42,7 +42,7 @@ mod compute {
             ("solar".to_string(), solar_phase, solar_at),
             ("pleiadian".to_string(), pleiadian_phase, pleiadian_at),
         ];
-        milestones.sort_by(|a, b| a.2.cmp(&b.2));
+        milestones.sort_by_key(|entry| entry.2);
         milestones
             .into_iter()
             .map(|(kind, phase, at)| CycleMilestone {
@@ -62,6 +62,9 @@ mod compute {
 //     use super::*;
 //     // TODO: hook to a precise ephemeris crate (e.g., VSOP87/ELP),
 //     // replace next_lunar_phase / next_solar_sign with accurate solvers.
+//     // NOTE: `solunatus` currently exposes high-precision lunar phases but does
+//     // not provide public ecliptic longitude APIs for the Sun. We keep the
+//     // NOAA-based solar sign calculation until a clean ephemeris hook exists.
 //     // Keep function signatures identical so handlers don't change.
 // }
 
@@ -108,49 +111,81 @@ async fn get_upcoming(Query(params): Query<UpcomingParams>) -> Json<Vec<CycleMil
 
 /// Mean synodic month in days (Espenak/JPL mean).
 fn next_lunar_phase(now: DateTime<Utc>) -> (String, DateTime<Utc>) {
-    const SYNODIC_MONTH: f64 = 29.530_588_853; // mean synodic month in days
-    let phase_offsets = [
-        (0.0, "new_moon"),
-        (0.25, "first_quarter"),
-        (0.5, "full_moon"),
-        (0.75, "last_quarter"),
-    ];
+    #[cfg(feature = "ephemeris")]
+    {
+        use chrono::Datelike;
+        use solunatus::astro::moon::{lunar_phases, LunarPhaseType};
 
-    // Reference new moon: 2000-01-06 18:14 UTC (Espenak).
-    let base_new_moon = Utc
-        .with_ymd_and_hms(2000, 1, 6, 18, 14, 0)
-        .single()
-        .expect("valid reference date");
-    let now_jd = datetime_to_julian(now);
-    let base_jd = datetime_to_julian(base_new_moon);
-    let age_days = (now_jd - base_jd).rem_euclid(SYNODIC_MONTH);
-    let mut next_phase = None;
+        let year = now.year();
+        let month = now.month();
+        let mut phases = lunar_phases(year, month);
+        let (next_year, next_month) = if month == 12 {
+            (year + 1, 1)
+        } else {
+            (year, month + 1)
+        };
+        phases.extend(lunar_phases(next_year, next_month));
+        phases.sort_by_key(|phase| phase.datetime);
 
-    for &(fraction, name) in &phase_offsets[1..] {
-        let offset = fraction * SYNODIC_MONTH;
-        if offset > age_days + 1e-6 {
-            next_phase = Some((name, offset));
-            break;
+        if let Some(phase) = phases.into_iter().find(|phase| phase.datetime > now) {
+            let label = match phase.phase_type {
+                LunarPhaseType::NewMoon => "new_moon",
+                LunarPhaseType::FirstQuarter => "first_quarter",
+                LunarPhaseType::FullMoon => "full_moon",
+                LunarPhaseType::LastQuarter => "last_quarter",
+            };
+            return (label.to_string(), phase.datetime);
         }
+
+        return ("new_moon".to_string(), now + Duration::seconds(1));
     }
 
-    let (phase_name, offset_days) = if let Some(phase) = next_phase {
-        phase
-    } else {
-        (phase_offsets[0].1, SYNODIC_MONTH)
-    };
+    #[cfg(not(feature = "ephemeris"))]
+    {
+        const SYNODIC_MONTH: f64 = 29.530_588_853; // mean synodic month in days
+        let phase_offsets = [
+            (0.0, "new_moon"),
+            (0.25, "first_quarter"),
+            (0.5, "full_moon"),
+            (0.75, "last_quarter"),
+        ];
 
-    let mut delta_days = offset_days - age_days;
-    if delta_days <= 0.0 {
-        delta_days += SYNODIC_MONTH;
-    }
+        // Reference new moon: 2000-01-06 18:14 UTC (Espenak).
+        let base_new_moon = Utc
+            .with_ymd_and_hms(2000, 1, 6, 18, 14, 0)
+            .single()
+            .expect("valid reference date");
+        let now_jd = datetime_to_julian(now);
+        let base_jd = datetime_to_julian(base_new_moon);
+        let age_days = (now_jd - base_jd).rem_euclid(SYNODIC_MONTH);
+        let mut next_phase = None;
 
-    let mut at = now + duration_from_days(delta_days);
-    // Ensure strictly future timestamp
-    if at <= now {
-        at = now + Duration::seconds(1);
+        for &(fraction, name) in &phase_offsets[1..] {
+            let offset = fraction * SYNODIC_MONTH;
+            if offset > age_days + 1e-6 {
+                next_phase = Some((name, offset));
+                break;
+            }
+        }
+
+        let (phase_name, offset_days) = if let Some(phase) = next_phase {
+            phase
+        } else {
+            (phase_offsets[0].1, SYNODIC_MONTH)
+        };
+
+        let mut delta_days = offset_days - age_days;
+        if delta_days <= 0.0 {
+            delta_days += SYNODIC_MONTH;
+        }
+
+        let mut at = now + duration_from_days(delta_days);
+        // Ensure strictly future timestamp
+        if at <= now {
+            at = now + Duration::seconds(1);
+        }
+        (phase_name.to_string(), at)
     }
-    (phase_name.to_string(), at)
 }
 
 /// Tropical zodiac signs in order; boundaries each 30° of ecliptic longitude.
@@ -311,5 +346,16 @@ mod tests {
         let ok =
             ["new_moon", "first_quarter", "full_moon", "last_quarter"].contains(&label.as_str());
         assert!(ok, "unexpected lunar label: {}", label);
+    }
+
+    #[test]
+    fn solar_next_sign_after_equinox_is_taurus() {
+        // After the March equinox, Aries should be current; next sign is Taurus.
+        let now = Utc
+            .with_ymd_and_hms(2025, 3, 21, 12, 0, 0)
+            .single()
+            .unwrap();
+        let (sign, _at) = next_solar_sign(now);
+        assert_eq!(sign, "taurus");
     }
 }

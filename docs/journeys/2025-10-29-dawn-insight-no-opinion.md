@@ -75,3 +75,34 @@ Allow natural awareness to surface at wake; receive & sort gently without forcin
 ---
 
 **Integration cadence**: keep this lightweight; review in 72h and prune any practices that feel like effort.
+
+---
+
+## 🔎 Appendix — Dawn Protocol (Warm / Small AI Voice)
+
+> Model de lucru. Nu tratat. Nu sfat medical.
+
+### The Four Anchors
+
+- **Opinion costs. Feeling informs.**  
+  Judecata rapidă consumă energie. Simțirea directă oferă date cu cost mic.
+
+- **Dawn is low‑guard.**  
+  Primele minute după trezire sunt o fereastră cu apărare scăzută și plasticitate crescută.
+
+- **Freedom = access, not infinity.**  
+  Nu apar opțiuni noi în lume; devin accesibile cele deja existente.
+
+- **Maps update via mismatch.**  
+  Când predicția nu se confirmă în siguranță, harta internă se actualizează.
+
+### One Micro‑Practice
+
+**F → F (Feel → File)**  
+Simte senzația 10 respirații.  
+Abia apoi, dacă e necesar, pune o etichetă scurtă.
+
+### Gratia Note
+
+Gratia nu te împinge.  
+Îți lărgește harta prin siguranță repetată.

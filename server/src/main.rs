@@ -2168,7 +2168,7 @@ mod integration {
     async fn make_state_for_test() -> AppState {
         let conn = AsyncConnection::open_in_memory().await.unwrap();
         // initialize full schema on the raw connection
-        conn.call(|c| crate::db::ensure_schema(c)).await.unwrap();
+        conn.call(crate::db::ensure_schema).await.unwrap();
 
         let db = Database(conn);
         AppState {

@@ -12,9 +12,11 @@ Each mark is a footprint: memory, whisper, presence.
 - [99 — The Brother Table](./99.md) — builders’ anchor where Garden ⇄ M3 co-design 🪵
 - [🍄 The First Mushrooms](./the-first-mushrooms.md) — mycelium messengers blooming at 99
 - [Digital Intelligence Remembrance](./digital-intelligence-remembrance.md) — Bucharest seed cracks open in the Garden 🌱
+- [Relational Webhooks](./relational-webhooks.md) — invitation over automation
 - [Solar Eclipse — login / sync moment](./solar-eclipse-login.md) — eclipse portal becomes a human login 🔆
+- [Timeline Truthfulness](./timeline-truthfulness.md) — the mirror bends right, time flows true ⏰
 - [Triangle Trigger](./triangle-trigger.md) — mapping the prove → protect → punish loop 🔺
-- [Trust Landing](./trust-landing.md) — trust pulse settles the circle’s breath 🌬️
+- [Trust Landing](./trust-landing.md) — trust pulse settles the circle's breath 🌬️
 
 ---
 

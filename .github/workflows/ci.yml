@@ -101,7 +101,7 @@ jobs:
           repository: gratiaOS/garden-core
           path: garden-core
           fetch-depth: 1
-
+          token: ${{ secrets.GH_PAT }}
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -246,9 +246,10 @@ jobs:
 
           status=0
           for sha in $shas; do
+            author=$(git log -1 --pretty=%ae "$sha")
             git log -1 --pretty=%B "$sha" > .git/commitmsg.txt
             echo "\n— checking $sha —" && head -n 3 .git/commitmsg.txt || true
-            node scripts/commit-whisper-check.mjs .git/commitmsg.txt || status=$?
+            node scripts/commit-whisper-check.mjs .git/commitmsg.txt "$author" || status=$?
           done
 
           exit $status

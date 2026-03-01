@@ -30,6 +30,7 @@ entries:
     related:
       - { title: 'Modules/Emotional', href: './modules/emotional.md' }
       - { title: 'Modules/Cycles', href: './modules/cycles.md' }
+      - { title: 'Relational Webhooks (draft)', href: './specs/relational-webhooks.md' }
 
   - page: docs/modules/astral.md
     related:

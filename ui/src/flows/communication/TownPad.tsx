@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Card, Pill, Field } from '@gratiaos/ui';
-import { DEFAULT_TOWN, getTownBulletin, postTownNews } from '@/api';
+import { DEFAULT_TOWN, getTownBulletin, postTownNews, addEmotion } from '@/api';
 import { showToast } from '@gratiaos/ui';
 import { flattenBulletinPayload, type TownBulletinItem } from '@/utils/town';
 // pad-visuals removed — keep simple local mappings per kind
@@ -49,17 +49,17 @@ const TownPad: React.FC<TownPadProps> = ({ me }) => {
   const [posting, setPosting] = useState(false);
   const [scheduleMode, setScheduleMode] = useState<'now' | 'soon'>('now');
   const activeOption = useMemo(() => KIND_OPTIONS.find((opt) => opt.id === kind) ?? KIND_OPTIONS[0], [kind]);
-  const pillTone = useMemo(() => ({ news: 'accent', alert: 'danger', note: 'subtle' }[kind] ?? 'subtle'), [kind]);
-  const kindLabel = useMemo(() => ({ news: 'News', alert: 'Signal', note: 'Note' }[kind] ?? 'Note'), [kind]);
+  const pillTone = useMemo(() => ({ news: 'accent', alert: 'danger', note: 'subtle' })[kind] ?? 'subtle', [kind]);
+  const kindLabel = useMemo(() => ({ news: 'News', alert: 'Signal', note: 'Note' })[kind] ?? 'Note', [kind]);
   const kindNote = useMemo(
-    () => ({ news: 'gentle updates ripple out', alert: 'heightened pulse — breathe first', note: 'soft reflection carried along' }[kind] ?? ''),
-    [kind]
+    () => ({ news: 'gentle updates ripple out', alert: 'heightened pulse — breathe first', note: 'soft reflection carried along' })[kind] ?? '',
+    [kind],
   );
 
   const voicePreview = useMemo(() => {
     const trimmed = voiceName.trim();
     if (trimmed.includes(':')) return trimmed;
-    const fallback = trimmed || (voiceSpecies === 'cat' ? 'all' : me?.toLowerCase().replace(/\s+/g, '_') ?? 'me');
+    const fallback = trimmed || (voiceSpecies === 'cat' ? 'all' : (me?.toLowerCase().replace(/\s+/g, '_') ?? 'me'));
     return `${voiceSpecies}:${fallback}`;
   }, [voiceName, voiceSpecies, me]);
 
@@ -101,12 +101,24 @@ const TownPad: React.FC<TownPadProps> = ({ me }) => {
 
     setPosting(true);
     try {
+      // Post to Town bulletin (backend stores in tells table with node="towns.news")
       await postTownNews({
         town: trimmedTown,
         headline: trimmedMessage,
         who: voice,
         note: kind,
       });
+
+      // Log to emotions table so Town signals appear in Gratia ledger
+      await addEmotion({
+        who: voice,
+        kind: kind === 'alert' ? 'signal' : kind,
+        intensity: kind === 'alert' ? 0.8 : 0.5,
+        details: `${trimmedTown}: ${trimmedMessage}`,
+        sealed: false,
+        privacy: 'community',
+      });
+
       setMessage('');
       showToast({
         title: 'Whisper posted',
@@ -150,7 +162,7 @@ const TownPad: React.FC<TownPadProps> = ({ me }) => {
     <div className="group relative" data-ui="town-pad" data-whisper="town-pad">
       {/* ambient aura removed with pad-visuals */}
       <div
-        className="pointer-events-none absolute inset-0 rounded-3xl border border-white/5 group-hover:border-[var(--color-accent)]/35 transition-colors duration-500"
+        className="pointer-events-none absolute inset-0 rounded-3xl border border-white/5 group-hover:border-accent/35 transition-colors duration-500"
         aria-hidden
       />
       <Card className="relative z-10 flex flex-col gap-6 rounded-3xl border border-border/50 bg-surface/85 p-6 shadow-[0_30px_80px_-45px_rgba(14,116,144,0.65)] backdrop-blur-sm">
@@ -235,7 +247,7 @@ const TownPad: React.FC<TownPadProps> = ({ me }) => {
             <div className="grid gap-2">
               <Field label="Voice" description={`Stored as ${voicePreview}`}>
                 {(aria) => (
-                <input
+                  <input
                     {...aria}
                     value={voiceName}
                     onChange={(e) => setVoiceName(e.target.value)}
@@ -328,11 +340,14 @@ const TownPad: React.FC<TownPadProps> = ({ me }) => {
               bulletin.map((item) => (
                 <article
                   key={item.id}
-                  className="group/bulletin relative overflow-hidden rounded-2xl border border-border/50 bg-surface/80 p-4 transition hover:border-[var(--color-accent)]/50">
+                  className="group/bulletin relative overflow-hidden rounded-2xl border border-border/50 bg-surface/80 p-4 transition hover:border-accent/50">
                   {/* decorative gradient removed with pad-visuals */}
                   <div className="relative flex flex-wrap items-center justify-between gap-2 text-xs text-subtle">
                     <div className="flex items-center gap-2">
-                      <Pill tone={(item.kind === 'alert' ? 'danger' : item.kind === 'news' ? 'accent' : 'subtle') as any} variant="soft" density="snug">
+                      <Pill
+                        tone={(item.kind === 'alert' ? 'danger' : item.kind === 'news' ? 'accent' : 'subtle') as any}
+                        variant="soft"
+                        density="snug">
                         {item.kind === 'alert' ? 'Signal' : item.kind === 'news' ? 'News' : 'Note'}
                       </Pill>
                       <span className="text-subtle/70">{item.town}</span>

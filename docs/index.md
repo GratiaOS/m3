@@ -76,6 +76,7 @@ Reusable emotional/behavioral maps extracted from experience. Start with the ove
 - [99 — The Brother Table](marks/99.md)
 - [The First Mushrooms](marks/the-first-mushrooms.md)
 - [Digital Intelligence Remembrance](marks/digital-intelligence-remembrance.md)
+- [Relational Webhooks](marks/relational-webhooks.md)
 - [Solar Eclipse Login](marks/solar-eclipse-login.md)
 - [Triangle Trigger](marks/triangle-trigger.md)
 - [Trust Landing](marks/trust-landing.md)
