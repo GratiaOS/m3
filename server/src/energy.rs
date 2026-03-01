@@ -9,6 +9,43 @@ use axum::{
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+// ============================================================================
+// CANONICAL ENERGY KINDS
+// ============================================================================
+
+/// Standard energy kinds used in M3
+/// These map to the Energy Calendar bands (E0-E4)
+pub const ENERGY_KINDS: &[&str] = &["crown", "dragon", "play", "life", "void"];
+
+/// Threshold for determining if energy level is stable vs trending
+/// Values within this threshold of the average are considered stable
+const TREND_THRESHOLD: f32 = 0.1;
+
+/// Get a human-readable label for an energy kind
+pub fn energy_label(kind: &str) -> &'static str {
+    match kind {
+        "crown" => "Crown (E4)",
+        "dragon" => "Dragon (E3)",
+        "play" => "Play (E2)",
+        "life" => "Life Force (E1)",
+        "void" => "Void (E0)",
+        _ => "Unknown",
+    }
+}
+
+/// Calculate trend direction based on current level, average, and sample count
+fn calculate_direction(current: f32, avg_24h: f32, samples_24h: i64) -> String {
+    if samples_24h == 0 {
+        "no_data".to_string()
+    } else if (current - avg_24h).abs() < TREND_THRESHOLD {
+        "stable".to_string()
+    } else if current > avg_24h {
+        "up".to_string()
+    } else {
+        "down".to_string()
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EnergyMark {
     pub id: i64,
@@ -25,6 +62,16 @@ pub struct NewEnergyMark {
     pub kind: String,
     pub level: f32,
     pub note: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct EnergyTrend {
+    pub kind: String,
+    pub label: String,
+    pub current: f32,
+    pub avg_24h: f32,
+    pub direction: String, // "up" | "down" | "stable" | "no_data"
+    pub samples_24h: i64,
 }
 
 pub async fn mark_energy(
@@ -104,14 +151,87 @@ pub async fn get_state(
     }
 }
 
+/// GET /energy/trends — analyze energy evolution over time
+pub async fn get_trends(
+    State(state): State<AppState>,
+) -> Result<Json<Vec<EnergyTrend>>, (StatusCode, String)> {
+    let db = state.db.clone();
+
+    let result =
+        db.0.call(
+            |conn: &mut rusqlite::Connection| -> tokio_rusqlite::Result<Vec<EnergyTrend>> {
+                let mut stmt = conn.prepare(
+                    "WITH latest AS (
+                        SELECT kind, MAX(id) AS max_id
+                        FROM energy_marks
+                        GROUP BY kind
+                    )
+                    SELECT 
+                        em.kind,
+                        em.level AS current,
+                        (SELECT AVG(level) FROM energy_marks WHERE kind = em.kind AND datetime(ts) > datetime('now', '-24 hours')) AS avg_24h,
+                        (SELECT COUNT(*) FROM energy_marks WHERE kind = em.kind AND datetime(ts) > datetime('now', '-24 hours')) AS samples_24h
+                    FROM energy_marks em
+                    INNER JOIN latest ON em.kind = latest.kind AND em.id = latest.max_id",
+                )?;
+
+                // TODO: Handle legacy/aliased energy kind names
+                // Current query matches exact canonical names from ENERGY_KINDS.
+                // If DB contains legacy names (e.g., "life_force" → "life", "deep_work" → "dragon"),
+                // those marks are silently skipped and returned as no_data.
+                // Solution: Add kind normalization map before stats.get(kind) lookup or in SQL WHERE clauses.
+                let mut stats = HashMap::new();
+                let mut rows = stmt.query([])?;
+                while let Some(row) = rows.next()? {
+                    let kind: String = row.get(0)?;
+                    let current: f32 = row.get(1)?;
+                    let avg_24h: Option<f32> = row.get(2)?;
+                    let samples_24h: Option<i64> = row.get(3)?;
+
+                    stats.insert(
+                        kind,
+                        (current, avg_24h.unwrap_or(0.0), samples_24h.unwrap_or(0)),
+                    );
+                }
+
+                let mut trends = Vec::new();
+                for &kind in ENERGY_KINDS {
+                    let (current, avg_24h, samples_24h) =
+                        stats.get(kind).copied().unwrap_or((0.0, 0.0, 0));
+
+                    let direction = calculate_direction(current, avg_24h, samples_24h);
+
+                    trends.push(EnergyTrend {
+                        kind: kind.to_string(),
+                        label: energy_label(kind).to_string(),
+                        current,
+                        avg_24h,
+                        direction,
+                        samples_24h,
+                    });
+                }
+
+                Ok(trends)
+            },
+        )
+        .await;
+
+    match result {
+        Ok(trends) => Ok(Json(trends)),
+        Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+    }
+}
+
 pub fn router() -> Router<AppState> {
     Router::new()
         .route("/mark", post(mark_energy))
         .route("/state", get(get_state))
+        .route("/trends", get(get_trends))
 }
 
 #[cfg(test)]
 mod tests {
+    use super::{calculate_direction, energy_label};
     use rusqlite::{params, Connection};
     use std::collections::HashMap;
 
@@ -247,5 +367,273 @@ mod tests {
             (latest_level - 0.9_f32).abs() < 1e-6,
             "expected latest level 0.9, got {latest_level}"
         );
+    }
+
+    #[test]
+    fn energy_label_returns_correct_labels() {
+        assert_eq!(energy_label("crown"), "Crown (E4)");
+        assert_eq!(energy_label("dragon"), "Dragon (E3)");
+        assert_eq!(energy_label("play"), "Play (E2)");
+        assert_eq!(energy_label("life"), "Life Force (E1)");
+        assert_eq!(energy_label("void"), "Void (E0)");
+        assert_eq!(energy_label("unknown"), "Unknown");
+    }
+
+    #[test]
+    fn trends_calculates_direction_correctly() {
+        let conn = setup_conn();
+
+        // Insert marks with decreasing dragon energy
+        conn.execute(
+            "INSERT INTO energy_marks (ts, who, kind, level, note)
+             VALUES (datetime('now', '-23 hours'), 'Raz', 'dragon', 0.9, NULL)",
+            [],
+        )
+        .unwrap();
+
+        conn.execute(
+            "INSERT INTO energy_marks (ts, who, kind, level, note)
+             VALUES (datetime('now', '-12 hours'), 'Raz', 'dragon', 0.6, NULL)",
+            [],
+        )
+        .unwrap();
+
+        conn.execute(
+            "INSERT INTO energy_marks (ts, who, kind, level, note)
+             VALUES (datetime('now', '-1 hour'), 'Raz', 'dragon', 0.3, NULL)",
+            [],
+        )
+        .unwrap();
+
+        // Calculate trend
+        let current: f32 = conn
+            .query_row(
+                "SELECT level FROM energy_marks WHERE kind = 'dragon' ORDER BY id DESC LIMIT 1",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+
+        let avg_24h: f32 = conn
+            .query_row(
+                "SELECT AVG(level) FROM energy_marks WHERE kind = 'dragon' AND datetime(ts) > datetime('now', '-24 hours')",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+
+        // Current = 0.3, avg = (0.9 + 0.6 + 0.3) / 3 = 0.6
+        assert!((current - 0.3).abs() < 0.01);
+        assert!((avg_24h - 0.6).abs() < 0.01);
+
+        // Compute number of samples in the last 24 hours
+        let samples_24h: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM energy_marks WHERE kind = 'dragon' AND datetime(ts) > datetime('now', '-24 hours')",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+
+        // Direction should be "down" using the helper function
+        let direction = calculate_direction(current, avg_24h, samples_24h);
+
+        assert_eq!(direction, "down");
+    }
+
+    #[test]
+    fn trends_returns_no_data_when_empty() {
+        let conn = setup_conn();
+
+        let samples: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM energy_marks WHERE kind = 'dragon' AND datetime(ts) > datetime('now', '-24 hours')",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+
+        assert_eq!(samples, 0);
+
+        // Use the helper function to calculate direction
+        let direction = calculate_direction(0.0, 0.0, samples);
+
+        assert_eq!(direction, "no_data");
+    }
+    #[test]
+    fn get_trends_returns_correct_latest_and_24h_stats() {
+        let conn = setup_conn();
+
+        // Insert older crown mark (outside 24h window)
+        conn.execute(
+            "INSERT INTO energy_marks (ts, who, kind, level, note)
+             VALUES (datetime('now', '-30 hours'), 'Raz', 'crown', 0.5, NULL)",
+            [],
+        )
+        .unwrap();
+
+        // Insert recent crown marks within 24h
+        conn.execute(
+            "INSERT INTO energy_marks (ts, who, kind, level, note)
+             VALUES (datetime('now', '-23 hours'), 'Raz', 'crown', 0.7, NULL)",
+            [],
+        )
+        .unwrap();
+
+        conn.execute(
+            "INSERT INTO energy_marks (ts, who, kind, level, note)
+             VALUES (datetime('now', '-12 hours'), 'Raz', 'crown', 0.9, NULL)",
+            [],
+        )
+        .unwrap();
+
+        // Latest crown (should be current)
+        conn.execute(
+            "INSERT INTO energy_marks (ts, who, kind, level, note)
+             VALUES (datetime('now', '-1 hour'), 'Raz', 'crown', 0.8, NULL)",
+            [],
+        )
+        .unwrap();
+
+        // Run the same query logic as get_trends()
+        let mut stmt = conn
+            .prepare(
+                "WITH latest AS (
+                    SELECT kind, MAX(id) AS max_id
+                    FROM energy_marks
+                    GROUP BY kind
+                )
+                SELECT 
+                    em.kind,
+                    em.level AS current,
+                    (SELECT AVG(level) FROM energy_marks WHERE kind = em.kind AND datetime(ts) > datetime('now', '-24 hours')) AS avg_24h,
+                    (SELECT COUNT(*) FROM energy_marks WHERE kind = em.kind AND datetime(ts) > datetime('now', '-24 hours')) AS samples_24h
+                FROM energy_marks em
+                INNER JOIN latest ON em.kind = latest.kind AND em.id = latest.max_id",
+            )
+            .unwrap();
+
+        let mut rows = stmt.query([]).unwrap();
+        let row = rows.next().unwrap().unwrap();
+
+        let kind: String = row.get(0).unwrap();
+        let current: f32 = row.get(1).unwrap();
+        let avg_24h: Option<f32> = row.get(2).unwrap();
+        let samples_24h: Option<i64> = row.get(3).unwrap();
+
+        // Verify crown was selected
+        assert_eq!(kind, "crown");
+
+        // Current should be latest (0.8 from -1 hour)
+        assert!((current - 0.8).abs() < 0.01);
+
+        // avg_24h should be average of last 3 marks (0.7, 0.9, 0.8) = 0.8
+        // (the -30 hours mark should be excluded)
+        assert!((avg_24h.unwrap() - 0.8).abs() < 0.01);
+
+        // samples_24h should count 3 marks (not the -30 hours one)
+        assert_eq!(samples_24h.unwrap(), 3);
+    }
+
+    #[test]
+    fn trends_returns_all_canonical_kinds_with_fallbacks() {
+        let conn = setup_conn();
+
+        // Insert data ONLY for dragon (2 marks) and play (1 mark)
+        // Leave crown, life, void completely absent
+        conn.execute(
+            "INSERT INTO energy_marks (ts, who, kind, level, note)
+             VALUES (datetime('now', '-2 hours'), 'Raz', 'dragon', 0.9, 'deep work')",
+            [],
+        )
+        .unwrap();
+
+        conn.execute(
+            "INSERT INTO energy_marks (ts, who, kind, level, note)
+             VALUES (datetime('now', '-1 hour'), 'Raz', 'dragon', 0.7, 'still focused')",
+            [],
+        )
+        .unwrap();
+
+        conn.execute(
+            "INSERT INTO energy_marks (ts, who, kind, level, note)
+             VALUES (datetime('now', '-3 hours'), 'Raz', 'play', 0.6, 'hoops')",
+            [],
+        )
+        .unwrap();
+
+        // Execute the same query logic as production get_trends()
+        let mut stmt = conn
+            .prepare(
+                "WITH latest AS (
+                    SELECT kind, MAX(id) AS max_id
+                    FROM energy_marks
+                    GROUP BY kind
+                )
+                SELECT 
+                    em.kind,
+                    em.level AS current,
+                    (SELECT AVG(level) FROM energy_marks WHERE kind = em.kind AND datetime(ts) > datetime('now', '-24 hours')) AS avg_24h,
+                    (SELECT COUNT(*) FROM energy_marks WHERE kind = em.kind AND datetime(ts) > datetime('now', '-24 hours')) AS samples_24h
+                FROM energy_marks em
+                INNER JOIN latest ON em.kind = latest.kind AND em.id = latest.max_id",
+            )
+            .unwrap();
+
+        // Collect query results into HashMap (same as production)
+        let mut stats = std::collections::HashMap::new();
+        let mut rows = stmt.query([]).unwrap();
+
+        while let Some(row) = rows.next().unwrap() {
+            let kind: String = row.get(0).unwrap();
+            let current: f32 = row.get(1).unwrap();
+            let avg_24h: Option<f32> = row.get(2).unwrap();
+            let samples_24h: Option<i64> = row.get(3).unwrap();
+
+            stats.insert(
+                kind,
+                (current, avg_24h.unwrap_or(0.0), samples_24h.unwrap_or(0)),
+            );
+        }
+
+        // Map over all ENERGY_KINDS (same as production endpoint)
+        let mut trends = Vec::new();
+        for &kind in super::ENERGY_KINDS {
+            let (current, avg_24h, samples_24h) = stats.get(kind).copied().unwrap_or((0.0, 0.0, 0));
+            let direction = calculate_direction(current, avg_24h, samples_24h);
+
+            trends.push((kind.to_string(), current, avg_24h, samples_24h, direction));
+        }
+
+        // RULE 1: Must return exactly 5 canonical kinds
+        assert_eq!(trends.len(), 5, "Must return all 5 canonical energy kinds");
+
+        // RULE 2: Kinds with data should have correct stats
+        let dragon = trends.iter().find(|t| t.0 == "dragon").unwrap();
+        assert_eq!(
+            dragon.4, "down",
+            "Dragon trending down (0.7 current < 0.8 avg)"
+        );
+        assert_eq!(dragon.3, 2, "Dragon should have 2 samples");
+        assert!(
+            (dragon.1 - 0.7).abs() < 0.01,
+            "Dragon current should be latest (0.7)"
+        );
+
+        let play = trends.iter().find(|t| t.0 == "play").unwrap();
+        assert_eq!(play.4, "stable", "Play stable (0.6 == 0.6)");
+        assert_eq!(play.3, 1, "Play should have 1 sample");
+
+        // RULE 3: Missing kinds should gracefully return no_data
+        let crown = trends.iter().find(|t| t.0 == "crown").unwrap();
+        assert_eq!(crown.4, "no_data", "Crown should show no_data");
+        assert_eq!(crown.3, 0, "Crown should have 0 samples");
+        assert_eq!(crown.1, 0.0, "Crown current should be 0.0");
+
+        let void_trend = trends.iter().find(|t| t.0 == "void").unwrap();
+        assert_eq!(void_trend.4, "no_data", "Void should show no_data");
+
+        let life = trends.iter().find(|t| t.0 == "life").unwrap();
+        assert_eq!(life.4, "no_data", "Life should show no_data");
     }
 }

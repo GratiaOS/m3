@@ -50,21 +50,31 @@ jobs:
           components: rustfmt, clippy
 
       - name: Show versions
+        env:
+          toolchain: ${{ matrix.toolchain }}
         run: |
           rustc -V
           cargo -V
 
       - name: Check formatting
+        env:
+          toolchain: ${{ matrix.toolchain }}
         run: cargo fmt -- --check
 
       - name: Clippy (deny warnings)
+        env:
+          toolchain: ${{ matrix.toolchain }}
         run: cargo clippy -- -D warnings
 
       - name: Test
+        env:
+          toolchain: ${{ matrix.toolchain }}
         run: cargo test --workspace --all-features --no-fail-fast
 
       - name: Panic redirect script – smoke test
         working-directory: m3
+        env:
+          toolchain: ${{ matrix.toolchain }}
         run: |
           set -euxo pipefail
           chmod +x ./panic.sh
