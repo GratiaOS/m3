@@ -17,6 +17,10 @@ use std::collections::HashMap;
 /// These map to the Energy Calendar bands (E0-E4)
 pub const ENERGY_KINDS: &[&str] = &["crown", "dragon", "play", "life", "void"];
 
+/// Threshold for determining if energy level is stable vs trending
+/// Values within this threshold of the average are considered stable
+const TREND_THRESHOLD: f32 = 0.1;
+
 /// Get a human-readable label for an energy kind
 pub fn energy_label(kind: &str) -> &'static str {
     match kind {
@@ -26,6 +30,19 @@ pub fn energy_label(kind: &str) -> &'static str {
         "life" => "Life Force (E1)",
         "void" => "Void (E0)",
         _ => "Unknown",
+    }
+}
+
+/// Calculate trend direction based on current level, average, and sample count
+fn calculate_direction(current: f32, avg_24h: f32, samples_24h: i64) -> String {
+    if samples_24h == 0 {
+        "no_data".to_string()
+    } else if (current - avg_24h).abs() < TREND_THRESHOLD {
+        "stable".to_string()
+    } else if current > avg_24h {
+        "up".to_string()
+    } else {
+        "down".to_string()
     }
 }
 
@@ -179,16 +196,8 @@ pub async fn get_trends(
                         )
                         .unwrap_or(0);
 
-                    // Determine direction with 0.1 threshold to avoid noise
-                    let direction = if samples_24h == 0 {
-                        "no_data".to_string()
-                    } else if (current - avg_24h).abs() < 0.1 {
-                        "stable".to_string()
-                    } else if current > avg_24h {
-                        "up".to_string()
-                    } else {
-                        "down".to_string()
-                    };
+                    // Determine direction using helper function
+                    let direction = calculate_direction(current, avg_24h, samples_24h);
 
                     trends.push(EnergyTrend {
                         kind: kind.to_string(),
@@ -220,7 +229,7 @@ pub fn router() -> Router<AppState> {
 
 #[cfg(test)]
 mod tests {
-    use super::energy_label;
+    use super::{calculate_direction, energy_label};
     use rusqlite::{params, Connection};
     use std::collections::HashMap;
 
@@ -415,14 +424,8 @@ mod tests {
         assert!((current - 0.3).abs() < 0.01);
         assert!((avg_24h - 0.6).abs() < 0.01);
 
-        // Direction should be "down"
-        let direction = if (current - avg_24h).abs() < 0.1 {
-            "stable"
-        } else if current > avg_24h {
-            "up"
-        } else {
-            "down"
-        };
+        // Direction should be "down" using the helper function
+        let direction = calculate_direction(current, avg_24h, 2);
 
         assert_eq!(direction, "down");
     }
@@ -441,7 +444,8 @@ mod tests {
 
         assert_eq!(samples, 0);
 
-        let direction = if samples == 0 { "no_data" } else { "stable" };
+        // Use the helper function to calculate direction
+        let direction = calculate_direction(0.0, 0.0, samples);
 
         assert_eq!(direction, "no_data");
     }
