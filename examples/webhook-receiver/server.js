@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { createHmac } from 'node:crypto';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 
 // Configuration
 const PORT = process.env.PORT || 4001;
@@ -30,6 +30,17 @@ function verifySignature(signature, body) {
       return false;
     }
 
+    // Validate timestamp to prevent replay attacks
+    const tsNum = Number.parseInt(timestamp, 10);
+    if (Number.isNaN(tsNum)) {
+      return false;
+    }
+    const now = Math.floor(Date.now() / 1000);
+    const maxAge = 300; // 5 minutes
+    if (Math.abs(now - tsNum) > maxAge) {
+      return false;
+    }
+
     // Compute expected signature
     const payload = `${timestamp}.${body}`;
     const hmac = createHmac('sha256', SECRET);
@@ -37,7 +48,12 @@ function verifySignature(signature, body) {
     const expectedSig = hmac.digest('hex');
 
     // Constant-time comparison
-    return receivedSig === expectedSig;
+    const receivedBuf = Buffer.from(receivedSig, 'hex');
+    const expectedBuf = Buffer.from(expectedSig, 'hex');
+    if (receivedBuf.length !== expectedBuf.length) {
+      return false;
+    }
+    return timingSafeEqual(receivedBuf, expectedBuf);
   } catch (err) {
     console.error('Signature verification error:', err.message);
     return false;
@@ -113,15 +129,21 @@ const server = createServer(async (req, res) => {
     if (size > maxSize) {
       tooLarge = true;
       req.destroy();
-      res.writeHead(413, { 'Content-Type': 'text/plain' });
-      res.end('Payload Too Large');
       return;
     }
     body += chunk.toString();
   });
+  req.on('error', err => {
+    console.error('Request stream error:', err.message);
+    if (!res.headersSent) {
+      res.writeHead(400, { 'Content-Type': 'text/plain' });
+      res.end('Bad Request');
+    }
+  });
   req.on('end', () => {
     if (tooLarge) {
-      // Already responded with 413
+      res.writeHead(413, { 'Content-Type': 'text/plain' });
+      res.end('Payload Too Large');
       return;
     }
     try {

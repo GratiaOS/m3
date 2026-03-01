@@ -148,7 +148,6 @@ VALUE_HORIZON=7d                    # plan window (e.g., 7d, 1m)
 VALUE_FORCE_MOCK_UNTIL=             # optional guard timestamp (RFC3339)
 ```
 
->
 > If `M3_BEARER` is set, all **write** endpoints require `Authorization: Bearer <token>`.
 
 ---

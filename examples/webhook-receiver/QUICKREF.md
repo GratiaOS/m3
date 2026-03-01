@@ -60,7 +60,7 @@ HMAC computed over: `timestamp + "." + body` using SHA-256
 Set `M3_WEBHOOK_SECRET` on both M3 server and receiver. The receiver will:
 - Parse the signature header
 - Compute expected HMAC
-- Compare with constant-time equality
+- Compare with timing-safe equality
 - Reject if invalid
 
 ## Need Help?

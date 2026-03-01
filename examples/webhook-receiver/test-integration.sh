@@ -17,8 +17,12 @@ SECRET="test-secret-$(date +%s)"
 cleanup() {
   echo ""
   echo "🧹 Cleaning up..."
-  pkill -f "m3-memory-server" 2>/dev/null || true
-  pkill -f "webhook-receiver" 2>/dev/null || true
+  if [ -n "$RECEIVER_PID" ] && kill -0 "$RECEIVER_PID" 2>/dev/null; then
+    kill "$RECEIVER_PID" 2>/dev/null || true
+  fi
+  if [ -n "$SERVER_PID" ] && kill -0 "$SERVER_PID" 2>/dev/null; then
+    kill "$SERVER_PID" 2>/dev/null || true
+  fi
   rm -f /tmp/m3-test-*.log
 }
 
@@ -48,7 +52,7 @@ cd ../..
 M3_WEBHOOK_URL="http://localhost:$WEBHOOK_PORT/webhook" \
 M3_WEBHOOK_SECRET="$SECRET" \
 M3_BIND="127.0.0.1:$M3_PORT" \
-cargo run -q 2>&1 | tee /tmp/m3-test-server.log &
+cargo run -q > /tmp/m3-test-server.log 2>&1 &
 SERVER_PID=$!
 
 # Wait for server to be ready
@@ -86,7 +90,7 @@ sleep 1
 echo ""
 echo "4️⃣  Webhook receiver log:"
 echo "   ─────────────────────────────"
-tail -20 /tmp/m3-test-receiver.log | grep -A10 "Event:"
+tail -20 /tmp/m3-test-receiver.log | grep -A10 "Event:" || echo "   (no events captured)"
 echo ""
 
 echo "✅ Integration test complete!"

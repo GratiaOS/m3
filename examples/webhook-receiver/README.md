@@ -68,7 +68,7 @@ Where:
 ### Example Verification (Node.js)
 
 ```javascript
-import { createHmac } from 'node:crypto';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 
 function verifySignature(signature, body, secret) {
   // Parse: m3=t=1234567890,v1=abc123...
@@ -76,13 +76,26 @@ function verifySignature(signature, body, secret) {
   const timestamp = parts[0]?.split('=')[1];
   const receivedSig = parts[1]?.split('=')[1];
 
+  // Validate timestamp (anti-replay)
+  const tsNum = Number.parseInt(timestamp, 10);
+  if (Number.isNaN(tsNum)) return false;
+  const now = Math.floor(Date.now() / 1000);
+  const maxAge = 300; // 5 minutes
+  if (Math.abs(now - tsNum) > maxAge) return false;
+
   // Compute expected signature
   const payload = `${timestamp}.${body}`;
   const hmac = createHmac('sha256', secret);
   hmac.update(payload);
   const expectedSig = hmac.digest('hex');
 
-  return receivedSig === expectedSig;
+  // Constant-time comparison
+  const receivedBuf = Buffer.from(receivedSig, 'hex');
+  const expectedBuf = Buffer.from(expectedSig, 'hex');
+  return (
+    receivedBuf.length === expectedBuf.length &&
+    timingSafeEqual(receivedBuf, expectedBuf)
+  );
 }
 ```
 
