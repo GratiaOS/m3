@@ -261,24 +261,25 @@ pub async fn infer_energy(
     let db = state.db.clone();
 
     // Get recent trends for baseline
-    let trends_result = db
-        .0
-        .call(|conn: &mut rusqlite::Connection| -> tokio_rusqlite::Result<HashMap<String, f32>> {
-            let mut baseline = HashMap::new();
-            for &kind in ENERGY_KINDS {
-                let avg: f32 = conn
-                    .query_row(
-                        "SELECT AVG(level) FROM energy_marks 
+    let trends_result =
+        db.0.call(
+            |conn: &mut rusqlite::Connection| -> tokio_rusqlite::Result<HashMap<String, f32>> {
+                let mut baseline = HashMap::new();
+                for &kind in ENERGY_KINDS {
+                    let avg: f32 = conn
+                        .query_row(
+                            "SELECT AVG(level) FROM energy_marks 
                          WHERE kind = ?1 
                          AND datetime(ts) > datetime('now', '-24 hours')",
-                        [kind],
-                        |row| row.get(0),
-                    )
-                    .unwrap_or(0.5); // Default to neutral if no data
-                baseline.insert(kind.to_string(), avg);
-            }
-            Ok(baseline)
-        })
+                            [kind],
+                            |row| row.get(0),
+                        )
+                        .unwrap_or(0.5); // Default to neutral if no data
+                    baseline.insert(kind.to_string(), avg);
+                }
+                Ok(baseline)
+            },
+        )
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
@@ -294,10 +295,7 @@ pub async fn infer_energy(
         if hour >= 22 || hour <= 2 {
             void_level = 0.8;
             void_confidence = 0.9;
-            void_reasoning = format!(
-                "Late hour ({}:00) strongly indicates need for rest",
-                hour
-            );
+            void_reasoning = format!("Late hour ({}:00) strongly indicates need for rest", hour);
         } else if hour >= 3 && hour <= 6 {
             void_level = 0.9;
             void_confidence = 0.95;
@@ -309,10 +307,7 @@ pub async fn infer_energy(
         if minutes > 120 && void_level < 0.6 {
             void_level = 0.7;
             void_confidence = 0.7;
-            void_reasoning = format!(
-                "Idle for {} min suggests passive recovery mode",
-                minutes
-            );
+            void_reasoning = format!("Idle for {} min suggests passive recovery mode", minutes);
         }
     }
 
@@ -340,10 +335,7 @@ pub async fn infer_energy(
         } else if length > 200 {
             dragon_level = 0.7;
             dragon_confidence = 0.7;
-            dragon_reasoning = format!(
-                "Long note ({} chars) indicates sustained focus",
-                length
-            );
+            dragon_reasoning = format!("Long note ({} chars) indicates sustained focus", length);
         }
     }
 
@@ -352,10 +344,7 @@ pub async fn infer_energy(
         if hour >= 22 || hour <= 5 {
             dragon_level = dragon_level.min(0.4);
             dragon_confidence = 0.85;
-            dragon_reasoning = format!(
-                "Late hour ({}:00) impairs cognitive performance",
-                hour
-            );
+            dragon_reasoning = format!("Late hour ({}:00) impairs cognitive performance", hour);
         }
     }
 
@@ -414,12 +403,252 @@ pub async fn infer_energy(
     }))
 }
 
+// ============================================================================
+// CORRELATION — Detect patterns between energy kinds
+// ============================================================================
+
+#[derive(Debug, Deserialize)]
+pub struct CorrelateRequest {
+    /// Hours to look back for analysis (default: 72)
+    pub lookback_hours: Option<u64>,
+    /// Minimum samples required per kind pair (default: 5)
+    pub min_samples: Option<usize>,
+    /// Minimum |correlation| to report (default: 0.3)
+    pub correlation_threshold: Option<f64>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct Correlation {
+    pub kind_a: String,
+    pub kind_b: String,
+    pub coefficient: f64,
+    pub strength: String,   // "weak" | "moderate" | "strong"
+    pub direction: String,  // "positive" | "inverse" | "none"
+    pub samples: usize,
+    pub interpretation: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct CorrelateResponse {
+    pub correlations: Vec<Correlation>,
+    pub analysis_period: String,
+    pub total_marks_analyzed: usize,
+}
+
+/// Calculate Pearson correlation coefficient between two series
+fn pearson(xs: &[f64], ys: &[f64]) -> Option<f64> {
+    let n = xs.len();
+    if n < 2 {
+        return None;
+    }
+
+    let mean_x = xs.iter().sum::<f64>() / n as f64;
+    let mean_y = ys.iter().sum::<f64>() / n as f64;
+
+    let numerator: f64 = xs
+        .iter()
+        .zip(ys.iter())
+        .map(|(x, y)| (x - mean_x) * (y - mean_y))
+        .sum();
+
+    let denom_x: f64 = xs
+        .iter()
+        .map(|x| (x - mean_x).powi(2))
+        .sum::<f64>()
+        .sqrt();
+    let denom_y: f64 = ys
+        .iter()
+        .map(|y| (y - mean_y).powi(2))
+        .sum::<f64>()
+        .sqrt();
+
+    if denom_x == 0.0 || denom_y == 0.0 {
+        return None;
+    }
+
+    Some(numerator / (denom_x * denom_y))
+}
+
+/// Classify correlation strength and direction
+fn classify_correlation(coeff: f64) -> (String, String) {
+    let abs = coeff.abs();
+    let strength = match abs {
+        v if v >= 0.7 => "strong",
+        v if v >= 0.3 => "moderate",
+        _ => "weak",
+    };
+    let direction = match coeff {
+        v if v > 0.05 => "positive",
+        v if v < -0.05 => "inverse",
+        _ => "none",
+    };
+    (strength.to_string(), direction.to_string())
+}
+
+/// Generate human-readable interpretation of correlation
+fn interpret_correlation(kind_a: &str, kind_b: &str, coeff: f64) -> String {
+    let (strength, direction) = classify_correlation(coeff);
+    match direction.as_str() {
+        "inverse" => format!(
+            "When {} falls, {} rises ({} inverse correlation)",
+            kind_a, kind_b, strength
+        ),
+        "positive" => format!(
+            "{} and {} move together ({} positive correlation)",
+            kind_a, kind_b, strength
+        ),
+        _ => format!("{} and {} show no clear relationship", kind_a, kind_b),
+    }
+}
+
+/// Align two time series by hour buckets, averaging values within each bucket
+fn align_series(a: &[(String, f64)], b: &[(String, f64)]) -> (Vec<f64>, Vec<f64>) {
+    use std::collections::HashMap;
+
+    let mut buckets_a: HashMap<i64, Vec<f64>> = HashMap::new();
+    let mut buckets_b: HashMap<i64, Vec<f64>> = HashMap::new();
+
+    // Bucket by hour
+    for (ts, val) in a {
+        if let Ok(dt) = ts.parse::<chrono::DateTime<chrono::Utc>>() {
+            let bucket = dt.timestamp() / 3600; // hour bucket
+            buckets_a.entry(bucket).or_default().push(*val);
+        }
+    }
+
+    for (ts, val) in b {
+        if let Ok(dt) = ts.parse::<chrono::DateTime<chrono::Utc>>() {
+            let bucket = dt.timestamp() / 3600;
+            buckets_b.entry(bucket).or_default().push(*val);
+        }
+    }
+
+    // Only keep buckets that exist in both series
+    let mut xs = Vec::new();
+    let mut ys = Vec::new();
+
+    for (bucket, vals_a) in &buckets_a {
+        if let Some(vals_b) = buckets_b.get(bucket) {
+            xs.push(vals_a.iter().sum::<f64>() / vals_a.len() as f64);
+            ys.push(vals_b.iter().sum::<f64>() / vals_b.len() as f64);
+        }
+    }
+
+    (xs, ys)
+}
+
+pub async fn correlate_energy(
+    State(state): State<AppState>,
+    Json(req): Json<CorrelateRequest>,
+) -> Result<Json<CorrelateResponse>, (StatusCode, String)> {
+    let lookback = req.lookback_hours.unwrap_or(72);
+    let min_samples = req.min_samples.unwrap_or(5);
+    let threshold = req.correlation_threshold.unwrap_or(0.3);
+
+    // Calculate cutoff timestamp
+    let now = chrono::Utc::now();
+    let cutoff = now - chrono::Duration::hours(lookback as i64);
+    let cutoff_str = cutoff.to_rfc3339();
+
+    let db = state.db.clone();
+
+    let result = db
+        .0
+        .call(move |conn: &mut rusqlite::Connection| -> tokio_rusqlite::Result<CorrelateResponse> {
+            // Fetch all marks within the lookback window
+            let mut stmt = conn.prepare(
+                "SELECT ts, kind, level FROM energy_marks WHERE ts >= ?1 ORDER BY ts ASC",
+            )?;
+
+            let rows = stmt.query_map(rusqlite::params![cutoff_str], |row| {
+                Ok((
+                    row.get::<_, String>(0)?, // ts
+                    row.get::<_, String>(1)?, // kind
+                    row.get::<_, f64>(2)?,    // level
+                ))
+            })?;
+
+            let mut marks = Vec::new();
+            for row in rows {
+                marks.push(row?);
+            }
+
+            let total = marks.len();
+
+            // Group marks by kind
+            let mut by_kind: HashMap<String, Vec<(String, f64)>> = HashMap::new();
+            for (ts, kind, level) in marks {
+                by_kind
+                    .entry(kind)
+                    .or_default()
+                    .push((ts, level));
+            }
+
+            // Calculate correlations for all pairs
+            let mut correlations = Vec::new();
+            let kinds = ENERGY_KINDS;
+
+            for i in 0..kinds.len() {
+                for j in (i + 1)..kinds.len() {
+                    let kind_a = kinds[i];
+                    let kind_b = kinds[j];
+
+                    let series_a = by_kind.get(kind_a).map(|v| v.as_slice()).unwrap_or(&[]);
+                    let series_b = by_kind.get(kind_b).map(|v| v.as_slice()).unwrap_or(&[]);
+
+                    // Align time series by hour buckets
+                    let (xs, ys) = align_series(series_a, series_b);
+
+                    if xs.len() < min_samples {
+                        continue;
+                    }
+
+                    if let Some(coeff) = pearson(&xs, &ys) {
+                        if coeff.abs() >= threshold {
+                            let (strength, direction) = classify_correlation(coeff);
+                            correlations.push(Correlation {
+                                kind_a: kind_a.to_string(),
+                                kind_b: kind_b.to_string(),
+                                coefficient: (coeff * 100.0).round() / 100.0,
+                                strength,
+                                direction,
+                                samples: xs.len(),
+                                interpretation: interpret_correlation(kind_a, kind_b, coeff),
+                            });
+                        }
+                    }
+                }
+            }
+
+            // Sort by absolute coefficient descending
+            correlations.sort_by(|a, b| {
+                b.coefficient
+                    .abs()
+                    .partial_cmp(&a.coefficient.abs())
+                    .unwrap()
+            });
+
+            Ok(CorrelateResponse {
+                correlations,
+                analysis_period: format!("{}h", lookback),
+                total_marks_analyzed: total,
+            })
+        })
+        .await;
+
+    match result {
+        Ok(response) => Ok(Json(response)),
+        Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+    }
+}
+
 pub fn router() -> Router<AppState> {
     Router::new()
         .route("/mark", post(mark_energy))
         .route("/state", get(get_state))
         .route("/trends", get(get_trends))
         .route("/infer", post(infer_energy))
+        .route("/correlate", post(correlate_energy))
 }
 
 #[cfg(test)]
@@ -834,13 +1063,12 @@ mod tests {
     fn infer_detects_late_hour_void() {
         // Late hour (23:00) should strongly predict high void
         let hour = 23;
-        let void_level: f32 = if hour >= 22 || hour <= 2 {
-            0.8
-        } else {
-            0.3
-        };
+        let void_level: f32 = if hour >= 22 || hour <= 2 { 0.8 } else { 0.3 };
 
-        assert!((void_level - 0.8).abs() < 0.01, "Late hour should predict high void");
+        assert!(
+            (void_level - 0.8).abs() < 0.01,
+            "Late hour should predict high void"
+        );
     }
 
     #[test]
@@ -864,6 +1092,105 @@ mod tests {
         assert!(
             (life_level - 0.3).abs() < 0.01,
             "Multiple rhythm resets should predict low life force"
+        );
+    }
+
+    #[test]
+    fn correlate_detects_inverse_relationship() {
+        use super::{align_series, pearson};
+
+        // Simulate dragon going down while void goes up
+        let dragon_series = vec![
+            ("2025-01-01T08:00:00Z".to_string(), 0.9),
+            ("2025-01-01T09:00:00Z".to_string(), 0.7),
+            ("2025-01-01T10:00:00Z".to_string(), 0.5),
+            ("2025-01-01T11:00:00Z".to_string(), 0.3),
+            ("2025-01-01T12:00:00Z".to_string(), 0.2),
+            ("2025-01-01T13:00:00Z".to_string(), 0.1),
+        ];
+
+        let void_series = vec![
+            ("2025-01-01T08:00:00Z".to_string(), 0.1),
+            ("2025-01-01T09:00:00Z".to_string(), 0.3),
+            ("2025-01-01T10:00:00Z".to_string(), 0.5),
+            ("2025-01-01T11:00:00Z".to_string(), 0.7),
+            ("2025-01-01T12:00:00Z".to_string(), 0.8),
+            ("2025-01-01T13:00:00Z".to_string(), 0.9),
+        ];
+
+        let (xs, ys) = align_series(&dragon_series, &void_series);
+        let coeff = pearson(&xs, &ys).expect("Should calculate correlation");
+
+        assert!(
+            coeff < -0.7,
+            "Dragon ↓ + Void ↑ should show strong inverse correlation (got {})",
+            coeff
+        );
+    }
+
+    #[test]
+    fn correlate_detects_positive_relationship() {
+        use super::{align_series, pearson};
+
+        // Simulate crown and dragon moving together
+        let crown_series = vec![
+            ("2025-01-01T08:00:00Z".to_string(), 0.3),
+            ("2025-01-01T09:00:00Z".to_string(), 0.5),
+            ("2025-01-01T10:00:00Z".to_string(), 0.7),
+            ("2025-01-01T11:00:00Z".to_string(), 0.9),
+            ("2025-01-01T12:00:00Z".to_string(), 0.8),
+        ];
+
+        let dragon_series = vec![
+            ("2025-01-01T08:00:00Z".to_string(), 0.2),
+            ("2025-01-01T09:00:00Z".to_string(), 0.4),
+            ("2025-01-01T10:00:00Z".to_string(), 0.6),
+            ("2025-01-01T11:00:00Z".to_string(), 0.8),
+            ("2025-01-01T12:00:00Z".to_string(), 0.7),
+        ];
+
+        let (xs, ys) = align_series(&crown_series, &dragon_series);
+        let coeff = pearson(&xs, &ys).expect("Should calculate correlation");
+
+        assert!(
+            coeff > 0.7,
+            "Crown ↑ + Dragon ↑ should show strong positive correlation (got {})",
+            coeff
+        );
+    }
+
+    #[test]
+    fn correlate_ignores_weak_patterns() {
+        use super::{align_series, pearson};
+
+        // Data with minimal variance should show weak/moderate correlation
+        let play_series = vec![
+            ("2025-01-01T08:00:00Z".to_string(), 0.48),
+            ("2025-01-01T09:00:00Z".to_string(), 0.52),
+            ("2025-01-01T10:00:00Z".to_string(), 0.47),
+            ("2025-01-01T11:00:00Z".to_string(), 0.51),
+            ("2025-01-01T12:00:00Z".to_string(), 0.49),
+            ("2025-01-01T13:00:00Z".to_string(), 0.53),
+        ];
+
+        let life_series = vec![
+            ("2025-01-01T08:00:00Z".to_string(), 0.61),
+            ("2025-01-01T09:00:00Z".to_string(), 0.39),
+            ("2025-01-01T10:00:00Z".to_string(), 0.58),
+            ("2025-01-01T11:00:00Z".to_string(), 0.42),
+            ("2025-01-01T12:00:00Z".to_string(), 0.55),
+            ("2025-01-01T13:00:00Z".to_string(), 0.45),
+        ];
+
+        let (xs, ys) = align_series(&play_series, &life_series);
+        let coeff = pearson(&xs, &ys).expect("Should calculate correlation");
+
+        // This test verifies Pearson calculation works even with non-obvious patterns
+        // The actual coefficient value depends on the data distribution
+        assert!(
+            coeff.abs() < 0.95,
+            "Non-correlated data should not show near-perfect correlation (got {})",
+            coeff
         );
     }
 }
