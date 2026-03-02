@@ -222,11 +222,204 @@ pub async fn get_trends(
     }
 }
 
+// ============================================================================
+// INFERENCE — Predict energy from behavior
+// ============================================================================
+
+#[derive(Debug, Deserialize)]
+pub struct InferenceInput {
+    /// Current hour (0-23) for time-based inference
+    pub hour: Option<u8>,
+    /// Length of last note/message (chars) for cognitive load inference
+    pub note_length: Option<usize>,
+    /// Number of rhythm resets in last 24h for life force inference
+    pub rhythm_resets_24h: Option<u32>,
+    /// Minutes since last major activity (for void inference)
+    pub minutes_idle: Option<u32>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct InferredLevel {
+    pub kind: String,
+    pub label: String,
+    pub predicted_level: f32,
+    pub confidence: f32, // 0.0-1.0
+    pub reasoning: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct InferenceResult {
+    pub inferred: Vec<InferredLevel>,
+    pub timestamp: String,
+}
+
+/// POST /energy/infer — predict energy levels from behavioral signals
+pub async fn infer_energy(
+    State(state): State<AppState>,
+    Json(input): Json<InferenceInput>,
+) -> Result<Json<InferenceResult>, (StatusCode, String)> {
+    let db = state.db.clone();
+
+    // Get recent trends for baseline
+    let trends_result = db
+        .0
+        .call(|conn: &mut rusqlite::Connection| -> tokio_rusqlite::Result<HashMap<String, f32>> {
+            let mut baseline = HashMap::new();
+            for &kind in ENERGY_KINDS {
+                let avg: f32 = conn
+                    .query_row(
+                        "SELECT AVG(level) FROM energy_marks 
+                         WHERE kind = ?1 
+                         AND datetime(ts) > datetime('now', '-24 hours')",
+                        [kind],
+                        |row| row.get(0),
+                    )
+                    .unwrap_or(0.5); // Default to neutral if no data
+                baseline.insert(kind.to_string(), avg);
+            }
+            Ok(baseline)
+        })
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    let mut inferred = Vec::new();
+
+    // === VOID (E0) INFERENCE ===
+    let mut void_level = trends_result.get("void").copied().unwrap_or(0.3);
+    let mut void_confidence = 0.3;
+    let mut void_reasoning = String::from("Baseline from recent activity");
+
+    if let Some(hour) = input.hour {
+        // Late night hours (22:00-02:00) suggest high void
+        if hour >= 22 || hour <= 2 {
+            void_level = 0.8;
+            void_confidence = 0.9;
+            void_reasoning = format!(
+                "Late hour ({}:00) strongly indicates need for rest",
+                hour
+            );
+        } else if hour >= 3 && hour <= 6 {
+            void_level = 0.9;
+            void_confidence = 0.95;
+            void_reasoning = format!("Very late hour ({}:00) — sleep critical", hour);
+        }
+    }
+
+    if let Some(minutes) = input.minutes_idle {
+        if minutes > 120 && void_level < 0.6 {
+            void_level = 0.7;
+            void_confidence = 0.7;
+            void_reasoning = format!(
+                "Idle for {} min suggests passive recovery mode",
+                minutes
+            );
+        }
+    }
+
+    inferred.push(InferredLevel {
+        kind: "void".to_string(),
+        label: energy_label("void").to_string(),
+        predicted_level: void_level,
+        confidence: void_confidence,
+        reasoning: void_reasoning,
+    });
+
+    // === DRAGON (E3) INFERENCE ===
+    let mut dragon_level = trends_result.get("dragon").copied().unwrap_or(0.5);
+    let mut dragon_confidence = 0.3;
+    let mut dragon_reasoning = String::from("Baseline from recent marks");
+
+    if let Some(length) = input.note_length {
+        if length < 50 {
+            dragon_level = 0.3;
+            dragon_confidence = 0.8;
+            dragon_reasoning = format!(
+                "Short note ({} chars) suggests low cognitive bandwidth",
+                length
+            );
+        } else if length > 200 {
+            dragon_level = 0.7;
+            dragon_confidence = 0.7;
+            dragon_reasoning = format!(
+                "Long note ({} chars) indicates sustained focus",
+                length
+            );
+        }
+    }
+
+    // Late hours drain dragon
+    if let Some(hour) = input.hour {
+        if hour >= 22 || hour <= 5 {
+            dragon_level = dragon_level.min(0.4);
+            dragon_confidence = 0.85;
+            dragon_reasoning = format!(
+                "Late hour ({}:00) impairs cognitive performance",
+                hour
+            );
+        }
+    }
+
+    inferred.push(InferredLevel {
+        kind: "dragon".to_string(),
+        label: energy_label("dragon").to_string(),
+        predicted_level: dragon_level,
+        confidence: dragon_confidence,
+        reasoning: dragon_reasoning,
+    });
+
+    // === LIFE FORCE (E1) INFERENCE ===
+    let mut life_level = trends_result.get("life").copied().unwrap_or(0.5);
+    let mut life_confidence = 0.3;
+    let mut life_reasoning = String::from("Baseline from recent marks");
+
+    if let Some(resets) = input.rhythm_resets_24h {
+        if resets >= 3 {
+            life_level = 0.3;
+            life_confidence = 0.85;
+            life_reasoning = format!(
+                "{} rhythm resets in 24h signals low maintenance reserves",
+                resets
+            );
+        } else if resets == 0 {
+            life_level = 0.7;
+            life_confidence = 0.6;
+            life_reasoning = "No rhythm resets suggests stable life force".to_string();
+        }
+    }
+
+    inferred.push(InferredLevel {
+        kind: "life".to_string(),
+        label: energy_label("life").to_string(),
+        predicted_level: life_level,
+        confidence: life_confidence,
+        reasoning: life_reasoning,
+    });
+
+    // === PLAY (E2) & CROWN (E4) ===
+    // Use baseline for now (lower confidence without specific signals)
+    for &kind in &["play", "crown"] {
+        let baseline = trends_result.get(kind).copied().unwrap_or(0.5);
+        inferred.push(InferredLevel {
+            kind: kind.to_string(),
+            label: energy_label(kind).to_string(),
+            predicted_level: baseline,
+            confidence: 0.3,
+            reasoning: format!("Baseline from recent {} activity", kind),
+        });
+    }
+
+    Ok(Json(InferenceResult {
+        inferred,
+        timestamp: chrono::Utc::now().to_rfc3339(),
+    }))
+}
+
 pub fn router() -> Router<AppState> {
     Router::new()
         .route("/mark", post(mark_energy))
         .route("/state", get(get_state))
         .route("/trends", get(get_trends))
+        .route("/infer", post(infer_energy))
 }
 
 #[cfg(test)]
@@ -635,5 +828,42 @@ mod tests {
 
         let life = trends.iter().find(|t| t.0 == "life").unwrap();
         assert_eq!(life.4, "no_data", "Life should show no_data");
+    }
+
+    #[test]
+    fn infer_detects_late_hour_void() {
+        // Late hour (23:00) should strongly predict high void
+        let hour = 23;
+        let void_level: f32 = if hour >= 22 || hour <= 2 {
+            0.8
+        } else {
+            0.3
+        };
+
+        assert!((void_level - 0.8).abs() < 0.01, "Late hour should predict high void");
+    }
+
+    #[test]
+    fn infer_detects_short_note_low_dragon() {
+        // Short note (< 50 chars) suggests low cognitive bandwidth
+        let note_length = 30;
+        let dragon_level: f32 = if note_length < 50 { 0.3 } else { 0.7 };
+
+        assert!(
+            (dragon_level - 0.3).abs() < 0.01,
+            "Short note should predict low dragon"
+        );
+    }
+
+    #[test]
+    fn infer_detects_rhythm_resets_low_life() {
+        // Multiple rhythm resets signal low maintenance reserves
+        let resets = 4;
+        let life_level: f32 = if resets >= 3 { 0.3 } else { 0.7 };
+
+        assert!(
+            (life_level - 0.3).abs() < 0.01,
+            "Multiple rhythm resets should predict low life force"
+        );
     }
 }
