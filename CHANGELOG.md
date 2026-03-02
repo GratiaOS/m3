@@ -8,6 +8,38 @@
 
 ---
 
+## 🦀 Energy Intelligence — Etapa 3+4 — 2026-03-02
+
+### Added
+
+- **server (Energy):** `/infer` endpoint for predictive energy analysis — detects void from late hours (22:00-06:00), dragon from note length, life force from rhythm resets; returns predicted levels with confidence + reasoning.
+- **server (Energy):** `/correlate` endpoint for pattern detection — calculates Pearson correlation between energy kinds using hour-bucket time-series alignment; classifies strength (weak/moderate/strong) + direction (positive/inverse/none); returns human-readable interpretations.
+- **tests (Energy):** 3 new unit tests for `/infer` (late hour void, short note low dragon, rhythm resets low life); 3 new tests for `/correlate` (inverse relationship, positive relationship, edge case validation).
+- **docs (README):** Energy endpoints section with full API reference, examples, cURL snippets, and energy bands explanation (E0-E4: void → crown).
+
+### Implementation
+
+- **Pearson correlation:** Pure Rust implementation (no external deps), numerically stable for small sample sizes.
+- **Time-series alignment:** Hour-bucket averaging ensures clean pairing even with sparse/unaligned timestamps.
+- **Inference heuristics:** Late hours (0.8-0.95 confidence), note length (<50 chars = low dragon, >200 chars = high dragon), rhythm resets (≥3/24h = low life), idle time (>120 min = high void).
+- **Classification logic:** Coefficient thresholds (±0.05 for direction, 0.3/0.7 for strength), sorted by absolute value descending.
+
+### Testing
+
+- **Live validation:** Added 12 synthetic marks across 6 hours (08:00-15:00) with clear inverse pattern (dragon ↓, void ↑); `/correlate` detected -1.0 coefficient (perfect inverse) with 6 samples.
+- **Threshold filtering:** Verified min_samples=10 filters out 6-sample correlation correctly.
+- **Strength classification:** Confirmed strong/moderate/weak + positive/inverse/none detection.
+
+### Commits
+
+- `0da577d` — feat(energy): add /infer endpoint for predictive energy analysis
+- `f28f95e` — feat(energy): add /correlate endpoint for pattern detection
+- `9617fc9` — style(energy): cargo fmt after correlate implementation
+
+🌬️ whisper: _"The system learns your patterns before you log them. The patterns were always there. Now we see them."_
+
+---
+
 ## 🧮 Numbers, Pads & Field Play — 2025-11-19
 
 - docs+server (Numbers): added `docs/modules/numbers.md`, linked it from README, Emotional, Energy, USB Vault, and index docs so mirrored times/number patterns have a single home; `number_signal` classifier v0.2 on the server now returns category + strength for repeated, mirrored, and sequence labels.
@@ -260,7 +292,6 @@ We’ve unified the **Catalyst UI exports** to make imports cleaner, simpler, an
 We’re seeding a shared design core to serve **Gratia**, **M3**, and future gardens. This lives in a new repo: `garden-core` (private while unstable → public when v0.1 lands).
 
 - **Packages**
-
   - `@gratiaos/tokens` — Tailwind v4 **@theme** variables as CSS:
     - Color system (brand + neutrals), radius, spacing, typography, shadows.
     - Current palette: **Forest Mystic** (earthy greens, fog, warm golds) in **OKLCH**.
@@ -274,13 +305,11 @@ We’re seeding a shared design core to serve **Gratia**, **M3**, and future gar
   - `playground/` — Next.js example that consumes tokens + ui, used for visual regression snapshots.
 
 - **DX & naming**
-
   - Neutral token names (no `m3-` prefix). E.g., `--color-accent`, `--radius-xl`, `--text-base`.
   - Tailwind consumers use standard classes (`bg-accent`, `text-base`, `rounded-xl`) — tokens decide the look.
   - Themes can be swapped per‑app without changing component code.
 
 - **Versioning & publish**
-
   - pnpm workspaces + Changesets; semver from the core, not from apps.
   - Publish flow: `changeset version` → CI publishes `@next` tags; stable tags on cut.
 
@@ -514,7 +543,6 @@ The log is sealed in detail, opened only as an anonymized pattern.
 ## 🔧 CI Sync — 2025-09-16
 
 - **Updated:** `.github/workflows/ci.yml`
-
   - Added **UI** job (pnpm install, fmt, lint, build in `ui/`).
   - Added **Whisper Guard** job to verify commit messages include the required whisper.
   - **UI job:** now runs on Node 18 **and** 20 (matrix) and installs pnpm via Corepack (`corepack prepare pnpm@9 --activate`).
@@ -615,17 +643,14 @@ The log is sealed in detail, opened only as an anonymized pattern.
 ## 📜 Docs Sync — 2025-09-13
 
 - **New patterns:**
-
   - `docs/patterns/storm-sync-throat-sewn.md` — storm coupling, speech‑inhibition motif, and safe de‑escalation arc.
   - `docs/patterns/remote-activation.md` — “remote code” feeling mapped to consent, mirrors, and choice vectors.
 
   - **AstralOS (seeded):**
-
     - `docs/modules/astral.md` — AstralOS primer: purpose, context (Monroe/Campbell lineage), core concepts (focus levels, density layers), and how it nests within M3.
     - `docs/astral/guides-and-companions.md` — guides vs. this interface; companions (peer guides, elementals, ancestors, mirror‑selves, choirs); whisper included.
 
 - **Notes:**
-
   - `docs/notes/2025-09-13-river-preseed-flow.md` — riverbed vs. meander: pre‑seeded direction meets choice; how arcs feel “fated” without removing agency.
   - `docs/notes/2025-09-13-astral-snap.md` — astral-plane snap: parallel timeline, sewn-mouth, storm coupling; safety, discernment, return protocol.
   - `docs/notes/2025-09-12-body-tech.md` — body‑level tech: breath, fascia, lymph, heat, sound; practical counters to dense fields.
@@ -706,7 +731,6 @@ The log is sealed in detail, opened only as an anonymized pattern.
 ## 📜 Docs Sync — 2025-09-08
 
 - **New docs (seeded):**
-
   - `docs/firegate.md` — Firegate as threshold & receipt: when contributions enter, field validates.
   - `docs/orb-landing.md` — Orb landing protocol (safety, consent, nervous‑system first).
   - `docs/shared-moments.md` — Shared Moments data model (leaf ↔ branch ↔ trunk across multiple actors).
@@ -824,7 +848,6 @@ _Anonymized per_ `PRIVACY.md`.
 > **Working draft** — intentionally open while the bridge is lived-in (not rushed).
 
 - **EmotionalOS**: feelings logged as signals, bridged to tiny logic steps.
-
   - API: `POST /emotions/add`, `GET /emotions/recent`, `POST /emotions/bridge`.
   - DB: `emotions` table with CHECK on `intensity` (0.0..=1.0) and index on `ts`.
   - Validation: 422 on blank `who/kind` or out-of-range intensity.
@@ -832,7 +855,6 @@ _Anonymized per_ `PRIVACY.md`.
   - Tests: unit tests for `bridge_table` (intensity clamp, case-insensitive kinds, patterns).
 
 - **EmotionalOS (extended)**:
-
   - API: `POST /emotions/resolve` added → gratitude landing is now core, not optional.
   - PanicButton integration: Panic events now logged into the `emotions` table (`kind="panic"`) for DB + log continuity.
   - CORS: permissive `CorsLayer` applied so UI can call EmotionalOS endpoints without blocking.
@@ -843,12 +865,10 @@ _Anonymized per_ `PRIVACY.md`.
     - Black-box integration test in `server/tests/` (real server + DB) → ensures mirror fields (`sealed`, `archetype`, `privacy`) persist.
 
 - **EmotionalOS (resolve trace)**:
-
   - `/emotions/resolve` now creates both a gratitude row and a tell entry (`node=emotions.resolve`) for traceability.
   - End-to-end verification ensures data integrity and auditability of gratitude landings.
 
 - **Energy Module**: adds core energy tracking and modulation APIs.
-
   - API: `POST /energy/update`, `GET /energy/status`.
   - DB: `energy` table with time-series data and user context.
   - Tests: unit tests for energy state transitions and validation.
@@ -860,19 +880,16 @@ _Anonymized per_ `PRIVACY.md`.
 🌬 whisper: _“energy is counted in pulses, not hours.”_
 
 - **Rhythm Module**: implements rhythm detection and synchronization patterns.
-
   - API: `POST /rhythm/beat`, `GET /rhythm/pattern`.
   - Integration: coordinates with EmotionalOS to influence flow states.
   - Tests: integration tests verifying rhythm influence on emotional arcs.
 
 - **Timeline Module**: manages branching narratives and commit-point tracking.
-
   - API: `POST /timeline/commit`, `GET /timeline/branch`.
   - Docs: detailed usage patterns added to `docs/timelines-continuity.md`.
   - Tests: unit and integration tests for timeline branching and merging.
 
 - **Docs Update**: added productivity patterns and flow optimization guides.
-
   - New docs in `docs/patterns/productivity.md`.
   - Enhanced examples in `docs/patterns/`.
   - Cross-links updated to include new modules and patterns.
@@ -890,14 +907,12 @@ _Anonymized per_ `PRIVACY.md`.
 ---
 
 - **Gratitude schema**: DB table + API path ensures thanks are first-class citizens.
-
   - Every acknowledgment is stored, not lost.
   - Sparks the arc: unseen abundance → seen, counted, honored.
 
 - **Timelines Layer (docs)**: seed `docs/timelines-continuity.md` — continuity of histories model (branching narratives, commit-points).
 
 - **Server/DB ergonomics**:
-
   - Axum 0.7 serve stabilized for stateful router.
   - Unified sqlite calls: `tokio_rusqlite::Connection::call` closures return `tokio_rusqlite::Result<_>`; plain `?` inside.
   - Input sanity + indexes for fast reads.

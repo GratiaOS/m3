@@ -632,6 +632,154 @@ Example `/cycles/upcoming` response:
 
 ## 🌬 whisper: _"rhythm first, precision when ceremony calls."_
 
+### Energy (self-awareness intelligence)
+
+Track, analyze, and predict your energy patterns across the 5 canonical kinds (crown, dragon, play, life, void). These endpoints help you understand when deep work flows, when rest is needed, and how different energy types correlate.
+
+See also: [docs/patterns/energy-calendar.md](docs/patterns/energy-calendar.md).
+
+| Method | Path                | Purpose                                | Body (JSON)                                                                  |
+| ------ | ------------------- | -------------------------------------- | ---------------------------------------------------------------------------- |
+| POST   | `/energy/mark`      | Log an energy level                    | `{ "who":"Raz", "kind":"dragon", "level":0.7, "note":"optional" }`           |
+| GET    | `/energy/state`     | Current snapshot (latest per kind)     | —                                                                            |
+| GET    | `/energy/trends`    | 24h temporal analysis with direction   | —                                                                            |
+| POST   | `/energy/infer`     | Predict energy from behavioral signals | `{ "hour":22, "note_length":45, "rhythm_resets_24h":3, "minutes_idle":120 }` |
+| POST   | `/energy/correlate` | Detect patterns between energy kinds   | `{ "lookback_hours":72, "min_samples":5, "correlation_threshold":0.3 }`      |
+
+**Energy kinds:**
+
+- `crown` (E4) → architecture, strategy, naming
+- `dragon` (E3) → deep work, coding, analysis
+- `play` (E2) → reviews, pairing, drafting
+- `life` (E1) → chores, admin, grooming
+- `void` (E0) → rest, breathwork, sleep
+
+Example `/energy/mark` request:
+
+```json
+{
+  "who": "Raz",
+  "kind": "dragon",
+  "level": 0.7,
+  "note": "Deep work session on /correlate"
+}
+```
+
+Example `/energy/trends` response:
+
+```json
+[
+  {
+    "kind": "dragon",
+    "label": "Dragon (E3)",
+    "current": 0.15,
+    "avg_24h": 0.43,
+    "direction": "down",
+    "samples_24h": 5
+  },
+  {
+    "kind": "void",
+    "label": "Void (E0)",
+    "current": 0.95,
+    "avg_24h": 0.6,
+    "direction": "up",
+    "samples_24h": 5
+  }
+]
+```
+
+Example `/energy/infer` request (predict from behavior):
+
+```json
+{
+  "hour": 23,
+  "note_length": 42,
+  "rhythm_resets_24h": 3,
+  "minutes_idle": 135
+}
+```
+
+Example `/energy/infer` response:
+
+```json
+{
+  "inferred": [
+    {
+      "kind": "void",
+      "label": "Void (E0)",
+      "predicted_level": 0.8,
+      "confidence": 0.9,
+      "reasoning": "Late hour (23:00-02:00) suggests high void"
+    },
+    {
+      "kind": "dragon",
+      "label": "Dragon (E3)",
+      "predicted_level": 0.3,
+      "confidence": 0.8,
+      "reasoning": "Short note (<50 chars) suggests low cognitive load"
+    }
+  ],
+  "timestamp": "2026-03-02T14:43:00Z"
+}
+```
+
+Example `/energy/correlate` request:
+
+```json
+{
+  "lookback_hours": 72,
+  "min_samples": 5,
+  "correlation_threshold": 0.3
+}
+```
+
+Example `/energy/correlate` response:
+
+```json
+{
+  "correlations": [
+    {
+      "kind_a": "dragon",
+      "kind_b": "void",
+      "coefficient": -1.0,
+      "strength": "strong",
+      "direction": "inverse",
+      "samples": 6,
+      "interpretation": "When dragon falls, void rises (strong inverse correlation)"
+    }
+  ],
+  "analysis_period": "72h",
+  "total_marks_analyzed": 22
+}
+```
+
+**Quick cURL**
+
+```bash
+# Mark current energy
+curl -X POST localhost:3033/energy/mark \
+  -H "Authorization: Bearer $M3_BEARER" -H "Content-Type: application/json" \
+  -d '{"who":"Raz","kind":"dragon","level":0.7,"note":"Deep work session"}'
+
+# Get current state
+curl -s localhost:3033/energy/state
+
+# Get 24h trends
+curl -s localhost:3033/energy/trends
+
+# Infer energy from behavior
+curl -X POST localhost:3033/energy/infer \
+  -H "Content-Type: application/json" \
+  -d '{"hour":23,"note_length":45,"rhythm_resets_24h":3}'
+
+# Detect correlations
+curl -X POST localhost:3033/energy/correlate \
+  -H "Content-Type: application/json" \
+  -d '{"lookback_hours":72,"min_samples":5,"correlation_threshold":0.3}'
+```
+
+🌬️ whisper: _"The system learns your patterns before you log them. The patterns were always there. Now we see them."_
+
 ### Panic summary
 
 | Method | Path          | Purpose                    | Body |
@@ -809,25 +957,30 @@ Instead, we lean on terms that honor sovereignty, reciprocity, and mirrors.
 ### 🎧 City of Lights: Manualul de Lifestyle (S-Edition)
 
 #### 🧱 Fundația: cum stăm în picioare
+
 - **Miezul** → claritate, siguranță, simplitate.
 - **Rust** → structură care ține.
 - **Orchestrare** → ritm comun.
 
 #### 🤝 Comunitatea: cum ne conectăm
+
 - **Vínculo** → legătura vie.
 - **Covenant (Pragul)** → intri cu respect.
 - **Joint** → linie directă, fără zgomot.
 
 #### 🕵️ Discreția: cum circulăm
+
 - **Ghost (Fantomă)** → prezență fără urme.
 - **Burn** → mesajul pleacă, spațiul rămâne curat.
 - **Designer de Orașe** → decizi cum se simte lumina.
 
 #### 🤖 Inteligența: cum evoluăm
+
 - **AI (Motorul)** → sfetnic de context.
 - **Tool-uri** → extensii ale viziunii.
 
 #### 🏮 Ritualuri: The Daily Beat
+
 - **☕ Dimineață** → cafea, răsărit, Firegate.
 - **🫧 Pâine** → când Masa Madre „manda”, task-urile încetinesc.
 - **🕯️ Seară** → burn pe zgomot, păstrăm lumina.
