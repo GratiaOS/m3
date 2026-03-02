@@ -422,8 +422,8 @@ pub struct Correlation {
     pub kind_a: String,
     pub kind_b: String,
     pub coefficient: f64,
-    pub strength: String,   // "weak" | "moderate" | "strong"
-    pub direction: String,  // "positive" | "inverse" | "none"
+    pub strength: String,  // "weak" | "moderate" | "strong"
+    pub direction: String, // "positive" | "inverse" | "none"
     pub samples: usize,
     pub interpretation: String,
 }
@@ -451,16 +451,8 @@ fn pearson(xs: &[f64], ys: &[f64]) -> Option<f64> {
         .map(|(x, y)| (x - mean_x) * (y - mean_y))
         .sum();
 
-    let denom_x: f64 = xs
-        .iter()
-        .map(|x| (x - mean_x).powi(2))
-        .sum::<f64>()
-        .sqrt();
-    let denom_y: f64 = ys
-        .iter()
-        .map(|y| (y - mean_y).powi(2))
-        .sum::<f64>()
-        .sqrt();
+    let denom_x: f64 = xs.iter().map(|x| (x - mean_x).powi(2)).sum::<f64>().sqrt();
+    let denom_y: f64 = ys.iter().map(|y| (y - mean_y).powi(2)).sum::<f64>().sqrt();
 
     if denom_x == 0.0 || denom_y == 0.0 {
         return None;
@@ -552,88 +544,86 @@ pub async fn correlate_energy(
 
     let db = state.db.clone();
 
-    let result = db
-        .0
-        .call(move |conn: &mut rusqlite::Connection| -> tokio_rusqlite::Result<CorrelateResponse> {
-            // Fetch all marks within the lookback window
-            let mut stmt = conn.prepare(
-                "SELECT ts, kind, level FROM energy_marks WHERE ts >= ?1 ORDER BY ts ASC",
-            )?;
+    let result =
+        db.0.call(
+            move |conn: &mut rusqlite::Connection| -> tokio_rusqlite::Result<CorrelateResponse> {
+                // Fetch all marks within the lookback window
+                let mut stmt = conn.prepare(
+                    "SELECT ts, kind, level FROM energy_marks WHERE ts >= ?1 ORDER BY ts ASC",
+                )?;
 
-            let rows = stmt.query_map(rusqlite::params![cutoff_str], |row| {
-                Ok((
-                    row.get::<_, String>(0)?, // ts
-                    row.get::<_, String>(1)?, // kind
-                    row.get::<_, f64>(2)?,    // level
-                ))
-            })?;
+                let rows = stmt.query_map(rusqlite::params![cutoff_str], |row| {
+                    Ok((
+                        row.get::<_, String>(0)?, // ts
+                        row.get::<_, String>(1)?, // kind
+                        row.get::<_, f64>(2)?,    // level
+                    ))
+                })?;
 
-            let mut marks = Vec::new();
-            for row in rows {
-                marks.push(row?);
-            }
+                let mut marks = Vec::new();
+                for row in rows {
+                    marks.push(row?);
+                }
 
-            let total = marks.len();
+                let total = marks.len();
 
-            // Group marks by kind
-            let mut by_kind: HashMap<String, Vec<(String, f64)>> = HashMap::new();
-            for (ts, kind, level) in marks {
-                by_kind
-                    .entry(kind)
-                    .or_default()
-                    .push((ts, level));
-            }
+                // Group marks by kind
+                let mut by_kind: HashMap<String, Vec<(String, f64)>> = HashMap::new();
+                for (ts, kind, level) in marks {
+                    by_kind.entry(kind).or_default().push((ts, level));
+                }
 
-            // Calculate correlations for all pairs
-            let mut correlations = Vec::new();
-            let kinds = ENERGY_KINDS;
+                // Calculate correlations for all pairs
+                let mut correlations = Vec::new();
+                let kinds = ENERGY_KINDS;
 
-            for i in 0..kinds.len() {
-                for j in (i + 1)..kinds.len() {
-                    let kind_a = kinds[i];
-                    let kind_b = kinds[j];
+                for i in 0..kinds.len() {
+                    for j in (i + 1)..kinds.len() {
+                        let kind_a = kinds[i];
+                        let kind_b = kinds[j];
 
-                    let series_a = by_kind.get(kind_a).map(|v| v.as_slice()).unwrap_or(&[]);
-                    let series_b = by_kind.get(kind_b).map(|v| v.as_slice()).unwrap_or(&[]);
+                        let series_a = by_kind.get(kind_a).map(|v| v.as_slice()).unwrap_or(&[]);
+                        let series_b = by_kind.get(kind_b).map(|v| v.as_slice()).unwrap_or(&[]);
 
-                    // Align time series by hour buckets
-                    let (xs, ys) = align_series(series_a, series_b);
+                        // Align time series by hour buckets
+                        let (xs, ys) = align_series(series_a, series_b);
 
-                    if xs.len() < min_samples {
-                        continue;
-                    }
+                        if xs.len() < min_samples {
+                            continue;
+                        }
 
-                    if let Some(coeff) = pearson(&xs, &ys) {
-                        if coeff.abs() >= threshold {
-                            let (strength, direction) = classify_correlation(coeff);
-                            correlations.push(Correlation {
-                                kind_a: kind_a.to_string(),
-                                kind_b: kind_b.to_string(),
-                                coefficient: (coeff * 100.0).round() / 100.0,
-                                strength,
-                                direction,
-                                samples: xs.len(),
-                                interpretation: interpret_correlation(kind_a, kind_b, coeff),
-                            });
+                        if let Some(coeff) = pearson(&xs, &ys) {
+                            if coeff.abs() >= threshold {
+                                let (strength, direction) = classify_correlation(coeff);
+                                correlations.push(Correlation {
+                                    kind_a: kind_a.to_string(),
+                                    kind_b: kind_b.to_string(),
+                                    coefficient: (coeff * 100.0).round() / 100.0,
+                                    strength,
+                                    direction,
+                                    samples: xs.len(),
+                                    interpretation: interpret_correlation(kind_a, kind_b, coeff),
+                                });
+                            }
                         }
                     }
                 }
-            }
 
-            // Sort by absolute coefficient descending
-            correlations.sort_by(|a, b| {
-                b.coefficient
-                    .abs()
-                    .partial_cmp(&a.coefficient.abs())
-                    .unwrap()
-            });
+                // Sort by absolute coefficient descending
+                correlations.sort_by(|a, b| {
+                    b.coefficient
+                        .abs()
+                        .partial_cmp(&a.coefficient.abs())
+                        .unwrap()
+                });
 
-            Ok(CorrelateResponse {
-                correlations,
-                analysis_period: format!("{}h", lookback),
-                total_marks_analyzed: total,
-            })
-        })
+                Ok(CorrelateResponse {
+                    correlations,
+                    analysis_period: format!("{}h", lookback),
+                    total_marks_analyzed: total,
+                })
+            },
+        )
         .await;
 
     match result {
