@@ -632,6 +632,194 @@ pub async fn correlate_energy(
     }
 }
 
+// ============================================================================
+// PREDICTION — Forecast future energy levels
+// ============================================================================
+
+#[derive(Debug, Deserialize)]
+pub struct PredictRequest {
+    /// Energy kind to forecast
+    pub kind: String,
+    /// Days to look back for trend analysis (default: 7)
+    pub lookback_days: Option<u64>,
+    /// Hours into the future to forecast (default: 24)
+    pub forecast_hours: Option<u64>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct PredictResponse {
+    pub kind: String,
+    pub label: String,
+    pub current_level: f32,
+    pub predicted_level: f32,
+    pub confidence: f32,
+    pub trend: String, // "up", "down", "stable"
+    pub reasoning: String,
+    pub forecast_window: String,
+    pub samples_analyzed: usize,
+}
+
+/// Simple linear regression result
+struct Line {
+    slope: f64,
+    intercept: f64,
+    r_squared: f64,
+}
+
+fn linear_regression(xs: &[f64], ys: &[f64]) -> Option<Line> {
+    let n = xs.len() as f64;
+    if n < 2.0 {
+        return None;
+    }
+
+    let sum_x = xs.iter().sum::<f64>();
+    let sum_y = ys.iter().sum::<f64>();
+    let sum_xx = xs.iter().map(|x| x * x).sum::<f64>();
+    let sum_xy = xs.iter().zip(ys.iter()).map(|(x, y)| x * y).sum::<f64>();
+
+    let denominator = n * sum_xx - sum_x * sum_x;
+    if denominator == 0.0 {
+        return None;
+    }
+
+    let slope = (n * sum_xy - sum_x * sum_y) / denominator;
+    let intercept = (sum_y - slope * sum_x) / n;
+
+    // Calculate R-squared
+    let mean_y = sum_y / n;
+    let ss_tot: f64 = ys.iter().map(|y| (y - mean_y).powi(2)).sum();
+    let ss_res: f64 = xs
+        .iter()
+        .zip(ys.iter())
+        .map(|(x, y)| (y - (slope * x + intercept)).powi(2))
+        .sum();
+
+    let r_squared = if ss_tot == 0.0 { 1.0 } else { 1.0 - (ss_res / ss_tot) };
+
+    Some(Line {
+        slope,
+        intercept,
+        r_squared,
+    })
+}
+
+pub async fn predict_energy(
+    State(state): State<AppState>,
+    Json(req): Json<PredictRequest>,
+) -> Result<Json<PredictResponse>, (StatusCode, String)> {
+    let lookback = req.lookback_days.unwrap_or(7);
+    let forecast = req.forecast_hours.unwrap_or(24);
+    let kind = req.kind.clone();
+
+    let now = chrono::Utc::now();
+    let cutoff = now - chrono::Duration::days(lookback as i64);
+    let cutoff_str = cutoff.to_rfc3339();
+
+    let db = state.db.clone();
+
+    let result = db.0.call(move |conn: &mut rusqlite::Connection| -> tokio_rusqlite::Result<PredictResponse> {
+        // 1. Get current level
+        let current_level: f32 = conn.query_row(
+            "SELECT level FROM energy_marks WHERE kind = ?1 ORDER BY id DESC LIMIT 1",
+            [&kind],
+            |row| row.get(0)
+        ).unwrap_or(0.5);
+
+        // 2. Fetch series for regression
+        let mut stmt = conn.prepare(
+            "SELECT ts, level FROM energy_marks WHERE kind = ?1 AND ts >= ?2 ORDER BY ts ASC"
+        )?;
+
+        let rows = stmt.query_map(rusqlite::params![kind, cutoff_str], |row| {
+            Ok((row.get::<_, String>(0)?, row.get::<_, f64>(1)?))
+        })?;
+
+        let mut xs = Vec::new();
+        let mut ys = Vec::new();
+
+        for row in rows {
+            let (ts_str, level) = row?;
+            if let Ok(dt) = ts_str.parse::<chrono::DateTime<chrono::Utc>>() {
+                // X is hours from start of period
+                let hours = (dt.timestamp() - cutoff.timestamp()) as f64 / 3600.0;
+                xs.push(hours);
+                ys.push(level);
+            }
+        }
+
+        let samples = xs.len();
+        let label = energy_label(&kind).to_string();
+        let window = format!("{}h", forecast);
+
+        if samples < 2 {
+            return Ok(PredictResponse {
+                kind,
+                label,
+                current_level,
+                predicted_level: current_level,
+                confidence: 0.1,
+                trend: "stable".to_string(),
+                reasoning: "Insufficient data for trend analysis (need at least 2 points)".to_string(),
+                forecast_window: window,
+                samples_analyzed: samples,
+            });
+        }
+
+        // 3. Perform regression
+        if let Some(line) = linear_regression(&xs, &ys) {
+            let forecast_x = (now.timestamp() - cutoff.timestamp()) as f64 / 3600.0 + forecast as f64;
+            let predicted = (line.slope * forecast_x + line.intercept).max(0.0).min(1.0) as f32;
+            
+            let trend = if line.slope.abs() < 0.001 {
+                "stable".to_string()
+            } else if line.slope > 0.0 {
+                "up".to_string()
+            } else {
+                "down".to_string()
+            };
+
+            // Confidence calculation: simple heuristic based on R-squared and sample size
+            let samples_factor = (samples as f32 / 10.0).min(1.0);
+            let r2_factor = line.r_squared as f32;
+            let confidence = (r2_factor * 0.7 + samples_factor * 0.3).max(0.1).min(0.95);
+
+            let reasoning = format!(
+                "Based on {} samples over {} days. Trend is {} (slope: {:.4}).",
+                samples, lookback, trend, line.slope
+            );
+
+            Ok(PredictResponse {
+                kind,
+                label,
+                current_level,
+                predicted_level: predicted,
+                confidence,
+                trend,
+                reasoning,
+                forecast_window: window,
+                samples_analyzed: samples,
+            })
+        } else {
+            Ok(PredictResponse {
+                kind,
+                label,
+                current_level,
+                predicted_level: current_level,
+                confidence: 0.1,
+                trend: "stable".to_string(),
+                reasoning: "Could not calculate trend line from available data".to_string(),
+                forecast_window: window,
+                samples_analyzed: samples,
+            })
+        }
+    }).await;
+
+    match result {
+        Ok(response) => Ok(Json(response)),
+        Err(e) => Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string())),
+    }
+}
+
 pub fn router() -> Router<AppState> {
     Router::new()
         .route("/mark", post(mark_energy))
@@ -639,6 +827,7 @@ pub fn router() -> Router<AppState> {
         .route("/trends", get(get_trends))
         .route("/infer", post(infer_energy))
         .route("/correlate", post(correlate_energy))
+        .route("/predict", post(predict_energy))
 }
 
 #[cfg(test)]
@@ -1182,5 +1371,74 @@ mod tests {
             "Non-correlated data should not show near-perfect correlation (got {})",
             coeff
         );
+    }
+
+    #[test]
+    fn linear_regression_calculates_correctly() {
+        use super::linear_regression;
+        let xs = vec![0.0, 1.0, 2.0, 3.0, 4.0];
+        let ys = vec![0.0, 0.2, 0.4, 0.6, 0.8];
+        let line = linear_regression(&xs, &ys).unwrap();
+        
+        assert!((line.slope - 0.2).abs() < 0.001);
+        assert!((line.intercept - 0.0).abs() < 0.001);
+        assert!((line.r_squared - 1.0).abs() < 0.001);
+    }
+
+    #[test]
+    fn predict_energy_detects_trends() {
+        let conn = setup_conn();
+        
+        // Insert upward trend for dragon
+        for i in 0..10 {
+            let ts = (chrono::Utc::now() - chrono::Duration::hours(24 - i * 2)).to_rfc3339();
+            let level = 0.1 + (i as f32 * 0.05);
+            conn.execute(
+                "INSERT INTO energy_marks (ts, who, kind, level, note) VALUES (?1, 'Raz', 'dragon', ?2, NULL)",
+                params![ts, level]
+            ).unwrap();
+        }
+
+        // We can't call predict_energy directly as it needs AppState, 
+        // but we can test the internal logic or use a helper if we extracted more.
+        // For now, let's verify SQL & regression flow together in a test.
+        
+        let now = chrono::Utc::now();
+        let cutoff = now - chrono::Duration::days(7);
+        let cutoff_str = cutoff.to_rfc3339();
+
+        let mut stmt = conn.prepare(
+            "SELECT ts, level FROM energy_marks WHERE kind = 'dragon' AND ts >= ?1 ORDER BY ts ASC"
+        ).unwrap();
+
+        let rows = stmt.query_map(params![cutoff_str], |row| {
+            Ok((row.get::<_, String>(0).unwrap(), row.get::<_, f64>(1).unwrap()))
+        }).unwrap();
+
+        let mut xs = Vec::new();
+        let mut ys = Vec::new();
+
+        for row in rows {
+            let (ts_str, level) = row.unwrap();
+            let dt = ts_str.parse::<chrono::DateTime<chrono::Utc>>().unwrap();
+            let hours = (dt.timestamp() - cutoff.timestamp()) as f64 / 3600.0;
+            xs.push(hours);
+            ys.push(level);
+        }
+
+        use super::linear_regression;
+        let line = linear_regression(&xs, &ys).unwrap();
+        assert!(line.slope > 0.0, "Trend should be upward");
+
+        let forecast_hours = 24.0;
+        let forecast_x = (now.timestamp() - cutoff.timestamp()) as f64 / 3600.0 + forecast_hours;
+        let predicted = (line.slope * forecast_x + line.intercept).max(0.0).min(1.0);
+        
+        let current: f32 = conn.query_row(
+            "SELECT level FROM energy_marks WHERE kind = 'dragon' ORDER BY id DESC LIMIT 1",
+            [], |row| row.get(0)
+        ).unwrap();
+
+        assert!(predicted > current as f64, "Predicted ({}) should be higher than current ({}) in upward trend", predicted, current);
     }
 }
