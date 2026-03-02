@@ -14,7 +14,8 @@
 
 - **server (Energy):** `/infer` endpoint for predictive energy analysis — detects void from late hours (22:00-06:00), dragon from note length, life force from rhythm resets; returns predicted levels with confidence + reasoning.
 - **server (Energy):** `/correlate` endpoint for pattern detection — calculates Pearson correlation between energy kinds using hour-bucket time-series alignment; classifies strength (weak/moderate/strong) + direction (positive/inverse/none); returns human-readable interpretations.
-- **tests (Energy):** 3 new unit tests for `/infer` (late hour void, short note low dragon, rhythm resets low life); 3 new tests for `/correlate` (inverse relationship, positive relationship, edge case validation).
+- **server (Energy):** `/predict` endpoint for ML-light forecasting — uses linear regression to project future energy levels based on historical marks; returns predicted value, trend direction, and confidence score.
+- **tests (Energy):** 3 new unit tests for `/infer` (late hour void, short note low dragon, rhythm resets low life); 3 new tests for `/correlate` (inverse relationship, positive relationship, edge case validation); 2 new tests for `/predict` (linear regression math, trend detection).
 - **docs (README):** Energy endpoints section with full API reference, examples, cURL snippets, and energy bands explanation (E0-E4: void → crown).
 
 ### Implementation

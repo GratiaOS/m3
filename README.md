@@ -645,6 +645,7 @@ See also: [docs/patterns/energy-calendar.md](docs/patterns/energy-calendar.md).
 | GET    | `/energy/trends`    | 24h temporal analysis with direction   | —                                                                            |
 | POST   | `/energy/infer`     | Predict energy from behavioral signals | `{ "hour":22, "note_length":45, "rhythm_resets_24h":3, "minutes_idle":120 }` |
 | POST   | `/energy/correlate` | Detect patterns between energy kinds   | `{ "lookback_hours":72, "min_samples":5, "correlation_threshold":0.3 }`      |
+| POST   | `/energy/predict`   | Forecast future energy levels (ML-light)| `{ "kind":"dragon", "lookback_days":7, "forecast_hours":24 }`               |
 
 **Energy kinds:**
 
@@ -753,6 +754,32 @@ Example `/energy/correlate` response:
 }
 ```
 
+Example `/energy/predict` request:
+
+```json
+{
+  "kind": "dragon",
+  "lookback_days": 7,
+  "forecast_hours": 24
+}
+```
+
+Example `/energy/predict` response:
+
+```json
+{
+  "kind": "dragon",
+  "label": "Dragon (E3)",
+  "current_level": 0.3,
+  "predicted_level": 0.25,
+  "confidence": 0.72,
+  "trend": "down",
+  "reasoning": "Based on 14 samples over 7 days. Trend is down (slope: -0.0042).",
+  "forecast_window": "24h",
+  "samples_analyzed": 14
+}
+```
+
 **Quick cURL**
 
 ```bash
@@ -776,6 +803,11 @@ curl -X POST localhost:3033/energy/infer \
 curl -X POST localhost:3033/energy/correlate \
   -H "Content-Type: application/json" \
   -d '{"lookback_hours":72,"min_samples":5,"correlation_threshold":0.3}'
+
+# Forecast future energy levels
+curl -X POST localhost:3033/energy/predict \
+  -H "Content-Type: application/json" \
+  -d '{"kind":"dragon","lookback_days":7,"forecast_hours":24}'
 ```
 
 🌬️ whisper: _"The system learns your patterns before you log them. The patterns were always there. Now we see them."_
