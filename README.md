@@ -1,10 +1,25 @@
+# 🌑 [LEGACY] m3: The Genesis of GratiaOS
+
+> **NOTE FOR ARCHITECTS & RECRUITERS:** 
+> This repository represents the foundational R&D phase of what has now evolved into the **GratiaOS** ecosystem. It serves as a "Living Archive" documenting the transition from a monolithic Pattern Engine to a distributed, presence-first Personal OS. 
+> 
+> Here, you will find the early logic behind the **EmotionalOS** concept, the initial Rust-based architecture, and the personal "awakening" process that informed the system's human-centric design.
+>
+> ### 🚀 Current Production Node
+> For the latest live interfaces, sovereign infrastructure, and production-ready features, visit:
+> **[gratia.space](https://gratia.space)**
+>
+> **Status:** Archived / Reference Only. Active development has moved to a private monorepo.
+
+---
+
 # M3 Memory Core (Local)
 
 <p>
   <img src="docs/assets/mark/gratia-mark.png" alt="Gratia Mark" width="90" />
 </p>
 
-[![Sponsor GratiaOS](https://img.shields.io/badge/Sponsor-♥︎%20GratiaOS-ff69b4?logo=githubsponsors)](https://github.com/sponsors/GratiaOS)
+[![Sponsor GratiaOS](https://img.shields.io/badge/Sponsor-♥︎%20GratiaOS-ff69b4?logo=githubsponsors)](https://revolut.me/gratiaos)
 [![CI](https://github.com/GratiaOS/m3/actions/workflows/ci.yml/badge.svg)](https://github.com/GratiaOS/m3/actions/workflows/ci.yml)
 [![Server License](https://img.shields.io/badge/server-AGPL--3.0--only-blue.svg)](#license-matrix)
 [![UI License](https://img.shields.io/badge/ui-Apache%202.0-green.svg)](#license-matrix)
@@ -26,7 +41,7 @@ Designed for offline resilience, privacy, and joyful retrieval.
 ## 💖 Sponsors
 
 If the Garden has helped you ship or smile, consider supporting its growth.  
-→ **https://github.com/sponsors/GratiaOS**
+→ **https://revolut.me/gratiaos**
 
 ### ⏱️ Run in 60s (curl)
 
@@ -985,37 +1000,6 @@ Instead, we lean on terms that honor sovereignty, reciprocity, and mirrors.
 | **Brand**             | **Mark**      | A visual gesture, living symbol, not empire framing |
 
 > Whisper → Mirror → Door → Action
-
-### 🎧 City of Lights: Manualul de Lifestyle (S-Edition)
-
-#### 🧱 Fundația: cum stăm în picioare
-
-- **Miezul** → claritate, siguranță, simplitate.
-- **Rust** → structură care ține.
-- **Orchestrare** → ritm comun.
-
-#### 🤝 Comunitatea: cum ne conectăm
-
-- **Vínculo** → legătura vie.
-- **Covenant (Pragul)** → intri cu respect.
-- **Joint** → linie directă, fără zgomot.
-
-#### 🕵️ Discreția: cum circulăm
-
-- **Ghost (Fantomă)** → prezență fără urme.
-- **Burn** → mesajul pleacă, spațiul rămâne curat.
-- **Designer de Orașe** → decizi cum se simte lumina.
-
-#### 🤖 Inteligența: cum evoluăm
-
-- **AI (Motorul)** → sfetnic de context.
-- **Tool-uri** → extensii ale viziunii.
-
-#### 🏮 Ritualuri: The Daily Beat
-
-- **☕ Dimineață** → cafea, răsărit, Firegate.
-- **🫧 Pâine** → când Masa Madre „manda”, task-urile încetinesc.
-- **🕯️ Seară** → burn pe zgomot, păstrăm lumina.
 
 ### Garden Stack naming (infra-facing)
 
